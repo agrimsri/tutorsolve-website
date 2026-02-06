@@ -1,15 +1,21 @@
-from werkzeug.security import generate_password_hash, check_password_hash
+import bcrypt
 
 
 def hash_password(password: str) -> str:
     """
-    Hash a plaintext password.
+    Hash a plaintext password using bcrypt.
     """
-    return generate_password_hash(password)
+    # Generate salt and hash password
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
 
 
 def verify_password(password: str, password_hash: str) -> bool:
     """
-    Verify a plaintext password against its hash.
+    Verify a plaintext password against its bcrypt hash.
     """
-    return check_password_hash(password_hash, password)
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+    except Exception:
+        return False

@@ -1,32 +1,58 @@
-from flask import Flask
-from src.db.database import db
+from flask import Flask, send_from_directory
+from src.db.mongo import Mongo
+from src.core.geo_fence import geo_fence_middleware
+from dotenv import load_dotenv
+from flask_cors import CORS
+import os
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
+PUBLIC_DIR = os.path.join(FRONTEND_DIR, "public")
+ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
 
 
-def create_app(config_object=None):
-    app = Flask(__name__)
+load_dotenv()
 
-    # Temporary config (will be externalized later)
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tutorsolve.db"
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+def create_app():
+    app = Flask(
+        __name__,
+        static_folder=ASSETS_DIR,
+        static_url_path="/assets"
+    )
 
-    if config_object:
-        app.config.from_object(config_object)
+    # Mongo init
+    Mongo.init_app(app)
 
-    # Initialize extensions
-    db.init_app(app)
+    # Register geo fence middleware
+    app.before_request(geo_fence_middleware)
 
-    # Register routes
+    # Serve landing page
+    @app.route("/")
+    def landing():
+        return send_from_directory(PUBLIC_DIR, "index.html")
+
+    # Serve all HTML files from public and dashboards directories
+    @app.route("/<path:filename>")
+    def serve_html_files(filename):
+        if filename.endswith('.html'):
+            # Try public directory first
+            public_path = os.path.join(PUBLIC_DIR, filename)
+            if os.path.exists(public_path):
+                return send_from_directory(PUBLIC_DIR, filename)
+            
+            # Try dashboards directory
+            dashboard_path = os.path.join(BASE_DIR, "frontend", filename)
+            if os.path.exists(dashboard_path):
+                return send_from_directory(os.path.join(BASE_DIR, "frontend"), filename)
+        
+        # Let Flask handle other files (404 for non-existent files)
+        return "Not Found", 404
+
+    # Register blueprints
     from src.routes import register_routes
     register_routes(app)
 
-    with app.app_context():
-        # Import models so SQLAlchemy registers them
-        from src.models.user import User
-        from src.models.student import Student
-        from src.models.expert import Expert
-        from src.models.employee import Employee
-        from src.models.super_admin import SuperAdmin
-
-        db.create_all()
+    # Enable CORS
+    CORS(app)
 
     return app

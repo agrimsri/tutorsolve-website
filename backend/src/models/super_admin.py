@@ -1,14 +1,13 @@
 from datetime import datetime
-from src.db.database import db
 
 
-class SuperAdmin(db.Model):
-    __tablename__ = "super_admins"
+class SuperAdmin:
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        self.created_at = datetime.utcnow()
 
-    user_id = db.Column(
-        db.UUID(as_uuid=True),
-        db.ForeignKey("users.id"),
-        primary_key=True
-    )
-
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    def to_dict(self):
+        return {
+            "user_id": self.user_id,
+            "created_at": self.created_at
+        }

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Apply as Expert | TutorSolve</title>
+    <link rel="stylesheet" href="/assets/css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-card">
+      <h2>Apply as Expert</h2>
+      <p>Join our network of verified experts and help students worldwide.</p>
+
+      <div id="error" class="error"></div>
+
+      <input id="name" placeholder="Full Name" />
+      <input id="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+      <input
+        id="department"
+        placeholder="Department (e.g., Mathematics, Physics)"
+      />
+      <input id="mobileno" placeholder="Mobile Number" />
+
+      <button onclick="handleExpertSignup()">Apply as Expert</button>
+
+      <div class="switch">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/auth_pages.js"></script>
+
+    <script>
+      async function handleExpertSignup() {
+        const res = await expertSignup(
+          document.getElementById("name").value,
+          document.getElementById("email").value,
+          document.getElementById("password").value,
+          document.getElementById("department").value,
+          document.getElementById("mobileno").value,
+        );
+
+        if (!res.ok) {
+          error.textContent = res.data.error;
+          return;
+        }
+
+        // Auto-login after signup
+        saveUserSession(res.data);
+        redirectAfterAuth("expert");
+      }
+
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const department = document.getElementById("department");
+      const mobileno = document.getElementById("mobileno");
+      const error = document.getElementById("error");
+    </script>
+  </body>
+</html>

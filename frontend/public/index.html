@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TutorSolve — Expert Academic Help</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/assets/css/landing.css" />
+  </head>
+  <body>
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+      <div class="logo">TutorSolve</div>
+
+      <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#how-it-works">How it Works</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#blog">Blog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="btn-outline" href="apply-expert.html">Become an Expert</a>
+        <a href="login.html">Login</a>
+        <a class="btn-primary" href="signup.html">Sign Up</a>
+      </div>
+    </header>
+
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div
+        id="regionNotice"
+        style="
+          display: none;
+          color: #b91c1c;
+          margin-top: 16px;
+          font-weight: 500;
+        "
+      ></div>
+      <h1>Expert Help for Your Assignments — On Your Terms</h1>
+      <p>Verified experts. Secure payments. Human-admin oversight.</p>
+
+      <div class="question-box student-only">
+        <input
+          id="questionInput"
+          type="text"
+          placeholder="Type your question here..."
+        />
+        <button onclick="handleGetSolution()">Get Solution</button>
+      </div>
+    </section>
+
+    <!-- ================= HOW IT WORKS ================= -->
+    <section id="how-it-works" class="how-it-works">
+      <h2>How TutorSolve Works</h2>
+
+      <div class="steps">
+        <div class="step">
+          <h3>1. Ask Your Question</h3>
+          <p>Post your assignment or doubt in seconds.</p>
+        </div>
+
+        <div class="step">
+          <h3>2. Admin Finds the Best Expert</h3>
+          <p>Our team evaluates and assigns the right expert.</p>
+        </div>
+
+        <div class="step">
+          <h3>3. Pay Securely in Parts</h3>
+          <p>Pay only what’s needed, when it’s needed.</p>
+        </div>
+
+        <div class="step">
+          <h3>4. Get Your Solution</h3>
+          <p>Review, unlock, and download your solution.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TRUST ================= -->
+    <section class="trust">
+      <h2>Built for Privacy & Trust</h2>
+
+      <div class="trust-points">
+        <div>🔒 Students & Experts never interact directly</div>
+        <div>💳 Secure split-payment system</div>
+        <div>🧑‍💼 Human admin mediation on every task</div>
+      </div>
+    </section>
+
+    <!-- ================= LIVE STATS ================= -->
+    <section class="stats">
+      <div class="stat">
+        <h3>15+</h3>
+        <p>Active Experts Online</p>
+      </div>
+      <div class="stat">
+        <h3>1,240+</h3>
+        <p>Questions Solved Today</p>
+      </div>
+      <div class="stat">
+        <h3>98%</h3>
+        <p>Student Satisfaction</p>
+      </div>
+    </section>
+
+    <!-- ================= REVIEWS ================= -->
+    <section id="reviews" class="reviews">
+      <h2>What Students Say</h2>
+
+      <div class="review-cards">
+        <div class="review">
+          <p>“Got an A+ in my algorithms assignment. Smooth and secure.”</p>
+          <span>— CS Student</span>
+        </div>
+        <div class="review">
+          <p>“Loved the partial payment system. Very trustworthy.”</p>
+          <span>— Engineering Student</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FINAL CTA ================= -->
+    <section class="final-cta">
+      <h2>Stuck on an assignment?</h2>
+      <button>Ask Your Question</button>
+    </section>
+
+    <!-- ================= FOOTER ================= -->
+    <footer class="footer">
+      <p>© 2026 TutorSolve. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </footer>
+  </body>
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/geo.js"></script>
+  <script src="/assets/js/landing.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", detectCountryAndApplyUX);
+  </script>
+</html>

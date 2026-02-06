@@ -7,16 +7,13 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 @auth_bp.route("/signup/student", methods=["POST"])
 def signup_student():
     data = request.json
-
     try:
-        user = AuthService.signup_student(
+        result = AuthService.signup_student(
+            name=data["name"],
             email=data["email"],
-            password=data["password"],
-            country=data["country"],
-            degree=data.get("degree")
+            password=data["password"]
         )
-        return jsonify({"message": "Student registered", "user_id": str(user.id)}), 201
-
+        return jsonify({"user_id": result}), 201
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -24,15 +21,15 @@ def signup_student():
 @auth_bp.route("/signup/expert", methods=["POST"])
 def signup_expert():
     data = request.json
-
     try:
-        user = AuthService.signup_expert(
+        result = AuthService.signup_expert(
+            name=data["name"],
             email=data["email"],
             password=data["password"],
-            domain=data["domain"]
+            department=data["department"],
+            mobileno=data["mobileno"]
         )
-        return jsonify({"message": "Expert registered, pending approval"}), 201
-
+        return jsonify({"user_id": result}), 201
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -40,16 +37,11 @@ def signup_expert():
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.json
-
     try:
-        user = AuthService.login(
+        result = AuthService.login(
             email=data["email"],
             password=data["password"]
         )
-        return jsonify({
-            "message": "Login successful",
-            "role": user.role.value
-        })
-
+        return jsonify(result)
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 401

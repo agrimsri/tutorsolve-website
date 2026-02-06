@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Sign Up | TutorSolve</title>
+    <link rel="stylesheet" href="/assets/css/auth.css" />
+  </head>
+  <body>
+    <div class="auth-card">
+      <h2>Student Sign Up</h2>
+      <p>
+        Create your student account to get expert help with your assignments.
+      </p>
+
+      <div id="error" class="error"></div>
+
+      <!-- Student fields only -->
+      <input id="name" placeholder="Full Name" />
+      <input id="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+
+      <button onclick="handleSignup()">Create Account</button>
+
+      <div class="switch">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </div>
+
+      <div class="switch" style="margin-top: 10px">
+        Want to become an expert?
+        <a href="apply-expert.html">Apply as Expert</a>
+      </div>
+    </div>
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/auth_pages.js"></script>
+
+    <script>
+      async function handleSignup() {
+        // Student signup only
+        const res = await studentSignup(
+          document.getElementById("name").value,
+          document.getElementById("email").value,
+          document.getElementById("password").value,
+        );
+
+        if (!res.ok) {
+          error.textContent = res.data.error;
+          return;
+        }
+
+        // Auto-login after signup
+        saveUserSession(res.data);
+        redirectAfterAuth("student");
+      }
+
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const password = document.getElementById("password");
+      const error = document.getElementById("error");
+    </script>
+  </body>
+</html>

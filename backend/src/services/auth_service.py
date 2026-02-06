@@ -1,10 +1,6 @@
-from src.db.database import db
-from src.models.user import User, UserRole, UserStatus
-from src.models.student import Student
-from src.models.expert import Expert
-from src.models.employee import Employee
-from src.models.super_admin import SuperAdmin
-from src.core.security import hash_password, verify_password
+from flask import current_app
+import bcrypt
+from datetime import datetime
 
 
 class AuthServiceError(Exception):
@@ -12,72 +8,118 @@ class AuthServiceError(Exception):
 
 
 class AuthService:
+    """
+    Auth service adapted to existing client MongoDB schema.
+    """
 
+    # -----------------------
+    # LOGIN
+    # -----------------------
     @staticmethod
-    def signup_student(email, password, country, degree=None):
-        if country in ("IN", "PK"):
-            raise AuthServiceError("Students from this country are not allowed")
+    def login(email: str, password: str):
+        users = current_app.mongo.users
+        experts = current_app.mongo.experts
 
-        if User.query.filter_by(email=email).first():
-            raise AuthServiceError("Email already registered")
-
-        user = User(
-            email=email,
-            password_hash=hash_password(password),
-            role=UserRole.STUDENT,
-            status=UserStatus.ACTIVE
-        )
-
-        db.session.add(user)
-        db.session.flush()  # get user.id
-
-        student = Student(
-            user_id=user.id,
-            country=country,
-            degree=degree
-        )
-
-        db.session.add(student)
-        db.session.commit()
-
-        return user
-
-    @staticmethod
-    def signup_expert(email, password, domain):
-        if User.query.filter_by(email=email).first():
-            raise AuthServiceError("Email already registered")
-
-        user = User(
-            email=email,
-            password_hash=hash_password(password),
-            role=UserRole.EXPERT,
-            status=UserStatus.PENDING  # requires approval
-        )
-
-        db.session.add(user)
-        db.session.flush()
-
-        expert = Expert(
-            user_id=user.id,
-            domain=domain
-        )
-
-        db.session.add(expert)
-        db.session.commit()
-
-        return user
-
-    @staticmethod
-    def login(email, password):
-        user = User.query.filter_by(email=email).first()
+        user = users.find_one({"email": email})
 
         if not user:
-            raise AuthServiceError("Invalid credentials")
+            raise AuthServiceError("Invalid email or password")
 
-        if user.status != UserStatus.ACTIVE:
-            raise AuthServiceError("User not active")
+        # Account must be verified
+        if not user.get("isVerified", False):
+            raise AuthServiceError("Account not verified")
 
-        if not verify_password(password, user.password_hash):
-            raise AuthServiceError("Invalid credentials")
+        # Password check (bcrypt)
+        if not bcrypt.checkpw(
+            password.encode("utf-8"),
+            user["password"].encode("utf-8")
+        ):
+            raise AuthServiceError("Invalid email or password")
 
-        return user
+        # Expert-specific approval check
+        if "Expert" in user.get("role", []):
+            expert = experts.find_one({"user": user["_id"]})
+            if not expert or not expert.get("approve", False):
+                raise AuthServiceError("Expert account not approved yet")
+
+        return {
+            "user_id": str(user["_id"]),
+            "email": user["email"],
+            "role": user["role"],
+            "name": user.get("name"),
+            "picture": user.get("picture")
+        }
+
+    # -----------------------
+    # STUDENT SIGNUP
+    # -----------------------
+    @staticmethod
+    def signup_student(name, email, password):
+        users = current_app.mongo.users
+
+        if users.find_one({"email": email}):
+            raise AuthServiceError("Email already exists")
+
+        hashed_pw = bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+        user_doc = {
+            "name": name,
+            "email": email,
+            "password": hashed_pw,
+            "role": ["Student"],
+            "isVerified": True,   # client schema expects this
+            "picture": "",
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+
+        result = users.insert_one(user_doc)
+
+        return str(result.inserted_id)
+
+    # -----------------------
+    # EXPERT SIGNUP
+    # -----------------------
+    @staticmethod
+    def signup_expert(name, email, password, department, mobileno):
+        users = current_app.mongo.users
+        experts = current_app.mongo.experts
+
+        if users.find_one({"email": email}):
+            raise AuthServiceError("Email already exists")
+
+        hashed_pw = bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+        # 1 Create user
+        user_doc = {
+            "name": name,
+            "email": email,
+            "password": hashed_pw,
+            "role": ["Expert"],
+            "isVerified": True,
+            "picture": "",
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        }
+
+        user_result = users.insert_one(user_doc)
+
+        # 2 Create expert profile (pending approval)
+        experts.insert_one({
+            "user": user_result.inserted_id,
+            "department": department,
+            "mobileno": mobileno,
+            "approve": False,
+            "document": [],
+            "payment": [],
+            "createdAt": datetime.utcnow(),
+            "updatedAt": datetime.utcnow()
+        })
+
+        return str(user_result.inserted_id)
