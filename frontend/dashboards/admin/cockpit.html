@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard | TutorSolve</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+  </head>
+  <body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <h2>TutorSolve | Admin</h2>
+      <div class="logout" onclick="logout()">Logout</div>
+    </div>
+
+    <div class="container">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <h3>Navigation</h3>
+        <a href="#">Dashboard</a>
+        <a href="#">Experts</a>
+        <a href="#">Students</a>
+      </div>
+
+      <!-- MAIN -->
+      <div class="main">
+        <!-- PENDING EXPERT APPROVALS -->
+        <div class="card">
+          <h3>Pending Expert Approvals</h3>
+
+          <table id="expertTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected by JS -->
+            </tbody>
+          </table>
+
+          <p id="emptyState" class="empty" style="display: none">
+            No pending expert approvals.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+      // ⚠️ TEMPORARY MOCK DATA
+      // Later replaced by API call
+      const pendingExperts = [
+        {
+          id: "1",
+          name: "Rahul Sharma",
+          email: "rahul@example.com",
+          department: "Electronics",
+        },
+        {
+          id: "2",
+          name: "Neha Verma",
+          email: "neha@example.com",
+          department: "Computer Science",
+        },
+      ];
+
+      const tableBody = document.querySelector("#expertTable tbody");
+      const emptyState = document.getElementById("emptyState");
+
+      function renderExperts() {
+        if (pendingExperts.length === 0) {
+          emptyState.style.display = "block";
+          return;
+        }
+
+        pendingExperts.forEach((exp) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+          <td>${exp.name}</td>
+          <td>${exp.email}</td>
+          <td>${exp.department}</td>
+          <td>
+            <button class="btn btn-approve" onclick="approve('${exp.id}')">
+              Approve
+            </button>
+            <button class="btn btn-reject" onclick="reject('${exp.id}')">
+              Reject
+            </button>
+          </td>
+        `;
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function approve(id) {
+        alert("Approved expert ID: " + id);
+        // Later: POST /admin/experts/{id}/approve
+      }
+
+      function reject(id) {
+        alert("Rejected expert ID: " + id);
+        // Later: POST /admin/experts/{id}/reject
+      }
+
+      function logout() {
+        sessionStorage.clear();
+        window.location.href = "../../public/index.html";
+      }
+
+      renderExperts();
+    </script>
+  </body>
+</html>

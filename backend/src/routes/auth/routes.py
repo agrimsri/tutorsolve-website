@@ -45,3 +45,16 @@ def login():
         return jsonify(result)
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 401
+
+@auth_bp.route("/signup/admin", methods=["POST"])
+def admin_signup():
+    data = request.json
+    try:
+        result = AuthService.admin_signup(
+            name=data["name"],
+            email=data["email"],
+            password=data["password"]
+        )
+        return jsonify(result), 201
+    except AuthServiceError as e:
+        return jsonify({"error": str(e)}), 400

@@ -11,5 +11,7 @@ function redirectAfterAuth(role) {
     window.location.href = "/dashboards/student/index.html";
   } else if (role === "expert") {
     window.location.href = "/dashboards/expert/index.html";
+  } else if (role === "admin") {
+    window.location.href = "/dashboards/admin/cockpit.html";
   }
 }

@@ -22,3 +22,11 @@ async function login(email, password) {
     password,
   });
 }
+
+async function adminSignup(name, email, password) {
+  return apiRequest("/auth/signup/admin", "POST", {
+    name,
+    email,
+    password,
+  });
+}
