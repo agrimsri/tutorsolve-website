@@ -1,6 +1,7 @@
 from flask import current_app
 import bcrypt
 from datetime import datetime
+from src.core.jwt_utils import generate_token
 
 
 class AuthServiceError(Exception):
@@ -33,11 +34,14 @@ class AuthService:
         ):
             raise AuthServiceError("Invalid email or password")
 
+        token = generate_token(str(user["_id"]), user["role"])
+
         return {
             "user_id": str(user["_id"]),
             "role": user["role"],
             "name": user.get("name"),
-            "picture": user.get("picture")
+            "picture": user.get("picture"),
+            "token": token
         }
 
     # -----------------------
@@ -68,12 +72,14 @@ class AuthService:
 
         result = users.insert_one(user_doc)
 
-        # ✅ RETURN SAME SHAPE AS LOGIN
+        token = generate_token(str(result.inserted_id), ["Student"])
+
         return {
             "user_id": str(result.inserted_id),
             "role": ["Student"],
             "name": name,
-            "picture": ""
+            "picture": "",
+            "token": token
         }
 
     # -----------------------
@@ -118,12 +124,15 @@ class AuthService:
             "updatedAt": datetime.utcnow()
         })
 
+        token = generate_token(str(user_result.inserted_id), ["Expert"])
+
         # ✅ RETURN SAME SHAPE AS LOGIN
         return {
             "user_id": str(user_result.inserted_id),
             "role": ["Expert"],
             "name": name,
-            "picture": ""
+            "picture": "",
+            "token": token
         }
 
 
@@ -152,9 +161,12 @@ class AuthService:
 
         result = users.insert_one(user_doc)
 
+        token = generate_token(str(result.inserted_id), ["Admin"])
+
         return {
             "user_id": str(result.inserted_id),
             "role": ["Admin"],
             "name": name,
-            "picture": ""
+            "picture": "",
+            "token": token
         }

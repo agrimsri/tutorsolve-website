@@ -29,10 +29,37 @@
       <div class="main">
         <!-- PENDING QUESTION -->
         <div class="card">
-          <h3>Your Question</h3>
-          <div id="pendingQuestion" class="question-box">
-            No question posted yet.
-          </div>
+          <h3>Ask a New Question</h3>
+
+          <input
+            id="title"
+            placeholder="Question title"
+            style="width: 100%; margin-bottom: 10px"
+          />
+
+          <input
+            id="department"
+            placeholder="Department (e.g. Mechanical)"
+            style="width: 100%; margin-bottom: 10px"
+          />
+
+          <textarea
+            id="description"
+            placeholder="Describe your problem"
+            style="width: 100%; height: 100px"
+          ></textarea>
+
+          <button onclick="submitStudentQuestion()" style="margin-top: 10px">
+            Submit Question
+          </button>
+        </div>
+
+        <!-- MY ORDERS -->
+        <div class="card">
+          <h3>My Questions</h3>
+          <ul id="myQuestions" style="list-style: none; padding: 0">
+            <li>Loading...</li>
+          </ul>
         </div>
 
         <!-- MY ORDERS -->
@@ -53,16 +80,14 @@
     </div>
 
     <!-- LOGIC -->
+
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/questions.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const pendingQuestion = sessionStorage.getItem("pending_question");
-
-        if (pendingQuestion) {
-          document.getElementById("pendingQuestion").textContent =
-            pendingQuestion;
-
-          console.log("Auto-posting question (future):", pendingQuestion);
-        }
+        handlePendingQuestionCarryForward();
+        // loadStudentQuestions();
       });
 
       function logout() {

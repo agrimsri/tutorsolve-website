@@ -14,17 +14,22 @@ ASSETS_DIR = os.path.join(FRONTEND_DIR, "assets")
 load_dotenv()
 
 def create_app():
+
     app = Flask(
         __name__,
         static_folder=ASSETS_DIR,
         static_url_path="/assets"
     )
 
+    # Load config
+    from src.core.config import Config
+    app.config.from_object(Config)
+
     # Mongo init
     Mongo.init_app(app)
 
     # Register geo fence middleware
-    app.before_request(geo_fence_middleware)
+    # app.before_request(geo_fence_middleware)
 
     # Serve landing page
     @app.route("/")

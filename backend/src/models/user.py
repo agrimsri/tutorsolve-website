@@ -4,6 +4,7 @@ class UserRole(str, Enum):
     STUDENT = "student"
     EXPERT = "expert"
     EMPLOYEE = "employee"
+    ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
 
 

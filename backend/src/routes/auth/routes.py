@@ -13,7 +13,7 @@ def signup_student():
             email=data["email"],
             password=data["password"]
         )
-        return jsonify({"user_id": result}), 201
+        return jsonify(result), 201
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -29,7 +29,7 @@ def signup_expert():
             department=data["department"],
             mobileno=data["mobileno"]
         )
-        return jsonify({"user_id": result}), 201
+        return jsonify(result), 201
     except AuthServiceError as e:
         return jsonify({"error": str(e)}), 400
 

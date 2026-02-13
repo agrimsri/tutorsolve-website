@@ -1,7 +1,7 @@
 from flask import current_app
 from bson import ObjectId
 from datetime import datetime
-from src.core.question_status import QuestionStatus
+from src.models.question_status import QuestionStatus
 
 
 class QuestionServiceError(Exception):
@@ -66,3 +66,24 @@ class QuestionService:
             })
 
         return result
+
+    @staticmethod
+    def get_questions_for_student(student_id: str):
+        questions = current_app.mongo.questions
+
+        cursor = questions.find(
+            {"user": ObjectId(student_id)}
+        ).sort("createdAt", -1)
+
+        result = []
+        for q in cursor:
+            result.append({
+                "id": str(q["_id"]),
+                "title": q.get("title"),
+                "department": q.get("department"),
+                "status": q.get("status"),
+                "createdAt": q.get("createdAt")
+            })
+
+        return result
+
