@@ -30,3 +30,9 @@ async function adminSignup(name, email, password) {
     password,
   });
 }
+
+function logout() {
+  localStorage.clear();
+  sessionStorage.clear();
+  window.location.href = "/public/index.html";
+}

@@ -111,3 +111,19 @@ function handlePendingQuestionCarryForward() {
 
   document.getElementById("description").value = pending;
 }
+
+async function loadDepartments() {
+  const res = await apiRequest("/departments");
+
+  if (!res.ok) return;
+
+  const select = document.getElementById("department");
+  select.innerHTML = "";
+
+  res.data.departments.forEach((d) => {
+    const option = document.createElement("option");
+    option.value = d.slug;
+    option.innerText = d.name;
+    select.appendChild(option);
+  });
+}

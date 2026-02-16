@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/assets/css/expert.css" />
   </head>
+
   <body>
     <!-- TOP BAR -->
     <div class="topbar">
@@ -17,72 +18,32 @@
       <!-- SIDEBAR -->
       <div class="sidebar">
         <h3>Navigation</h3>
-        <a href="#">Dashboard</a>
-        <a href="#">Assigned Tasks</a>
-        <a href="#">Earnings</a>
-        <a href="#">Profile</a>
+        <a href="#" onclick="loadExpertView('dashboard')">Dashboard</a>
+        <a href="#" onclick="loadExpertView('available-questions')"
+          >Available Questions</a
+        >
+        <a href="#" onclick="loadExpertView('assigned-tasks')"
+          >Assigned Tasks</a
+        >
+        <a href="#" onclick="loadExpertView('earnings')">Earnings</a>
+        <a href="#" onclick="loadExpertView('profile')">Profile</a>
       </div>
 
-      <!-- MAIN -->
-      <div class="main">
-        <!-- APPROVAL STATUS -->
-        <div class="card">
-          <h3>Approval Status</h3>
-          <div id="approvalStatus" class="status pending">
-            Pending admin approval
-          </div>
-          <p style="margin-top: 10px; font-size: 13px; color: #6b7280">
-            Experts can start receiving assignments only after approval.
-          </p>
-        </div>
-
-        <!-- ASSIGNED TASKS -->
-        <div class="card">
-          <h3>Assigned Tasks</h3>
-          <p class="empty">No tasks assigned yet.</p>
-        </div>
-
-        <!-- EARNINGS -->
-        <div class="card">
-          <h3>Earnings</h3>
-          <div class="earnings">₹0.00</div>
-          <p style="font-size: 13px; color: #6b7280">
-            Earnings are released after task completion and admin verification.
-          </p>
-        </div>
-
-        <!-- COMMUNICATION NOTICE -->
-        <div class="card">
-          <h3>Communication Policy</h3>
-          <p class="empty">
-            All communication is handled by TutorSolve admins. Direct student
-            contact is not permitted.
-          </p>
-        </div>
+      <!-- MAIN DYNAMIC CONTENT -->
+      <div class="main" id="expertContent">
+        <!-- Default view will load here -->
       </div>
     </div>
 
-    <!-- LOGIC -->
+    <!-- SCRIPTS -->
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/experts.js"></script>
+
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-
-        // Simulate approval status (later from backend)
-        const isApproved = false; // placeholder
-
-        const statusEl = document.getElementById("approvalStatus");
-
-        if (isApproved) {
-          statusEl.textContent = "Approved";
-          statusEl.classList.remove("pending");
-          statusEl.classList.add("approved");
-        }
+        loadExpertView("dashboard"); // default page
       });
-
-      function logout() {
-        sessionStorage.clear();
-        window.location.href = "../../public/index.html";
-      }
     </script>
   </body>
 </html>

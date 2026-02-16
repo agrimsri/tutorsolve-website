@@ -2,32 +2,53 @@
 <html>
   <head>
     <title>Sign Up | TutorSolve</title>
+    <link rel="stylesheet" href="/assets/css/landing.css" />
     <link rel="stylesheet" href="/assets/css/auth.css" />
   </head>
   <body>
-    <div class="auth-card">
-      <h2>Student Sign Up</h2>
-      <p>
-        Create your student account to get expert help with your assignments.
-      </p>
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+      <a class="logo" href="/">TutorSolve</a>
 
-      <div id="error" class="error"></div>
+      <!-- <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#how-it-works">How it Works</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#blog">Blog</a>
+      </nav> -->
 
-      <!-- Student fields only -->
-      <input id="name" placeholder="Full Name" />
-      <input id="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-
-      <button onclick="handleSignup()">Create Account</button>
-
-      <div class="switch">
-        Already have an account?
-        <a href="login.html">Login</a>
+      <div class="nav-actions">
+        <!-- <a class="btn-outline" href="apply-expert.html">Become an Expert</a> -->
+        <!-- <a href="login.html">Login</a> -->
+        <!-- <a class="btn-primary" href="signup.html">Sign Up</a> -->
       </div>
+    </header>
 
-      <div class="switch" style="margin-top: 10px">
-        Want to become an expert?
-        <a href="apply-expert.html">Apply as Expert</a>
+    <div class="auth-container">
+      <div class="auth-card">
+        <h2>Student Sign Up</h2>
+        <p>
+          Create your student account to get expert help with your assignments.
+        </p>
+
+        <div id="error" class="error"></div>
+
+        <!-- Student fields only -->
+        <input id="name" placeholder="Full Name" />
+        <input id="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+
+        <button onclick="handleSignup()">Create Account</button>
+
+        <div class="switch">
+          Already have an account?
+          <a href="login.html">Login</a>
+        </div>
+
+        <div class="switch" style="margin-top: 10px">
+          Want to become an expert?
+          <a href="apply-expert.html">Apply as Expert</a>
+        </div>
       </div>
     </div>
 

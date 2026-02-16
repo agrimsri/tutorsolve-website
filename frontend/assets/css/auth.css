@@ -6,9 +6,15 @@
 body {
   background: #f3f4f6;
   display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.auth-container {
+  display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  flex: 1;
 }
 
 .auth-card {

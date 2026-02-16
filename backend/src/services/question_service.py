@@ -2,6 +2,8 @@ from flask import current_app
 from bson import ObjectId
 from datetime import datetime
 from src.models.question_status import QuestionStatus
+from src.services.department_service import DepartmentService
+
 
 
 class QuestionServiceError(Exception):
@@ -19,11 +21,15 @@ class QuestionService:
         for field in required_fields:
             if field not in payload or not payload[field]:
                 raise QuestionServiceError(f"Missing field: {field}")
+        
+        department_slug = payload["department"]
+        if not DepartmentService.is_valid_department(department_slug):
+            raise QuestionServiceError("Invalid department")
 
         question_doc = {
             # Existing client fields
-            "user": ObjectId(student_id),
-            "department": payload["department"],
+            "studentId": ObjectId(student_id),
+            "department": department_slug,
             "title": payload["title"],
             "description": payload["description"],
             "willingtopay": payload.get("willingtopay"),
@@ -72,7 +78,7 @@ class QuestionService:
         questions = current_app.mongo.questions
 
         cursor = questions.find(
-            {"user": ObjectId(student_id)}
+            {"studentId": ObjectId(student_id)}
         ).sort("createdAt", -1)
 
         result = []

@@ -1,10 +1,6 @@
 const API_BASE = "http://localhost:5000";
 
 async function apiRequest(endpoint, method = "GET", body = null) {
-  console.log(
-    "Token in apiRequest:",
-    JSON.parse(sessionStorage.getItem("token") || "null"),
-  );
   const options = {
     method,
     headers: {
@@ -13,13 +9,14 @@ async function apiRequest(endpoint, method = "GET", body = null) {
   };
 
   // Add Authorization header if JWT token is present
-  const user = JSON.parse(sessionStorage.getItem("user") || "null");
-  console.log("[apiRequest] sessionStorage user:", user);
-  if (user && user.token) {
-    console.log("[apiRequest] Using token:", user.token);
-    options.headers["Authorization"] = `Bearer ${user.token}`;
+  const token = localStorage.getItem("token");
+  if (token) {
+    options.headers["Authorization"] = `Bearer ${token}`;
   } else {
-    console.log("[apiRequest] No token found in sessionStorage");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (user && user.token) {
+      options.headers["Authorization"] = `Bearer ${user.token}`;
+    }
   }
 
   if (body) {

@@ -1,7 +1,8 @@
 from flask import current_app
 import bcrypt
-from datetime import datetime
+from datetime import datetime, timezone
 from src.core.jwt_utils import generate_token
+from src.services.department_service import DepartmentService
 
 
 class AuthServiceError(Exception):
@@ -19,29 +20,48 @@ class AuthService:
     @staticmethod
     def login(email: str, password: str):
         users = current_app.mongo.users
+        experts = current_app.mongo.experts
 
+        # 1️⃣ Find user
         user = users.find_one({"email": email})
 
         if not user:
             raise AuthServiceError("Invalid email or password")
 
+        # 2️⃣ Check verification
         if not user.get("isVerified", False):
             raise AuthServiceError("Account not verified")
 
+        # 3️⃣ Verify password
         if not bcrypt.checkpw(
             password.encode("utf-8"),
             user["password"].encode("utf-8")
         ):
             raise AuthServiceError("Invalid email or password")
 
-        token = generate_token(str(user["_id"]), user["role"])
+        # 4️⃣ Generate JWT (identity only)
+        token = generate_token(
+            user_id=str(user["_id"]),
+            role=user["role"]
+        )
 
+        # 5️⃣ If Expert → fetch approval status
+        approved = None
+        expert = None
+
+        if "Expert" in user.get("role", []):
+            expert = experts.find_one({"user": user["_id"]})
+            approved = expert.get("approved", False) if expert else False
+
+        # 6️⃣ Return structured response
         return {
+            "token": token,
             "user_id": str(user["_id"]),
             "role": user["role"],
             "name": user.get("name"),
             "picture": user.get("picture"),
-            "token": token
+            "approved": approved,  # None for non-experts
+            "department": expert.get("department") if expert else None
         }
 
     # -----------------------
@@ -66,8 +86,8 @@ class AuthService:
             "role": ["Student"],
             "isVerified": True,
             "picture": "",
-            "createdAt": datetime.utcnow(),
-            "updatedAt": datetime.utcnow()
+            "createdAt": datetime.now(timezone.utc),
+            "updatedAt": datetime.now(timezone.utc)
         }
 
         result = users.insert_one(user_doc)
@@ -93,6 +113,10 @@ class AuthService:
         if users.find_one({"email": email}):
             raise AuthServiceError("Email already exists")
 
+        # Validate department slug
+        if not DepartmentService.is_valid_department(department):
+            raise AuthServiceError("Invalid department")
+
         hashed_pw = bcrypt.hashpw(
             password.encode("utf-8"),
             bcrypt.gensalt()
@@ -106,8 +130,8 @@ class AuthService:
             "role": ["Expert"],
             "isVerified": True,
             "picture": "",
-            "createdAt": datetime.utcnow(),
-            "updatedAt": datetime.utcnow()
+            "createdAt": datetime.now(timezone.utc),
+            "updatedAt": datetime.now(timezone.utc)
         }
 
         user_result = users.insert_one(user_doc)
@@ -115,13 +139,11 @@ class AuthService:
         # 2️⃣ Create expert profile (pending approval)
         experts.insert_one({
             "user": user_result.inserted_id,
-            "department": department,
+            "department": department,  # department is slug
             "mobileno": mobileno,
-            "approve": False,
+            "approved": False,
             "document": [],
             "payment": [],
-            "createdAt": datetime.utcnow(),
-            "updatedAt": datetime.utcnow()
         })
 
         token = generate_token(str(user_result.inserted_id), ["Expert"])
@@ -132,7 +154,8 @@ class AuthService:
             "role": ["Expert"],
             "name": name,
             "picture": "",
-            "token": token
+            "token": token,
+            "approved": False
         }
 
 
@@ -155,8 +178,8 @@ class AuthService:
             "role": ["Admin"],
             "isVerified": True,
             "picture": "",
-            "createdAt": datetime.utcnow(),
-            "updatedAt": datetime.utcnow()
+            "createdAt": datetime.now(timezone.utc),
+            "updatedAt": datetime.now(timezone.utc)
         }
 
         result = users.insert_one(user_doc)

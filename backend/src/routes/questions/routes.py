@@ -1,7 +1,9 @@
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
+from bson import ObjectId
 from src.services.question_service import QuestionService, QuestionServiceError
 from src.core.decorators import auth_required
+from src.services.notification_service import NotificationService
 
 questions_bp = Blueprint("questions", __name__, url_prefix="/questions")
 
@@ -16,6 +18,11 @@ def create_question():
         result = QuestionService.create_question(
             student_id=user["user_id"],
             payload=payload
+        )
+
+        NotificationService.notify_experts_new_question(
+            department=payload["department"],
+            question_title=payload["title"]
         )
         return jsonify(result), 201
     except QuestionServiceError as e:

@@ -2,29 +2,42 @@
 <html lang="en">
   <head>
     <title>Apply as Expert | TutorSolve</title>
+    <link rel="stylesheet" href="/assets/css/landing.css" />
     <link rel="stylesheet" href="/assets/css/auth.css" />
   </head>
   <body>
-    <div class="auth-card">
-      <h2>Apply as Expert</h2>
-      <p>Join our network of verified experts and help students worldwide.</p>
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+      <a class="logo" href="/">TutorSolve</a>
 
-      <div id="error" class="error"></div>
-
-      <input id="name" placeholder="Full Name" />
-      <input id="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-      <input
-        id="department"
-        placeholder="Department (e.g., Mathematics, Physics)"
-      />
-      <input id="mobileno" placeholder="Mobile Number" />
-
-      <button onclick="handleExpertSignup()">Apply as Expert</button>
-
-      <div class="switch">
-        Already have an account?
+      <!-- <div class="nav-actions">
+        <a class="btn-outline" href="apply-expert.html">Become an Expert</a>
         <a href="login.html">Login</a>
+        <a class="btn-primary" href="signup.html">Sign Up</a>
+      </div> -->
+    </header>
+
+    <div class="auth-container">
+      <div class="auth-card">
+        <h2>Apply as Expert</h2>
+        <p>Join our network of verified experts and help students worldwide.</p>
+
+        <div id="error" class="error"></div>
+
+        <input id="name" placeholder="Full Name" />
+        <input id="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+        <select id="department">
+          <option value="">Loading departments...</option>
+        </select>
+        <input id="mobileno" placeholder="Mobile Number" />
+
+        <button onclick="handleExpertSignup()">Apply as Expert</button>
+
+        <div class="switch">
+          Already have an account?
+          <a href="login.html">Login</a>
+        </div>
       </div>
     </div>
 
@@ -34,11 +47,16 @@
 
     <script>
       async function handleExpertSignup() {
+        const departmentValue = document.getElementById("department").value;
+        if (!departmentValue) {
+          alert("Please select a department");
+          return;
+        }
         const res = await expertSignup(
           document.getElementById("name").value,
           document.getElementById("email").value,
           document.getElementById("password").value,
-          document.getElementById("department").value,
+          departmentValue,
           document.getElementById("mobileno").value,
         );
 
@@ -51,6 +69,26 @@
         saveUserSession(res.data);
         redirectAfterAuth("expert");
       }
+
+      async function loadDepartments() {
+        const res = await apiRequest("/departments");
+        if (!res.ok) {
+          console.error(res.data?.error || "Failed to load departments");
+          return;
+        }
+        const select = document.getElementById("department");
+        select.innerHTML = "";
+        res.data.departments.forEach((dept) => {
+          const option = document.createElement("option");
+          option.value = dept.slug;
+          option.textContent = dept.name;
+          select.appendChild(option);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadDepartments();
+      });
 
       const name = document.getElementById("name");
       const email = document.getElementById("email");

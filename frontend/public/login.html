@@ -2,22 +2,43 @@
 <html>
   <head>
     <title>Login | TutorSolve</title>
+    <link rel="stylesheet" href="/assets/css/landing.css" />
     <link rel="stylesheet" href="/assets/css/auth.css" />
   </head>
   <body>
-    <div class="auth-card">
-      <h2>Login</h2>
+    <!-- ================= NAVBAR ================= -->
+    <header class="navbar">
+      <a class="logo" href="/">TutorSolve</a>
 
-      <div id="error" class="error"></div>
+      <!-- <nav class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#how-it-works">How it Works</a>
+        <a href="#reviews">Reviews</a>
+        <a href="#blog">Blog</a>
+      </nav> -->
 
-      <input id="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
+      <div class="nav-actions">
+        <a class="btn-outline" href="apply-expert.html">Become an Expert</a>
+        <!-- <a href="login.html">Login</a> -->
+        <a class="btn-primary" href="signup.html">Sign Up</a>
+      </div>
+    </header>
 
-      <button onclick="handleLogin()">Login</button>
+    <div class="auth-container">
+      <div class="auth-card">
+        <h2>Login</h2>
 
-      <div class="switch">
-        Don’t have an account?
-        <a href="signup.html">Sign up</a>
+        <div id="error" class="error"></div>
+
+        <input id="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+
+        <button onclick="handleLogin()">Login</button>
+
+        <div class="switch">
+          Don't have an account?
+          <a href="signup.html">Sign up</a>
+        </div>
       </div>
     </div>
 
@@ -40,10 +61,14 @@
         saveUserSession(res.data);
 
         // Determine role from response and redirect
-        const role =
-          res.data.role && res.data.role.includes("Expert")
-            ? "expert"
-            : "student";
+        let role = "student";
+        if (res.data.role && res.data.role.includes("Admin")) {
+          role = "admin";
+        } else if (res.data.role && res.data.role.includes("Expert")) {
+          role = "expert";
+        } else if (res.data.role && res.data.role.includes("EmployeeAdmin")) {
+          role = "EmployeeAdmin";
+        }
         redirectAfterAuth(role);
       }
 

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Employee Admin | TutorSolve</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+  </head>
+
+  <body>
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <h2>TutorSolve | Operations Center</h2>
+      <div class="logout" onclick="logout()">Logout</div>
+    </div>
+
+    <div class="container">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <h3>Operations</h3>
+
+        <a href="#" onclick="showInterestedQuestions()">Interested Questions</a>
+        <a href="#" onclick="showActiveOrders()">Active Orders</a>
+        <a href="#" onclick="showPricingPending()">Pricing Pending</a>
+        <a href="#" onclick="showCompletedOrders()">Completed Orders</a>
+      </div>
+
+      <!-- MAIN DYNAMIC CONTENT -->
+      <div class="main">
+        <div id="employeeContent"></div>
+      </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="/assets/js/api.js"></script>
+    <script src="/assets/js/auth.js"></script>
+    <script src="/assets/js/employee_admin.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        showInterestedQuestions(); // default view
+      });
+    </script>
+  </body>
+</html>
