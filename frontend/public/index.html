@@ -2,13 +2,22 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>TutorSolve — Expert Academic Help</title>
+    <title>TutorSolve — Secure Academic Assistance</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- CSS -->
     <link rel="stylesheet" href="/assets/css/landing.css" />
   </head>
+
   <body>
+    <div class="background-glow"></div>
+    <div class="ambient-glow"></div>
     <!-- ================= NAVBAR ================= -->
     <header class="navbar">
       <div class="logo">TutorSolve</div>
@@ -28,77 +37,114 @@
     </header>
 
     <!-- ================= HERO ================= -->
-    <section class="hero">
-      <div
-        id="regionNotice"
-        style="
-          display: none;
-          color: #b91c1c;
-          margin-top: 16px;
-          font-weight: 500;
-        "
-      ></div>
-      <h1>Expert Help for Your Assignments — On Your Terms</h1>
-      <p>Verified experts. Secure payments. Human-admin oversight.</p>
+    <section class="hero fade-up">
+      <div id="regionNotice" style="display: none"></div>
 
-      <div class="question-box student-only">
-        <input
-          id="questionInput"
-          type="text"
-          placeholder="Type your question here..."
+      <div class="hero-content">
+        <h1>
+          Academic Help.<br />
+          Structured. Secure. Transparent.
+        </h1>
+
+        <p>
+          Your assignments handled by verified experts through a secure
+          admin-mediated system. No direct contact. No risk. Just results.
+        </p>
+
+        <div class="question-box student-only">
+          <input
+            id="questionInput"
+            type="text"
+            placeholder="Type your question here..."
+          />
+          <button onclick="handleGetSolution()">Get Solution</button>
+        </div>
+
+        <div class="hero-badges">
+          <span>✔ Admin Mediated</span>
+          <span>✔ Split Payments</span>
+          <span>✔ Verified Experts</span>
+        </div>
+      </div>
+
+      <div class="hero-image">
+        <img
+          src="https://images.unsplash.com/photo-1584697964358-3e14ca57658b"
+          alt="Student studying"
         />
-        <button onclick="handleGetSolution()">Get Solution</button>
+      </div>
+    </section>
+
+    <!-- ================= SERVICES ================= -->
+    <section id="services" class="services fade-up">
+      <h2>What We Help With</h2>
+
+      <div class="service-grid">
+        <div class="service-card">
+          <h3>Programming & CS</h3>
+          <p>Algorithms, Data Structures, Machine Learning, Web Development.</p>
+        </div>
+
+        <div class="service-card">
+          <h3>Mathematics</h3>
+          <p>Linear Algebra, Probability, Calculus, Discrete Mathematics.</p>
+        </div>
+
+        <div class="service-card">
+          <h3>Engineering</h3>
+          <p>Mechanical, Electrical, Civil, Simulation-based assignments.</p>
+        </div>
+
+        <div class="service-card">
+          <h3>Research Support</h3>
+          <p>Technical reports, LaTeX formatting, structured documentation.</p>
+        </div>
       </div>
     </section>
 
     <!-- ================= HOW IT WORKS ================= -->
-    <section id="how-it-works" class="how-it-works">
+    <section id="how-it-works" class="how-it-works fade-up">
       <h2>How TutorSolve Works</h2>
 
       <div class="steps">
         <div class="step">
-          <h3>1. Ask Your Question</h3>
-          <p>Post your assignment or doubt in seconds.</p>
+          <span>01</span>
+          <h3>Post Your Question</h3>
+          <p>Your task is securely broadcast to verified domain experts.</p>
         </div>
 
         <div class="step">
-          <h3>2. Admin Finds the Best Expert</h3>
-          <p>Our team evaluates and assigns the right expert.</p>
+          <span>02</span>
+          <h3>Admin Negotiates</h3>
+          <p>An employee mediates pricing and assigns the best expert.</p>
         </div>
 
         <div class="step">
-          <h3>3. Pay Securely in Parts</h3>
-          <p>Pay only what’s needed, when it’s needed.</p>
+          <span>03</span>
+          <h3>Pay in Parts</h3>
+          <p>Split payments ensure protection before full unlock.</p>
         </div>
 
         <div class="step">
-          <h3>4. Get Your Solution</h3>
-          <p>Review, unlock, and download your solution.</p>
+          <span>04</span>
+          <h3>Preview & Unlock</h3>
+          <p>Preview 25% of solution. Pay remaining to unlock final file.</p>
         </div>
       </div>
     </section>
 
-    <!-- ================= TRUST ================= -->
-    <section class="trust">
-      <h2>Built for Privacy & Trust</h2>
-
-      <div class="trust-points">
-        <div>🔒 Students & Experts never interact directly</div>
-        <div>💳 Secure split-payment system</div>
-        <div>🧑‍💼 Human admin mediation on every task</div>
-      </div>
-    </section>
-
-    <!-- ================= LIVE STATS ================= -->
+    <!-- ================= LIVE TRUST ================= -->
     <section class="stats">
       <div class="stat">
         <h3>15+</h3>
         <p>Active Experts Online</p>
       </div>
+
       <div class="stat">
         <h3>1,240+</h3>
         <p>Questions Solved Today</p>
       </div>
+
       <div class="stat">
         <h3>98%</h3>
         <p>Student Satisfaction</p>
@@ -106,30 +152,45 @@
     </section>
 
     <!-- ================= REVIEWS ================= -->
-    <section id="reviews" class="reviews">
-      <h2>What Students Say</h2>
+    <section id="reviews" class="reviews fade-up">
+      <h2>Trusted by Students Worldwide</h2>
 
       <div class="review-cards">
         <div class="review">
-          <p>“Got an A+ in my algorithms assignment. Smooth and secure.”</p>
-          <span>— CS Student</span>
+          <p>
+            “The preview lock system gave me confidence before paying fully.”
+          </p>
+          <span>— Computer Science Student</span>
         </div>
+
         <div class="review">
-          <p>“Loved the partial payment system. Very trustworthy.”</p>
-          <span>— Engineering Student</span>
+          <p>“Admin mediation makes everything professional and structured.”</p>
+          <span>— Engineering Undergraduate</span>
         </div>
       </div>
     </section>
 
-    <!-- ================= FINAL CTA ================= -->
-    <section class="final-cta">
-      <h2>Stuck on an assignment?</h2>
-      <button>Ask Your Question</button>
+    <!-- ================= BLOG ================= -->
+    <section id="blog" class="blog fade-up">
+      <h2>From the TutorSolve Blog</h2>
+
+      <div class="blog-grid">
+        <div class="blog-card">
+          <h3>How Split Payments Protect Students</h3>
+          <p>Understanding the 25% preview lock mechanism.</p>
+        </div>
+
+        <div class="blog-card">
+          <h3>Why Admin Mediation Increases Quality</h3>
+          <p>How structured communication improves outcomes.</p>
+        </div>
+      </div>
     </section>
 
     <!-- ================= FOOTER ================= -->
     <footer class="footer">
-      <p>© 2026 TutorSolve. All rights reserved.</p>
+      <p>© 2026 TutorSolve. Secure Academic Marketplace.</p>
+
       <div class="footer-links">
         <a href="#">Privacy Policy</a>
         <a href="#">Terms</a>
@@ -137,10 +198,34 @@
       </div>
     </footer>
   </body>
+
   <script src="/assets/js/config.js"></script>
   <script src="/assets/js/geo.js"></script>
   <script src="/assets/js/landing.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", detectCountryAndApplyUX);
+    document.addEventListener("DOMContentLoaded", function () {
+      const faders = document.querySelectorAll(".fade-up");
+
+      const appearOptions = {
+        threshold: 0.2,
+      };
+
+      const appearOnScroll = new IntersectionObserver(function (
+        entries,
+        observer,
+      ) {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("appear");
+          observer.unobserve(entry.target);
+        });
+      }, appearOptions);
+
+      faders.forEach((fader) => {
+        appearOnScroll.observe(fader);
+      });
+    });
   </script>
 </html>

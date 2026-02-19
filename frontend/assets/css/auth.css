@@ -1,96 +1,175 @@
-* {
-  box-sizing: border-box;
-  font-family: "Segoe UI", sans-serif;
-}
+/* ================= AUTH BACKGROUND ================= */
 
 body {
-  background: #f3f4f6;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f7fb 100%);
 }
+
+@keyframes drift {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  100% {
+    transform: translate(-120px, 60px);
+  }
+}
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  text-decoration: none;
+  background: linear-gradient(90deg, #00143f, #00143f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: 0.3s ease;
+}
+
+.logo:hover {
+  opacity: 0.85;
+}
+
+/* ================= AUTH CONTAINER ================= */
 
 .auth-container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  flex: 1;
+  align-items: center;
+  min-height: 85vh;
+  padding: 40px 20px;
 }
+
+/* ================= AUTH CARD ================= */
 
 .auth-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 48px;
   background: white;
-  padding: 32px;
-  width: 380px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  border: 1px solid #e6eaf2;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.05);
+  transition: 0.3s ease;
 }
 
-.auth-card h2 {
-  margin-bottom: 20px;
-  text-align: center;
+/* Subtle gradient border */
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  padding: 1px;
+  background-size: 200% 200%;
+  animation: borderFlow 8s linear infinite;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
+
+@keyframes borderFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* ================= TEXT ================= */
+
+.auth-card h2 {
+  font-size: 26px;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.auth-card p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+.auth-subtext {
+  color: #6b7280;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+/* ================= INPUTS ================= */
 
 .auth-card input,
 .auth-card select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+  padding: 14px;
+  margin-bottom: 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 15px;
+  background: #f9fafc;
+  transition: 0.25s ease;
 }
+
+.auth-card input:focus,
+.auth-card select:focus {
+  outline: none;
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.auth-card select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%236b7280' viewBox='0 0 20 20'%3E%3Cpath d='M5.25 7.5L10 12.25L14.75 7.5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 40px;
+}
+
+/* ================= BUTTON ================= */
 
 .auth-card button {
   width: 100%;
-  padding: 12px;
-  background: #2563eb;
+  padding: 14px;
+  background: linear-gradient(90deg, #1e293b, #0f172a);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
+  transition: 0.25s ease;
 }
 
 .auth-card button:hover {
-  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
 }
 
+/* ================= SWITCH LINKS ================= */
+
 .switch {
-  text-align: center;
-  margin-top: 14px;
+  margin-top: 20px;
   font-size: 14px;
+  color: #4b5563;
 }
 
 .switch a {
   color: #2563eb;
   text-decoration: none;
+  font-weight: 500;
 }
+
+.switch a:hover {
+  text-decoration: none;
+}
+
+/* ================= ERROR ================= */
 
 .error {
   color: #dc2626;
-  font-size: 13px;
-  margin-bottom: 10px;
-}
-
-.role-selection {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 10px;
-  background: #f8fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.role-selection label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+  margin-bottom: 15px;
   font-size: 14px;
-  color: #374151;
-}
-
-.role-selection input[type="radio"] {
-  width: auto;
-  margin: 0;
-  accent-color: #2563eb;
+  min-height: 18px;
 }

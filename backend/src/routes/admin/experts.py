@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, current_app
 from bson import ObjectId
 from src.core.decorators import auth_required
 from src.services.expert_service import ExpertService, ExpertServiceError
+from src.services.admin_stats_service import AdminStatsService
 from src.services.notification_service import NotificationService
 
 
@@ -44,3 +45,17 @@ def approve_expert(expert_id):
         return jsonify({"message": "Expert approved successfully"})
     except ExpertServiceError as e:
         return jsonify({"error": str(e)}), 400
+
+
+@admin_experts_bp.route("/all", methods=["GET"])
+@auth_required(["Admin"])
+def get_all_experts():
+    try:
+        experts = AdminStatsService.get_all_experts()
+        
+        return jsonify({
+            "count": len(experts),
+            "experts": experts
+        })
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch experts"}), 500

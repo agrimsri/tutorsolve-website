@@ -11,23 +11,20 @@
 
   <body>
     <!-- TOP BAR -->
-    <div class="topbar">
-      <h2>TutorSolve | Student</h2>
-      <div class="logout" onclick="logout()">Logout</div>
-    </div>
-
-    <div class="container">
-      <!-- SIDEBAR -->
-      <div class="sidebar">
-        <h3>Navigation</h3>
+    <div class="navbar">
+      <a class="logo" href="/">TutorSolve <span>| Student</span></a>
+      <nav class="nav-links">
         <a href="#" onclick="loadStudentView('dashboard')">Dashboard</a>
         <a href="#" onclick="loadStudentView('ask-question')">Ask Question</a>
         <a href="#" onclick="loadStudentView('my-questions')">My Questions</a>
         <a href="#" onclick="loadStudentView('my-orders')">My Orders</a>
         <a href="#" onclick="loadStudentView('global-feed')">Global Feed</a>
         <a href="#" onclick="loadStudentView('profile')">Profile</a>
-      </div>
+      </nav>
+      <div class="logout" onclick="logout()">Logout</div>
+    </div>
 
+    <div class="container">
       <!-- MAIN DYNAMIC CONTENT -->
       <div class="main" id="studentContent">
         <!-- Default view will load here -->
@@ -41,7 +38,6 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // Ensure user is logged in
         const token = localStorage.getItem("token");
         if (!token) {
           window.location.href = "/public/login.html";
@@ -49,9 +45,7 @@
         }
 
         handlePendingQuestionCarryForward();
-        loadDepartments();
-        loadStudentQuestions();
-        loadStudentView("dashboard"); // default page
+        loadStudentView("ask-question");
       });
 
       function logout() {

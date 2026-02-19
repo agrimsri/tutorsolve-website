@@ -6,27 +6,23 @@
     <link rel="stylesheet" href="/assets/css/auth.css" />
   </head>
   <body>
+    <!-- Ambient Background Glow -->
+    <div class="auth-ambient"></div>
+
     <!-- ================= NAVBAR ================= -->
     <header class="navbar">
       <a class="logo" href="/">TutorSolve</a>
 
-      <!-- <nav class="nav-links">
-        <a href="#services">Services</a>
-        <a href="#how-it-works">How it Works</a>
-        <a href="#reviews">Reviews</a>
-        <a href="#blog">Blog</a>
-      </nav> -->
-
       <div class="nav-actions">
         <a class="btn-outline" href="apply-expert.html">Become an Expert</a>
-        <!-- <a href="login.html">Login</a> -->
         <a class="btn-primary" href="signup.html">Sign Up</a>
       </div>
     </header>
 
     <div class="auth-container">
       <div class="auth-card">
-        <h2>Login</h2>
+        <h2>Welcome Back</h2>
+        <p class="auth-subtext">Login to continue your academic journey.</p>
 
         <div id="error" class="error"></div>
 
@@ -60,7 +56,6 @@
 
         saveUserSession(res.data);
 
-        // Determine role from response and redirect
         let role = "student";
         if (res.data.role && res.data.role.includes("Admin")) {
           role = "admin";
@@ -69,6 +64,7 @@
         } else if (res.data.role && res.data.role.includes("EmployeeAdmin")) {
           role = "EmployeeAdmin";
         }
+
         redirectAfterAuth(role);
       }
 

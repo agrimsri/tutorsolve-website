@@ -24,9 +24,11 @@ def get_current_user():
         approved = expert.get("approved", expert.get("approve", False)) if expert else False
 
     department = None
-    if "Expert" not in user.get("role", []):
+    if "Expert" in user.get("role", []):
         departments = current_app.mongo.departments
-        department = departments.find_one({"slug": user.get("department")})
+        expert = experts.find_one({"user": user["_id"]})
+        if expert:
+            department = departments.find_one({"slug": expert.get("department")})
     return jsonify({
         "user_id": str(user["_id"]),
         "role": user["role"],

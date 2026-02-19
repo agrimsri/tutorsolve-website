@@ -6,34 +6,21 @@
     <link rel="stylesheet" href="/assets/css/auth.css" />
   </head>
   <body>
-    <!-- ================= NAVBAR ================= -->
+    <div class="auth-ambient"></div>
+
     <header class="navbar">
       <a class="logo" href="/">TutorSolve</a>
-
-      <!-- <nav class="nav-links">
-        <a href="#services">Services</a>
-        <a href="#how-it-works">How it Works</a>
-        <a href="#reviews">Reviews</a>
-        <a href="#blog">Blog</a>
-      </nav> -->
-
-      <div class="nav-actions">
-        <!-- <a class="btn-outline" href="apply-expert.html">Become an Expert</a> -->
-        <!-- <a href="login.html">Login</a> -->
-        <!-- <a class="btn-primary" href="signup.html">Sign Up</a> -->
-      </div>
     </header>
 
     <div class="auth-container">
       <div class="auth-card">
-        <h2>Student Sign Up</h2>
-        <p>
-          Create your student account to get expert help with your assignments.
+        <h2>Create Student Account</h2>
+        <p class="auth-subtext">
+          Join TutorSolve and get secure expert assistance.
         </p>
 
         <div id="error" class="error"></div>
 
-        <!-- Student fields only -->
         <input id="name" placeholder="Full Name" />
         <input id="email" placeholder="Email" />
         <input id="password" type="password" placeholder="Password" />
@@ -58,7 +45,6 @@
 
     <script>
       async function handleSignup() {
-        // Student signup only
         const res = await studentSignup(
           document.getElementById("name").value,
           document.getElementById("email").value,
@@ -70,14 +56,10 @@
           return;
         }
 
-        // Auto-login after signup
         saveUserSession(res.data);
         redirectAfterAuth("student");
       }
 
-      const name = document.getElementById("name");
-      const email = document.getElementById("email");
-      const password = document.getElementById("password");
       const error = document.getElementById("error");
     </script>
   </body>

@@ -64,11 +64,12 @@ class QuestionService:
         result = []
         for q in cursor:
             result.append({
-                "id": str(q["_id"]),
+                "question_id": str(q["_id"]),
                 "title": q.get("title"),
                 "department": q.get("department"),
                 "status": q.get("status"),
-                "createdAt": q.get("createdAt")
+                "createdAt": q.get("createdAt"),
+                "description": q.get("description")
             })
 
         return result
@@ -84,11 +85,12 @@ class QuestionService:
         result = []
         for q in cursor:
             result.append({
-                "id": str(q["_id"]),
+                "question_id": str(q["_id"]),
                 "title": q.get("title"),
                 "department": q.get("department"),
                 "status": q.get("status"),
-                "createdAt": q.get("createdAt")
+                "createdAt": q.get("createdAt"),
+                "description": q.get("description")
             })
 
         return result

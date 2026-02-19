@@ -6,8 +6,15 @@ def register_routes(app):
     from src.routes.admin.experts import admin_experts_bp
     from src.routes.auth.me import me_bp
     from src.routes.expert.questions import expert_questions_bp
+    from src.routes.expert.orders import expert_orders_bp
     from src.routes.admin.employee_admin import admin_employees_bp
     from src.routes.employee_admin.questions import employee_questions_bp
+    from src.routes.employee_admin.orders import employee_orders_bp
+    from src.routes.admin.stats import admin_stats_bp
+    from src.routes.admin.students import admin_students_bp
+    from src.routes.student.orders import student_orders_bp
+    from src.routes.student.chat import student_chat_bp
+    from src.routes.student.questions import student_questions_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_questions_bp)
@@ -16,5 +23,12 @@ def register_routes(app):
     app.register_blueprint(admin_experts_bp)
     app.register_blueprint(me_bp)
     app.register_blueprint(expert_questions_bp)
+    app.register_blueprint(expert_orders_bp)
     app.register_blueprint(admin_employees_bp)
     app.register_blueprint(employee_questions_bp)
+    app.register_blueprint(employee_orders_bp)
+    app.register_blueprint(admin_stats_bp)
+    app.register_blueprint(admin_students_bp)
+    app.register_blueprint(student_orders_bp)
+    app.register_blueprint(student_chat_bp)
+    app.register_blueprint(student_questions_bp)

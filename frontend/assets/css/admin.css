@@ -10,64 +10,111 @@ body {
   color: #1f2933;
 }
 
-/* TOP BAR */
-.topbar {
-  height: 60px;
-  background: #020617;
-  color: white;
+.logo {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+}
+
+.logo span {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 18px 6%;
+  background: linear-gradient(90deg, #0f172a, #1e293b);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
-.topbar h2 {
+.navbar a {
+  text-decoration: none;
+}
+
+.navbar .logo {
   font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: white;
+}
+
+.navbar .logo span {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-links a {
+  position: relative;
+  font-size: 14px;
+  font-weight: 500;
+  color: #cbd5e1;
+  transition: 0.25s ease;
+  padding: 4px 0;
+}
+
+.nav-links a:hover {
+  color: #ffffff;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-links a.active {
+  color: white;
+}
+
+.nav-links a.active::after {
+  width: 100%;
 }
 
 .logout {
-  cursor: pointer;
   font-size: 14px;
-  opacity: 0.85;
+  font-weight: 500;
+  color: #cbd5e1;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: 0.25s ease;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
 }
 
 /* LAYOUT */
-.container {
+/* .container {
   display: flex;
   height: calc(100vh - 60px);
-}
-
-/* SIDEBAR */
-.sidebar {
-  width: 220px;
-  background: #020617;
-  color: white;
-  padding: 24px 16px;
-}
-
-.sidebar h3 {
-  margin-bottom: 20px;
-  font-size: 16px;
-  opacity: 0.9;
-}
-
-.sidebar a {
-  display: block;
-  color: white;
-  text-decoration: none;
-  margin-bottom: 14px;
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-.sidebar a:hover {
-  opacity: 1;
-}
+} */
 
 /* MAIN */
 .main {
   flex: 1;
-  padding: 32px;
+  padding: 6vh 4vw;
   overflow-y: auto;
 }
 
@@ -113,6 +160,25 @@ th {
   background: #16a34a;
   color: white;
   margin-right: 6px;
+}
+
+.approved-text {
+  color: #16a34a;
+  font-weight: 500;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-active {
+  background: #16a34a;
+  color: white;
+}
+
+.status-inactive {
+  background: #6b7280;
+  color: white;
 }
 
 .btn-reject {
@@ -204,9 +270,460 @@ th {
   display: none;
 }
 
+/* ================= PRICING FORM ================= */
+.pricing-form {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 24px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+  background-color: white;
+}
+
+.pricing-form::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+}
+
+.pricing-form h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pricing-form h3::before {
+  content: "💰";
+  font-size: 24px;
+}
+
+.pricing-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.pricing-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pricing-input-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pricing-input-group .price-icon {
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.pricing-input-group input {
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  background: white;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.pricing-input-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.pricing-input-group input:hover {
+  border-color: #cbd5e1;
+}
+
+.pricing-submit-btn {
+  color: white;
+  background-color: black;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-width: 180px;
+}
+
+.pricing-submit-btn::before {
+  content: "📤";
+  font-size: 16px;
+}
+
+.pricing-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.pricing-submit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pricing-validation {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: none;
+}
+
+.pricing-validation.info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.pricing-validation.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.pricing-validation.success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+}
+
+/* Responsive pricing form */
+@media (max-width: 768px) {
+  .pricing-inputs {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pricing-form {
+    padding: 24px;
+  }
+}
+
+/* ================= BACK BUTTON ================= */
+.back-btn-black {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.back-btn-black:hover {
+  background: #333333;
+  transform: translateY(-1px);
+}
+
+.back-btn-black:active {
+  transform: translateY(0);
+}
+
+/* ================= PRICING REQUEST DETAILS ================= */
+.pricing-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-row label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  min-width: 120px;
+}
+
+.price-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #10b981;
+}
+
+.requester-info {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Responsive pricing details */
+@media (max-width: 768px) {
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .detail-row label {
+    min-width: auto;
+  }
+}
+
 .success-message {
   color: #16a34a;
   font-size: 13px;
   margin-top: 4px;
   display: none;
+}
+
+#questionChatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+#chatBox {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling */
+#chatBox::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chatBox::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 10px;
+}
+
+.chat-message {
+  max-width: 75%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.chat-message.chat-message-admin {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message.chat-message-student {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message.chat-message-expert {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message .sender {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  letter-spacing: 0.3px;
+}
+
+.chat-message .message-text {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.chat-message .timestamp {
+  font-size: 10px;
+  opacity: 0.6;
+  margin-top: 6px;
+  text-align: right;
+}
+
+.chat-input-container {
+  display: flex;
+  padding: 16px;
+  gap: 10px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input-container input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.chat-input-container input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.chat-input-container button {
+  padding: 10px 18px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chat-input-container button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.chat-input-container button:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Expert Cards Styling */
+.experts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.expert-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.expert-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.expert-card.assigned {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.expert-info h4 {
+  margin: 0 0 8px 0;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.expert-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.expert-info strong {
+  color: #374151;
+}
+
+.expert-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.expert-status {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.assign-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.assign-btn:hover {
+  background: #2563eb;
+}
+
+.status-badge.assigned {
+  background: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
 }

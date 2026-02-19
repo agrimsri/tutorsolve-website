@@ -9,22 +9,21 @@
 
   <body>
     <!-- TOP BAR -->
-    <div class="topbar">
-      <h2>TutorSolve | Operations Center</h2>
+    <div class="navbar">
+      <a class="logo" href="/">TutorSolve <span>| Operations Center</span></a>
+      <nav class="nav-links">
+        <a href="#" onclick="showAllQuestions()">All Questions</a>
+        <a href="#" onclick="showInterestedQuestions()">Interested Questions</a>
+        <a href="#" onclick="showNegotiations()">Negotiations</a>
+        <a href="#" onclick="showActiveOrders()">Active Orders</a>
+        <a href="#" onclick="showPricingPending()">Pricing Pending</a>
+        <a href="#" onclick="showCompletedOrders()">Completed Orders</a>
+        <a href="#" onclick="showProfile()">Profile</a>
+      </nav>
       <div class="logout" onclick="logout()">Logout</div>
     </div>
 
     <div class="container">
-      <!-- SIDEBAR -->
-      <div class="sidebar">
-        <h3>Operations</h3>
-
-        <a href="#" onclick="showInterestedQuestions()">Interested Questions</a>
-        <a href="#" onclick="showActiveOrders()">Active Orders</a>
-        <a href="#" onclick="showPricingPending()">Pricing Pending</a>
-        <a href="#" onclick="showCompletedOrders()">Completed Orders</a>
-      </div>
-
       <!-- MAIN DYNAMIC CONTENT -->
       <div class="main">
         <div id="employeeContent"></div>
@@ -38,7 +37,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        showInterestedQuestions(); // default view
+        showAllQuestions(); // default view
       });
     </script>
   </body>

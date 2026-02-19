@@ -23,7 +23,7 @@ class ExpertQuestionService:
 
         cursor = questions.find({
             "department": department,
-            "status": "CREATED",
+            "status": {"$in": ["CREATED", "UNDER_REVIEW", "NEGOTIATION"]},
             "assignedExpert": None,
         }).sort("createdAt", -1)
 
@@ -51,7 +51,7 @@ class ExpertQuestionService:
         result = questions.update_one(
             {
                 "_id": ObjectId(question_id),
-                "status": "CREATED",
+                "status": {"$in": ["CREATED", "UNDER_REVIEW", "NEGOTIATION"]},
                 "assignedExpert": None
             },
             {

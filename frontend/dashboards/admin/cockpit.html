@@ -19,8 +19,10 @@
       <div class="sidebar">
         <h3>Navigation</h3>
         <a href="#" onclick="loadView('dashboard')">Dashboard</a>
+        <a href="#" onclick="loadView('pricing-requests')">Pricing Requests</a>
         <a href="#" onclick="loadView('experts')">Experts</a>
         <a href="#" onclick="loadView('students')">Students</a>
+        <a href="#" onclick="loadView('employee-admins')">Employee Admins</a>
         <a href="#" onclick="loadView('create-employee-admin')"
           >Create Employee</a
         >
@@ -40,7 +42,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        loadView("experts"); // default page
+        loadView("dashboard"); // default page
       });
     </script>
   </body>
