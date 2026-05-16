@@ -4,7 +4,7 @@ function initNotifications() {
 
     const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? "http://localhost:5000"
-        : "";
+        : "https://YOUR_RAILWAY_BACKEND_URL"; // <-- UPDATE THIS TO YOUR RAILWAY BACKEND URL ONCE DEPLOYED
 
     // Attach new_notification listener to a socket (idempotent via .off first)
     function setupNotifListeners(sock) {
@@ -64,7 +64,9 @@ function initNotifications() {
             }, 200);
         } else {
             // No chat.js on this page — create a dedicated notification socket
-            const socketUrl = window.location.protocol + "//" + window.location.hostname + ":5000";
+            const socketUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? "http://localhost:5000"
+                : "https://YOUR_RAILWAY_BACKEND_URL"; // <-- UPDATE THIS TO YOUR RAILWAY BACKEND URL ONCE DEPLOYED
             const notifSocket = io(socketUrl, {
                 auth: { token: token },
                 transports: ["websocket", "polling"],

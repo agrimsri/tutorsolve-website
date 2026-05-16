@@ -3,7 +3,9 @@
  * Handles JWT token injection, 401 redirect, and JSON parsing.
  */
 
-const API_BASE = "http://localhost:5000/api";  // Change to prod URL before deploying
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://localhost:5000/api"
+    : "https://YOUR_RAILWAY_BACKEND_URL/api";  // <-- UPDATE THIS TO YOUR RAILWAY BACKEND URL ONCE DEPLOYED
 
 async function apiFetch(path, options = {}) {
     const token = localStorage.getItem("ts_token");
