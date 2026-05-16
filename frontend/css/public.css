@@ -1,0 +1,11 @@
+/* Public Page Global Styles */
+/* Note: .header navbar is defined in base.css — do NOT redefine here. */
+
+/* Push page content below the fixed 80px navbar */
+main {
+  padding-top: 80px;
+}
+
+.modal-overlay {
+  backdrop-filter: blur(4px);
+}

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KYC Queue — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/super-admin.css" />
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Overview</p>
+          <a
+            href="/super-admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Finance
+          </p>
+          <a
+            href="/super-admin/financials.html"
+            class="sidebar-item"
+            data-page="financials"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+            </svg>
+            Financials
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Operations
+          </p>
+          <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 8h6M5 5h6M5 11h4" />
+            </svg>
+            KYC Queue
+          </a>
+          <a
+            href="/super-admin/users.html"
+            class="sidebar-item"
+            data-page="users"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="6" cy="5" r="3" />
+              <path d="M1 13c0-2.761 2.239-5 5-5" />
+              <path d="M11 8v6M14 11H8" />
+            </svg>
+            Users
+          </a>
+          <a
+            href="/super-admin/chat-spy.html"
+            class="sidebar-item"
+            data-page="chat-spy"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            Chat Spy
+          </a>
+          <a
+            href="/super-admin/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">KYC Queue</h1>
+              <p class="page-subtitle">Expert applications awaiting review</p>
+            </div>
+          </div>
+
+          <div id="kyc-list"></div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+      if (!requireRole("super_admin")) throw new Error("Abort");
+      document.querySelector('[data-page="kyc"]')?.classList.add("active");
+
+      async function loadKYC() {
+        const res = await apiFetch("/superadmin/experts/pending");
+        const experts = await res.json();
+        const list = document.getElementById("kyc-list");
+
+        if (!experts.length) {
+          list.innerHTML = `<div class="empty-state"><h3>No pending applications</h3><p>All expert applications have been reviewed.</p></div>`;
+          return;
+        }
+
+        list.innerHTML = experts
+          .map((e) => {
+            const apiHost = API_BASE.replace("/api", "");
+            let docsHTML = "";
+
+            if (e.cv_url) {
+              docsHTML += `<a href="${e.cv_url}" target="_blank" class="btn btn-secondary btn-sm">📄 View CV</a>`;
+            } else {
+              docsHTML += `<span style="font-size:13px;color:var(--color-gray-500)">No CV uploaded</span>`;
+            }
+
+            if (e.id_proof_url) {
+              docsHTML += `<a href="${e.id_proof_url}" target="_blank" class="btn btn-secondary btn-sm">🪪 View ID Proof</a>`;
+            } else {
+              docsHTML += `<span style="font-size:13px;color:var(--color-gray-500)">No ID uploaded</span>`;
+            }
+
+            return `
+      <div class="card kyc-card" id="kyc-${e._id}">
+        <div class="kyc-card-header">
+          <div>
+            <h3 class="kyc-name">${escapeHtml(e.name)}</h3>
+            <p style="font-size:13px;color:var(--color-gray-500);margin-top:var(--space-1)">
+              ${escapeHtml(e.email)} · Domain: <strong>${escapeHtml(e.domain)}</strong>
+            </p>
+          </div>
+          <div style="display:flex;gap:var(--space-3)">
+            <button class="btn btn-primary btn-sm"
+              onclick="handleKYC('${e._id}', 'approve', this)">
+              ✓ Approve
+            </button>
+            <button class="btn btn-secondary btn-sm"
+              onclick="handleKYC('${e._id}', 'reject', this)">
+              ✗ Reject
+            </button>
+          </div>
+        </div>
+
+        <!-- Document links -->
+        <div class="kyc-docs">
+          ${docsHTML}
+        </div>
+      </div>
+    `;
+          })
+          .join("");
+      }
+
+      async function handleKYC(expertId, action, btn) {
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+
+        const endpoint =
+          action === "approve"
+            ? `/superadmin/experts/${expertId}/approve`
+            : `/superadmin/experts/${expertId}/reject`;
+
+        const res = await apiFetch(endpoint, { method: "POST" });
+        if (res.ok) {
+          document.getElementById(`kyc-${expertId}`)?.remove();
+          toast(
+            `Expert ${action === "approve" ? "approved" : "rejected"} successfully.`,
+            action === "approve" ? "success" : "warning",
+          );
+
+          // Show empty state if no more cards
+          if (!document.querySelector(".kyc-card")) {
+            document.getElementById("kyc-list").innerHTML =
+              `<div class="empty-state"><h3>All caught up!</h3><p>No pending applications.</p></div>`;
+          }
+        } else {
+          btn.disabled = false;
+          btn.textContent = action === "approve" ? "✓ Approve" : "✗ Reject";
+          toast("Action failed. Try again.", "error");
+        }
+      }
+
+      loadKYC();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+  </body>
+</html>

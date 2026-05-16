@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Become an Expert — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body class="auth-body">
+  <div class="auth-layout">
+    <div class="auth-brand">
+      <img src="/assets/logo.svg" alt="TutorSolve" width="48">
+      <h2>Become an Expert</h2>
+      <p>Earn by solving academic tasks for students worldwide.</p>
+    </div>
+    <div class="auth-form-panel">
+      <h1 class="auth-title">Apply as Expert</h1>
+      <p class="auth-sub">Your application will be reviewed within 24 hours.</p>
+      <form id="apply-form" enctype="multipart/form-data">
+        <div class="form-group">
+          <label class="label">Full Name</label>
+          <input name="name" type="text" class="input" required>
+        </div>
+        <div class="form-group">
+          <label class="label">Email</label>
+          <input name="email" type="email" class="input" required>
+        </div>
+        <div class="form-group">
+          <label class="label">Phone</label>
+          <input name="phone" type="tel" class="input" placeholder="+91 9876543210">
+        </div>
+        <div class="form-group">
+          <label class="label">Domain</label>
+          <select id="domain-select" name="domain" class="input" required>
+            <option value="">Loading domains...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label">Password</label>
+          <div class="password-wrapper">
+            <input name="password" type="password" class="input" required>
+            <button class="password-toggle" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label">Upload CV <span style="color:var(--color-gray-500)">(PDF)</span></label>
+          <input name="cv" type="file" class="input" accept=".pdf,.doc,.docx">
+        </div>
+        <div class="form-group">
+          <label class="label">Upload ID Proof</label>
+          <input name="id_proof" type="file" class="input" accept="image/*,.pdf">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Submit Application</button>
+      </form>
+      <p class="auth-footer">Already approved? <a href="/auth/login.html">Log In</a></p>
+    </div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    async function loadDomains() {
+      try {
+        const res = await apiFetch("/auth/domains");
+        const domains = await res.json();
+        const select = document.getElementById("domain-select");
+        select.innerHTML = '<option value="">Select your domain</option>';
+        domains.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = d.name;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Failed to load domains", err);
+      }
+    }
+    loadDomains();
+
+    document.getElementById("apply-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      try {
+        await expertApply(formData);
+        toast("Application submitted! You will be notified once approved.", "success");
+        e.target.reset();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
+  </script>
+</body>
+
+</html>

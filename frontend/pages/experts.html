@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Experts — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/public.css">
+    <link rel="stylesheet" href="/css/experts-public.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-inner">
+            <a href="/index.html" class="logo">
+                <img src="/assets/logo.svg" alt="TutorSolve">
+                <span>TutorSolve</span>
+            </a>
+            <nav></nav>
+            <div class="nav-actions" id="nav-actions">
+                <!-- Populated by JS -->
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+    <main>
+        <!-- Page header -->
+        <section class="experts-hero">
+            <div class="container" style="text-align: center; padding: var(--space-20) 0;">
+                <h1 class="experts-headline" style="font-size: 48px; font-weight: 800; margin-bottom: var(--space-4);">
+                    Meet Our Verified Experts</h1>
+                <p class="experts-sub"
+                    style="font-size: 18px; color: var(--color-gray-600); max-width: 600px; margin: 0 auto var(--space-12);">
+                    Every expert is KYC-verified, domain-tested, and rated by real students.
+                </p>
+
+                <!-- Domain filter -->
+                <div class="domain-filters" id="domain-filters"
+                    style="display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3);">
+                    <button class="domain-pill active" onclick="filterByDomain('', this)">All</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experts grid -->
+        <section style="padding: var(--space-12) 0 var(--space-20);">
+            <div class="container">
+                <div class="experts-grid" id="experts-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-8);">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Reviews modal -->
+    <!-- IMPORTANT: backdrop-filter MUST be on a separate child element, NOT the parent flex container.
+         Applying backdrop-filter to the parent creates a new stacking context that hides its own children. -->
+    <div id="reviews-modal"
+        style="display:none; position:fixed; inset:0; z-index:1000; align-items:center; justify-content:center; padding:16px;">
+        <!-- Backdrop (blur layer, does NOT contain modal content) -->
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);"
+            onclick="closeReviewsModal()"></div>
+        <!-- Modal box (sits above backdrop via position:relative + z-index) -->
+        <div class="reviews-modal-inner"
+            style="background:#fff; width:100%; max-width:600px; padding:32px; border-radius:16px; position:relative; z-index:1; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px">
+                <div>
+                    <h3 id="modal-expert-name" style="font-size:24px; font-weight:700; color:#111827;"></h3>
+                    <div id="modal-expert-rating" style="margin-top:8px"></div>
+                </div>
+                <button onclick="closeReviewsModal()"
+                    style="background:none; border:none; cursor:pointer; font-size:24px; color:#9ca3af; line-height:1;">
+                    ✕
+                </button>
+            </div>
+            <div id="modal-reviews-list"
+                style="max-height:400px; overflow-y:auto; border-top:1px solid #e5e7eb; padding-top:16px;">
+                <!-- Populated by JS -->
+            </div>
+            <div id="modal-load-more" style="text-align:center; margin-top:16px; display:none">
+                <button class="btn btn-secondary btn-sm" onclick="loadMoreReviews()">Load More</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        // Navbar state
+        const actions = document.getElementById("nav-actions");
+        if (isLoggedIn()) {
+            const role = getRole();
+            const dashMap = {
+                student: "/student/dashboard.html",
+                expert: "/expert/dashboard.html",
+                employee: "/admin/dashboard.html",
+                super_admin: "/super-admin/dashboard.html"
+            };
+            actions.innerHTML = `
+        <a href="${dashMap[role] || '/index.html'}" class="btn btn-secondary btn-sm">Dashboard</a>
+        <button onclick="logout()" class="btn btn-ghost btn-sm">Logout</button>`;
+        } else {
+            actions.innerHTML = `
+        <a href="/auth/expert-apply.html" class="btn btn-ghost btn-sm">Become an Expert</a>
+        <a href="/auth/login.html"        class="btn btn-secondary btn-sm">Login</a>
+        <a href="/auth/signup.html"       class="btn btn-primary btn-sm">Sign Up</a>`;
+        }
+
+        // ── Experts ──────────────────────────────────────────────
+        const DOMAINS = [
+            "Mathematics", "Physics", "Chemistry", "Biology",
+            "Computer Science", "Engineering", "Economics",
+            "Statistics", "Literature", "History", "Law", "Other"
+        ];
+
+        let allExperts = [];
+        let currentDomain = "";
+
+        // Populate domain filter pills
+        const filterEl = document.getElementById("domain-filters");
+        DOMAINS.forEach(d => {
+            const btn = document.createElement("button");
+            btn.className = "domain-pill";
+            btn.textContent = d;
+            btn.onclick = () => filterByDomain(d, btn);
+            filterEl.appendChild(btn);
+        });
+
+        async function loadExperts(domain = "") {
+            const url = domain
+                ? `/public/experts?domain=${encodeURIComponent(domain)}`
+                : "/public/experts";
+
+            // Public endpoint — no auth needed, use plain fetch
+            try {
+                const res = await fetch(`${API_BASE}${url}`);
+                allExperts = await res.json();
+                renderExperts(allExperts);
+            } catch (e) {
+                console.error("Failed to load experts", e);
+                toast("Failed to load experts.", "error");
+            }
+        }
+
+        function filterByDomain(domain, btn) {
+            currentDomain = domain;
+            document.querySelectorAll(".domain-pill").forEach(p => p.classList.remove("active"));
+            btn.classList.add("active");
+            loadExperts(domain);
+        }
+
+        function renderExperts(experts) {
+            const grid = document.getElementById("experts-grid");
+
+            if (!experts.length) {
+                grid.innerHTML = `
+          <div style="grid-column:1/-1; text-align:center; padding: var(--space-20); color: var(--color-gray-500);">
+            <h3>No experts found in this domain</h3>
+            <p>Try selecting a different domain or check back later.</p>
+          </div>`;
+                return;
+            }
+
+            grid.innerHTML = experts.map(e => `
+        <div class="expert-public-card" style="background:#fff; border:1px solid var(--color-gray-200); border-radius:var(--radius-lg); padding:var(--space-6); display:flex; flex-direction:column; align-items:center; text-align:center; transition: transform 0.2s, shadow 0.2s;">
+
+          <!-- Avatar -->
+          <div class="expert-avatar" style="width:64px; height:64px; background:var(--color-primary-50); color:var(--color-primary-600); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; margin-bottom:var(--space-4);">
+            ${e.display_name.charAt(0).toUpperCase()}
+          </div>
+
+          <!-- Info -->
+          <h3 class="expert-public-name" style="font-size:18px; font-weight:700; margin-bottom:var(--space-1);">${escapeHtml(e.display_name)}</h3>
+          <span class="badge" style="background:var(--color-primary-50); color:var(--color-primary-700); font-size:12px; margin-bottom:var(--space-4);">${escapeHtml(e.domain)}</span>
+
+          <!-- Star rating -->
+          <div class="expert-stars" style="color:#F59E0B; margin-bottom:var(--space-1);">
+            ${renderStarsFull(e.average_rating)}
+          </div>
+          <p class="expert-rating-text" style="font-size:13px; color:var(--color-gray-500);">
+            ${e.average_rating > 0
+                    ? `${e.average_rating.toFixed(1)} / 5 · ${e.review_count} review${e.review_count !== 1 ? "s" : ""}`
+                    : "No reviews yet"}
+          </p>
+
+          <!-- Stats -->
+          <div class="expert-stats">
+            <div class="expert-stat">
+              <p class="expert-stat-value">${e.tasks_completed || 0}</p>
+              <p class="expert-stat-label">Tasks</p>
+            </div>
+            <div class="expert-stat">
+              <p class="expert-stat-value">${(e.quality_score || 0).toFixed(1)}</p>
+              <p class="expert-stat-label">Quality</p>
+            </div>
+          </div>
+
+          <!-- See reviews button -->
+          ${e.review_count > 0
+                    ? `<button class="btn btn-secondary btn-sm" style="width:100%;"
+                onclick="openReviewsModal('${e._id}')">
+                See Reviews
+              </button>`
+                    : `<p style="font-size:12px; color:var(--color-gray-400); margin-top:var(--space-2);">No reviews available</p>`}
+
+        </div>
+      `).join("");
+        }
+
+        function renderStarsFull(rating) {
+            return [1, 2, 3, 4, 5].map(n => {
+                const filled = n <= Math.round(rating);
+                return `<span style="font-size:18px; color:${filled ? '#F59E0B' : 'var(--color-gray-300)'}">★</span>`;
+            }).join("");
+        }
+
+        // ── Reviews Modal ─────────────────────────────────────────
+        let modalExpertId = null;
+        let modalPage = 1;
+        let modalHasMore = false;
+
+        async function openReviewsModal(expertId) {
+            const expert = allExperts.find(ex => ex._id === expertId);
+            if (!expert) return;
+
+            modalExpertId = expertId;
+            modalPage = 1;
+
+            document.getElementById("modal-expert-name").textContent = expert.display_name;
+            document.getElementById("modal-expert-rating").innerHTML = `
+        <div style="display:flex; align-items:center; gap:var(--space-2)">
+          ${renderStarsFull(expert.average_rating)}
+          <span style="font-size:14px; color:var(--color-gray-500)">
+            ${expert.average_rating.toFixed(1)} / 5 · ${expert.review_count} review${expert.review_count !== 1 ? "s" : ""}
+          </span>
+        </div>`;
+
+            document.getElementById("modal-reviews-list").innerHTML = `
+        <p style="text-align:center; color:var(--color-gray-500); padding:var(--space-8)">Loading...</p>`;
+            document.getElementById("reviews-modal").style.display = "flex";
+            document.body.style.overflow = "hidden";
+
+            await fetchModalReviews(true);
+        }
+
+        function closeReviewsModal() {
+            document.getElementById("reviews-modal").style.display = "none";
+            document.body.style.overflow = "";
+        }
+
+        async function fetchModalReviews(reset = false) {
+            if (reset) modalPage = 1;
+
+            try {
+                const url = `${API_BASE}/public/experts/${modalExpertId}/reviews?page=${modalPage}`;
+                console.log("[Reviews] Fetching:", url);
+                const res = await fetch(url);
+                const data = await res.json();
+                console.log("[Reviews] Response:", data);
+
+                const list = document.getElementById("modal-reviews-list");
+                const reviews = data.reviews || [];
+
+                if (reset) list.innerHTML = "";
+
+                if (!reviews.length && reset) {
+                    list.innerHTML = `
+              <div style="text-align:center; padding:var(--space-10); color:var(--color-gray-500)">
+                <p>No reviews yet.</p>
+              </div>`;
+                    return;
+                }
+
+                reviews.forEach(r => {
+                    const div = document.createElement("div");
+                    div.className = "review-item";
+
+                    const starsHtml = [1, 2, 3, 4, 5].map(n =>
+                        `<span style="font-size:16px; color:${n <= r.rating ? '#F59E0B' : '#d1d5db'}">★</span>`
+                    ).join("");
+
+                    const reviewTextHtml = r.review_text
+                        ? `<div class="review-item-text">${escapeHtml(r.review_text)}</div>`
+                        : "";
+
+                    const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : "";
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center">
+                            <div style="display:flex; gap:2px;">${starsHtml}</div>
+                            <span style="font-size:12px; color:#9ca3af;">${dateStr}</span>
+                        </div>
+                        ${reviewTextHtml}
+                        <p style="font-size:11px; color:#9ca3af; margin-top:var(--space-2);">${escapeHtml(r.domain || "")} question</p>
+                    `;
+                    list.appendChild(div);
+                });
+
+                modalHasMore = data.has_more;
+                document.getElementById("modal-load-more").style.display = data.has_more ? "block" : "none";
+            } catch (e) {
+                console.error("Failed to load reviews", e);
+                const list = document.getElementById("modal-reviews-list");
+                list.innerHTML = `<div style="text-align:center; padding:var(--space-8); color:var(--color-gray-500)"><p>Error loading reviews. Please try again.</p></div>`;
+            }
+        }
+
+
+        function loadMoreReviews() {
+            modalPage++;
+            fetchModalReviews();
+        }
+
+        // Helper: escape HTML
+        function escapeHtml(text) {
+            if (!text) return "";
+            const p = document.createElement('p');
+            p.textContent = text;
+            return p.innerHTML;
+        }
+
+        loadExperts();
+    </script>
+
+    <!-- Styles are in /css/experts-public.css -->
+</body>
+
+</html>

@@ -1,0 +1,1415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Order Detail — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <style>
+      .dashboard-layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 32px;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 32px;
+      }
+
+      .card {
+        background: #fff;
+        padding: 24px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--color-gray-300);
+        margin-bottom: 24px;
+      }
+
+      .badge {
+        padding: 4px 8px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .badge-awaiting {
+        background: #fffbeb;
+        color: #92400e;
+      }
+
+      .badge-pending_payment {
+        background: #eff6ff;
+        color: #1e40af;
+      }
+
+      .badge-in_progress {
+        background: #ecfdf5;
+        color: #065f46;
+      }
+
+      .badge-reviewing {
+        background: #fef2f2;
+        color: #991b1b;
+      }
+
+      .badge-completed {
+        background: #ecfdf5;
+        color: #065f46;
+      }
+
+      .file-item {
+        padding: 12px;
+        border: 1px solid var(--color-gray-300);
+        border-radius: var(--radius-md);
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .spinner-small {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--color-gray-200);
+        border-top: 2px solid var(--color-warning);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      /* Roadmap Styles */
+      .roadmap {
+        position: relative;
+        margin-top: 16px;
+        padding-left: 32px;
+      }
+
+      .roadmap-line {
+        position: absolute;
+        left: 7px;
+        top: 10px;
+        bottom: 10px;
+        width: 2px;
+        background: var(--color-gray-200);
+        z-index: 1;
+      }
+
+      .roadmap-step {
+        position: relative;
+        margin-bottom: 32px;
+        z-index: 2;
+      }
+
+      .roadmap-step:last-child {
+        margin-bottom: 0;
+      }
+
+      .roadmap-dot {
+        position: absolute;
+        left: -32px;
+        top: 4px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--color-white);
+        border: 2px solid var(--color-gray-300);
+        transition: var(--transition-base);
+      }
+
+      .roadmap-step.active .roadmap-dot {
+        border-color: var(--brand-primary);
+        background: var(--brand-primary);
+        box-shadow: 0 0 0 4px var(--brand-primary-ultra);
+      }
+
+      .roadmap-step.completed .roadmap-dot {
+        border-color: var(--color-success);
+        background: var(--color-success);
+      }
+
+      .roadmap-step.completed .roadmap-dot::after {
+        content: "✓";
+        color: white;
+        font-size: 10px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .roadmap-content {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .roadmap-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-gray-900);
+      }
+
+      .roadmap-step.greyed .roadmap-title {
+        color: var(--color-gray-400);
+      }
+
+      .roadmap-desc {
+        font-size: 12px;
+        color: var(--color-gray-500);
+      }
+
+      .roadmap-action {
+        margin-top: 8px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Refund button */
+      #refund-btn {
+        white-space: nowrap;
+        font-size: 12px;
+        padding: 6px 12px;
+        background: #fff;
+        color: #dc2626;
+        border: 1.5px solid #dc2626;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        font-weight: 500;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      #refund-btn:hover:not(:disabled) {
+        background: #dc2626;
+        color: #fff;
+      }
+      #refund-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .refund-pending-badge {
+        display: inline-block;
+        font-size: 11px;
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fcd34d;
+        border-radius: 9999px;
+        padding: 2px 8px;
+        font-weight: 600;
+        margin-left: 8px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <aside class="sidebar">
+        <a href="/index.html" class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </a>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Menu</p>
+          <a
+            href="/student/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            href="/student/orders.html"
+            class="sidebar-item"
+            data-page="orders"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+            </svg>
+            My Orders
+          </a>
+          <a href="/student/feed.html" class="sidebar-item" data-page="feed">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="8" r="7" />
+              <path
+                d="M1.5 8h13M8 1c2.5 0 4 3.5 4 7s-1.5 7-4 7-4-3.5-4-7 1.5-7 4-7z"
+              />
+            </svg>
+            Global Feed
+          </a>
+          <a
+            href="/student/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <div class="main-content">
+        <!-- Left Panel: Info + Chat -->
+        <div>
+          <div class="card" id="order-info">
+            <h2>Loading...</h2>
+          </div>
+
+          <div
+            class="card"
+            style="
+              display: flex;
+              flex-direction: column;
+              height: 500px;
+              padding: 0;
+              overflow: hidden;
+            "
+          >
+            <div
+              style="
+                padding: 16px;
+                border-bottom: 1px solid var(--color-gray-300);
+                background: var(--color-gray-50);
+                font-weight: 600;
+              "
+            >
+              Order Chat
+              <span
+                id="chat-status"
+                style="
+                  font-size: 11px;
+                  font-weight: normal;
+                  margin-left: 8px;
+                  color: var(--color-gray-500);
+                "
+              ></span>
+              <span
+                id="refund-badge"
+                class="refund-pending-badge"
+                style="display: none"
+                >⏳ Refund Pending</span
+              >
+            </div>
+            <div
+              id="chat-messages"
+              class="chat-messages"
+              style="flex: 1; overflow-y: auto; padding: 16px; background: #fff"
+            >
+              <p
+                style="
+                  color: var(--color-gray-500);
+                  text-align: center;
+                  font-size: 14px;
+                  margin-top: 20px;
+                "
+              >
+                Fetching chat...
+              </p>
+            </div>
+            <div
+              style="
+                padding: 16px;
+                border-top: 1px solid var(--color-gray-300);
+                background: #fff;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+            >
+              <button
+                id="refund-btn"
+                style="display: none"
+                onclick="requestRefund()"
+              >
+                Ask for Refund
+              </button>
+              <input
+                type="text"
+                id="chat-input"
+                class="input"
+                placeholder="Type a message..."
+                style="flex: 1"
+              />
+              <button class="btn btn-primary" id="chat-send">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Files -->
+        <div>
+          <div class="card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              "
+            >
+              <h3 style="margin: 0">Your Attachments</h3>
+              <button
+                id="add-file-btn"
+                class="btn btn-secondary btn-sm"
+                style="display: none"
+                onclick="document.getElementById('new-file-input').click()"
+              >
+                + Add File
+              </button>
+            </div>
+            <input
+              type="file"
+              id="new-file-input"
+              style="display: none"
+              multiple
+              onchange="handleNewFiles(this.files)"
+            />
+            <div id="student-file-list">
+              <p style="color: var(--color-gray-500); font-size: 14px">
+                Fetching...
+              </p>
+            </div>
+            <div
+              id="new-files-progress"
+              style="
+                margin-top: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            ></div>
+          </div>
+
+          <div class="card" id="roadmap-card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+              "
+            >
+              <h3 style="margin: 0">Order Roadmap</h3>
+              <button
+                class="btn btn-ghost btn-sm"
+                onclick="loadDetail()"
+                title="Refresh Status"
+                id="refresh-roadmap-btn"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <div class="roadmap" id="order-roadmap">
+              <div class="roadmap-line"></div>
+              <!-- Steps injected here -->
+            </div>
+          </div>
+
+          <div class="card" id="expert-files-section" style="display: none">
+            <h3 style="margin-bottom: 16px">Expert Solutions</h3>
+            <div id="expert-file-list">
+              <p style="color: var(--color-gray-500); font-size: 14px">
+                Waiting for solution...
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review section — shown only for completed orders -->
+        <div
+          id="review-section"
+          style="display: none; margin-top: var(--space-8)"
+        >
+          <!-- Populated by loadReviewSection() -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="edit-modal">
+      <div class="modal-content">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+          "
+        >
+          <h2>Edit Question</h2>
+          <button
+            class="btn btn-ghost btn-sm"
+            onclick="
+              document.getElementById('edit-modal').classList.remove('active')
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="label">Title</label>
+          <input type="text" id="edit-q-title" class="input" />
+        </div>
+        <div class="form-group">
+          <label class="label">Domain</label>
+          <select id="edit-q-domain" class="input"></select>
+        </div>
+        <div class="form-group">
+          <label class="label">Description</label>
+          <textarea id="edit-q-desc" class="input" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="label">Deadline</label>
+          <input type="date" id="edit-q-deadline" class="input" />
+        </div>
+        <button
+          class="btn btn-primary"
+          style="width: 100%"
+          id="update-btn"
+          onclick="updateQuestion()"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Refund Confirmation Modal -->
+    <div class="modal" id="refund-modal">
+      <div class="modal-content" style="max-width: 480px">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2
+            style="
+              font-size: 18px;
+              font-weight: 700;
+              color: var(--color-gray-900);
+            "
+          >
+            🔄 Request Refund
+          </h2>
+          <button class="btn btn-ghost btn-sm" onclick="closeRefundModal()">
+            ✕
+          </button>
+        </div>
+        <p
+          style="
+            font-size: 14px;
+            color: var(--color-gray-600);
+            margin-bottom: 24px;
+            line-height: 1.6;
+          "
+        >
+          Do you have a concern with this order? <br /><br />
+          Clicking confirm will notify the admin team. An employee will review your case and chat with you here to resolve any issues.
+        </p>
+        <div style="display: flex; gap: 12px">
+          <button
+            id="refund-confirm-btn"
+            class="btn btn-primary"
+            style="flex: 1"
+            onclick="submitRefundRequest()"
+          >
+            Confirm Refund Request
+          </button>
+          <button
+            class="btn btn-secondary"
+            style="flex: 1"
+            onclick="closeRefundModal()"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script>
+      if (!requireRole("student")) throw new Error("Abort");
+
+      let currentThreadId = null;
+
+      const qid = new URLSearchParams(window.location.search).get("id");
+      if (!qid) window.location.href = "/student/orders.html";
+
+      async function loadDetail() {
+        try {
+          let order,
+            files,
+            reviewData = { reviewed: false };
+
+          const [orderRes, filesRes] = await Promise.all([
+            apiFetch(`/student/orders/${qid}`),
+            apiFetch(`/files/question/${qid}`),
+          ]);
+
+          if (!orderRes.ok || !filesRes.ok) throw new Error("API error");
+
+          order = await orderRes.json();
+          files = await filesRes.json();
+
+          if (order.status === "completed") {
+            try {
+              const reviewRes = await apiFetch(`/student/orders/${qid}/review`);
+              if (reviewRes.ok) {
+                reviewData = await reviewRes.json();
+              }
+            } catch (e) {}
+          }
+
+          // Render info
+          const infoCard = document.getElementById("order-info");
+          const urlParams = new URLSearchParams(window.location.search);
+
+          let editBtnHtml = "";
+          if (order.status === "awaiting_quote") {
+            editBtnHtml = `<button class="btn btn-secondary btn-sm" onclick="openEditModal()">Edit</button>`;
+          }
+
+          infoCard.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h2>${order.title}</h2>
+                            <p style="color: var(--color-gray-500); font-size: 14px; margin-top: 4px;">
+                                ${order.domain} · Posted ${new Date(order.created_at).toLocaleDateString()}
+                                ${order.deadline ? ` · <span style="color: var(--color-danger);">Deadline: ${new Date(order.deadline).toLocaleDateString()}</span>` : ""}
+                            </p>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                            <span class="badge badge-${order.status}">${order.status.replace("_", " ")}</span>
+                            ${editBtnHtml}
+                        </div>
+                    </div>
+                    ${order.description ? `<p style="margin-top: 16px;">${order.description}</p>` : ""}
+                    ${order.student_price ? `<p style="font-weight: 600; margin-top: 16px;">Total Price: ₹${order.student_price}</p>` : ""}
+                `;
+
+          renderRoadmap(order, reviewData.reviewed);
+
+          // Show/hide the refund button and badge based on payment status
+          const refundBtn = document.getElementById("refund-btn");
+          const refundBadge = document.getElementById("refund-badge");
+          if (order.payment) {
+            const isAdvancePaid = order.payment.advance_paid;
+            const isCompletionPaid = order.payment.completion_paid;
+            const isRefundPending =
+              order.status === "in_progress" ||
+              order.status === "refund_requested" ||
+              (isAdvancePaid && !isCompletionPaid);
+
+            if (
+              isAdvancePaid &&
+              !isCompletionPaid &&
+              order.status !== "refunded"
+            ) {
+              if (
+                order.payment.status === "refund_requested" ||
+                order.status === "refund_requested"
+              ) {
+                // Refund already requested — show badge, disable button
+                refundBtn.style.display = "block";
+                refundBtn.disabled = true;
+                refundBtn.textContent = "⏳ Refund Requested";
+                refundBadge.style.display = "inline-block";
+              } else {
+                refundBtn.style.display = "block";
+                refundBtn.disabled = false;
+                refundBtn.textContent = "🔄 Ask for Refund";
+                refundBadge.style.display = "none";
+              }
+            } else {
+              refundBtn.style.display = "none";
+              refundBadge.style.display = "none";
+            }
+          }
+
+          // Show add file button
+          if (
+            order.status === "awaiting_quote" ||
+            order.status === "pending_payment"
+          ) {
+            document.getElementById("add-file-btn").style.display = "block";
+          } else {
+            document.getElementById("add-file-btn").style.display = "none";
+          }
+
+          // Set edit modal values
+          document.getElementById("edit-q-title").value = order.title;
+          document.getElementById("edit-q-desc").value =
+            order.description || "";
+          if (order.deadline) {
+            try {
+              const d = new Date(order.deadline);
+              if (!isNaN(d.getTime())) {
+                const isoDate = d.toISOString().split("T")[0];
+                document.getElementById("edit-q-deadline").value = isoDate;
+              }
+            } catch (err) {}
+          }
+
+          // Load domains
+          loadEditDomains(order.domain_id);
+
+          // Render files
+          const studentList = document.getElementById("student-file-list");
+          const expertList = document.getElementById("expert-file-list");
+          const expertSection = document.getElementById("expert-files-section");
+
+          studentList.innerHTML = "";
+          expertList.innerHTML = "";
+
+          const sFiles = files.filter(
+            (f) => f.category === "attachment" || f.uploader_type === "student",
+          );
+          const eFiles = files.filter(
+            (f) => f.category === "solution" || f.uploader_type === "expert",
+          );
+
+          if (sFiles.length === 0) {
+            studentList.innerHTML =
+              "<p style='color: var(--color-gray-500); font-size: 14px;'>No attachments uploaded.</p>";
+          } else {
+            sFiles.forEach((f) => {
+              studentList.innerHTML += renderFileItem(f);
+            });
+          }
+
+          if (eFiles.length > 0) {
+            expertSection.style.display = "block";
+            let expertListHtml = "";
+            eFiles.forEach((f) => {
+              expertListHtml += renderFileItem(f);
+            });
+            expertList.innerHTML = expertListHtml;
+          } else if (
+            order.status === "reviewing" ||
+            order.status === "completed"
+          ) {
+            expertSection.style.display = "block";
+            expertList.innerHTML =
+              "<p style='color: var(--color-gray-500); font-size: 14px;'>Waiting for solution files...</p>";
+          } else {
+            expertSection.style.display = "none";
+          }
+
+          if (order.status === "completed") {
+            loadReviewSection(qid, reviewData);
+          }
+
+          // Chat — only initialise once to avoid repeated join_thread on each poll
+          try {
+            const [threadRes, meRes] = await Promise.all([
+              apiFetch(`/student/orders/${qid}/thread`),
+              apiFetch("/auth/me"),
+            ]);
+            if (threadRes.ok && meRes.ok) {
+              const tData = await threadRes.json();
+              const me = await meRes.json();
+              if (window._chatThreadId !== tData.thread_id) {
+                window._chatThreadId = tData.thread_id;
+                currentThreadId = tData.thread_id;
+                initStudentChat(tData.thread_id, me.id, "chat-messages");
+              }
+            } else if (!threadRes.ok) {
+              const chatBox = document.getElementById("chat-messages");
+              if (chatBox) {
+                chatBox.innerHTML = `<p style="color: var(--color-gray-400); text-align: center; font-size: 14px; margin-top: 20px;">
+                                    Chat will be available once your order is being reviewed.</p>`;
+              }
+            }
+          } catch (ce) {
+            console.error("[chat] Init failed:", ce);
+            const chatBox = document.getElementById("chat-messages");
+            if (chatBox && !window._chatInitialised) {
+              chatBox.innerHTML = `<p style="color:#e74c3c;text-align:center;font-size:14px;margin-top:20px;">
+                            Chat failed to load. Please refresh the page.</p>`;
+            }
+          }
+        } catch (e) {
+          console.error(e);
+          toast("Failed to load details.", "error");
+        }
+      }
+
+      function renderRoadmap(order, isReviewed = false) {
+        const container = document.getElementById("order-roadmap");
+        const isAdvancePaid = order.payment && order.payment.advance_paid;
+        const isCompletionPaid = order.payment && order.payment.completion_paid;
+
+        let steps = [];
+
+        // 1. Negotiation
+        steps.push({
+          id: "negotiation",
+          title: "Negotiation",
+          desc:
+            order.status === "awaiting_quote"
+              ? "Finding the best expert for you."
+              : "Expert assigned and price discussed.",
+          status: order.status === "awaiting_quote" ? "active" : "completed",
+        });
+
+        // 2. Advance Payment
+        let paymentStep = {
+          id: "payment",
+          title: "Advance Payment",
+          status: "greyed",
+        };
+        if (order.price_approved && !isAdvancePaid) {
+          paymentStep.status = "active";
+          paymentStep.desc = `Price set to ₹${order.student_price}. Pay 50% to start work.`;
+          paymentStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('advance')">Pay ₹${(order.student_price / 2).toFixed(2)}</button>`;
+        } else if (isAdvancePaid) {
+          paymentStep.status = "completed";
+          paymentStep.desc = "Advance payment received.";
+        } else {
+          paymentStep.desc = "Waiting for price quote.";
+        }
+        steps.push(paymentStep);
+
+        // 3. Solution in Progress
+        let progressStep = {
+          id: "progress",
+          title: "Solution in Progress",
+          status: "greyed",
+        };
+        if (isAdvancePaid && order.status === "in_progress") {
+          progressStep.status = "active";
+          progressStep.desc = "Expert is working on your solution.";
+        } else if (
+          order.status === "reviewing" ||
+          order.status === "completed"
+        ) {
+          progressStep.status = "completed";
+          progressStep.desc = "Expert has finished the work.";
+        }
+        steps.push(progressStep);
+
+        // 4. Preview & Final Payment
+        let previewStep = {
+          id: "preview",
+          title: "Solution Preview & Balance",
+          status: "greyed",
+        };
+        if (order.status === "reviewing") {
+          previewStep.status = "active";
+          if (!isCompletionPaid) {
+            const bal = order.student_price - order.student_price / 2;
+            previewStep.desc =
+              "Review preview and pay balance to unlock full file.";
+            previewStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('completion')">Pay ₹${bal.toFixed(2)}</button>`;
+          } else {
+            previewStep.desc = "Payment complete. Solution unlocked.";
+            previewStep.status = "completed";
+          }
+        } else if (order.status === "completed") {
+          previewStep.status = "completed";
+          previewStep.desc = "All files unlocked.";
+        }
+        steps.push(previewStep);
+
+        // 5. Review & Finish
+        let reviewStep = {
+          id: "review",
+          title: "Review & Finish",
+          status: "greyed",
+        };
+        if (order.status === "completed") {
+          if (isReviewed) {
+            reviewStep.status = "completed";
+            reviewStep.desc = "Thank you for your feedback!";
+          } else {
+            reviewStep.status = "active";
+            reviewStep.desc = "Thank you! Rate your expert below.";
+          }
+        }
+        steps.push(reviewStep);
+
+        // Render
+        container.innerHTML =
+          '<div class="roadmap-line"></div>' +
+          steps
+            .map(
+              (s) => `
+                <div class="roadmap-step ${s.status}">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-content">
+                        <div class="roadmap-title">${s.title}</div>
+                        ${s.desc ? `<div class="roadmap-desc">${s.desc}</div>` : ""}
+                        ${s.action ? `<div class="roadmap-action">${s.action}</div>` : ""}
+                    </div>
+                </div>
+            `,
+            )
+            .join("");
+      }
+
+      function renderFileItem(f) {
+        const isSolution =
+          f.category === "solution" || f.uploader_type === "expert";
+
+        let actionHtml = `<button class="btn btn-secondary btn-sm" onclick="downloadFile('${f._id}')">View</button>`;
+
+        if (f.is_locked) {
+          if (f.has_preview) {
+            actionHtml = `<button class="btn btn-secondary btn-sm" onclick="downloadFile('${f._id}')">Preview</button>`;
+          } else {
+            actionHtml = `<span style="font-size: 12px; color: var(--color-gray-400); font-style: italic;">No preview available</span>`;
+          }
+        }
+
+        const statusHtml = isSolution
+          ? `<div style="font-size: 12px; color: var(--color-gray-500); margin-top: 2px;">
+                    ${f.is_locked ? "🔒 Locked (25% Preview)" : "✅ Fully Unlocked"}
+                   </div>`
+          : "";
+
+        return `
+                <div class="file-item">
+                    <div>
+                        <div style="font-weight: 500; font-size: 14px;">${f.original_filename}</div>
+                        ${statusHtml}
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        ${actionHtml}
+                    </div>
+                </div>
+            `;
+      }
+
+      async function downloadFile(fileId) {
+        const res = await apiFetch(`/files/${fileId}/url`);
+        const data = await res.json();
+        if (res.ok) {
+          window.open(data.url, "_blank");
+        } else {
+          toast("Error getting file URL", "error");
+        }
+      }
+
+      async function payNow(paymentType) {
+        try {
+          const res = await apiFetch(`/payments/checkout/${qid}`, {
+            method: "POST",
+            body: JSON.stringify({ payment_type: paymentType }),
+          });
+          const data = await res.json();
+
+          if (res.ok && data.checkout_url) {
+            window.location.href = data.checkout_url;
+          } else {
+            toast(data.error || "Failed to initiate payment", "error");
+          }
+        } catch (e) {
+          console.error("Payment error:", e);
+          toast("Payment initialization failed.", "error");
+        }
+      }
+
+      function requestRefund() {
+        document.getElementById("refund-modal").classList.add("active");
+      }
+
+      function closeRefundModal() {
+        document.getElementById("refund-modal").classList.remove("active");
+      }
+
+      async function submitRefundRequest() {
+        const btn = document.getElementById("refund-confirm-btn");
+        const originalBtn = document.getElementById("refund-btn");
+
+        btn.disabled = true;
+        btn.textContent = "Sending Request...";
+
+        try {
+          const res = await apiFetch(`/student/orders/${qid}/request-refund`, {
+            method: "POST",
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            toast(
+              "✅ Request sent. The admin will chat with you shortly.",
+              "success",
+            );
+            closeRefundModal();
+
+            // Update the main UI button temporarily
+            if (originalBtn) {
+              originalBtn.textContent = "✅ Request Sent";
+              originalBtn.style.color = "var(--color-success)";
+              originalBtn.style.borderColor = "var(--color-success)";
+            }
+            loadDetail();
+          } else {
+            toast(data.error || "Failed to send request.", "error");
+            btn.disabled = false;
+            btn.textContent = "Confirm Request";
+          }
+        } catch (e) {
+          console.error("Refund error:", e);
+          toast("Request failed. Please try again.", "error");
+          btn.disabled = false;
+          btn.textContent = "Confirm Request";
+        }
+      }
+
+      // Wiring up Send button for chat
+      document.getElementById("chat-send").addEventListener("click", () => {
+        const input = document.getElementById("chat-input");
+        if (input.value) {
+          sendMessage(input.value, currentThreadId);
+          input.value = "";
+        }
+      });
+
+      // Also send on Enter key
+      document.getElementById("chat-input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          const input = document.getElementById("chat-input");
+          if (input.value) {
+            sendMessage(input.value, currentThreadId);
+            input.value = "";
+          }
+        }
+      });
+
+      // Cleanup chat
+      window.addEventListener("beforeunload", destroyChat);
+
+      // ── Resilience Fix: Verify Payment on Return ───────────────
+      let isVerifying = false;
+      async function verifyPaymentOnReturn(forcedSessionId = null) {
+        if (isVerifying && !forcedSessionId) return;
+
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = forcedSessionId || params.get("session_id");
+        if (!sessionId) return;
+
+        isVerifying = true;
+
+        // Immediately clean URL (UX) only on first call
+        if (!forcedSessionId) {
+          const cleanUrl = window.location.pathname + "?id=" + qid;
+          window.history.replaceState({}, document.title, cleanUrl);
+          toast("Confirming your payment...", "info");
+        }
+
+        try {
+          // Poll the new verify endpoint
+          const res = await apiFetch(
+            `/payments/verify?session_id=${sessionId}&id=${qid}`,
+          );
+          const data = await res.json();
+
+          if (data.status === "paid") {
+            if (data.payment_type === "completion") {
+              toast(
+                "✅ Final payment confirmed! Solutions unlocked.",
+                "success",
+              );
+            } else {
+              toast(
+                "✅ Advance payment confirmed! Expert will start work.",
+                "success",
+              );
+            }
+            loadDetail(); // Refresh order state
+            isVerifying = false;
+          } else if (data.status === "pending") {
+            // Stripe might still be processing, poll again in 3s
+            setTimeout(() => verifyPaymentOnReturn(sessionId), 3000);
+          } else {
+            toast("❌ Could not verify payment. Contact support.", "error");
+            isVerifying = false;
+          }
+        } catch (err) {
+          console.error("Verify error:", err);
+          // On network error, retry in 5s
+          setTimeout(() => verifyPaymentOnReturn(sessionId), 5000);
+        }
+      }
+
+      verifyPaymentOnReturn();
+      loadDetail();
+
+      // ── Review System ──────────────────────────────────────
+
+      async function loadReviewSection(questionId, preFetchedData = null) {
+        try {
+          let data = preFetchedData;
+          if (!data) {
+            const res = await apiFetch(`/student/orders/${questionId}/review`);
+            data = await res.json();
+          }
+
+          const section = document.getElementById("review-section");
+          section.style.display = "block";
+
+          if (data.reviewed) {
+            // Show submitted review
+            section.innerHTML = `
+                        <div class="card">
+                            <h3 style="margin-bottom: 16px;">Your Review</h3>
+                            <div style="font-size: 24px; margin-bottom: 12px;">${renderStars(data.rating)}</div>
+                            ${
+                              data.review_text
+                                ? `<p style="font-style: italic; color: var(--color-gray-700); background: var(--color-gray-50); padding: 16px; border-radius: var(--radius-md);">"${escapeHtml(data.review_text)}"</p>`
+                                : ""
+                            }
+                            <p style="font-size: 12px; color: var(--color-gray-500); margin-top: 16px;">
+                                Submitted ${new Date(data.created_at).toLocaleDateString()}
+                            </p>
+                        </div>`;
+            return;
+          }
+
+          // Show review form
+          section.innerHTML = `
+                    <div class="card">
+                        <h3 style="margin-bottom: 8px;">Rate Your Expert</h3>
+                        <p style="font-size: 14px; color: var(--color-gray-500); margin-bottom: 24px;">
+                            How was your experience? Your review helps other students.
+                        </p>
+
+                        <!-- Star picker -->
+                        <div style="display: flex; gap: 8px;" id="star-picker">
+                            ${[1, 2, 3, 4, 5]
+                              .map(
+                                (n) => `
+                                <button class="star-pick-btn" data-value="${n}"
+                                    style="background:none; border:none; cursor:pointer; font-size:32px; color:var(--color-gray-300); padding:0;"
+                                    onmouseover="hoverStars(${n})"
+                                    onmouseout="resetStars()"
+                                    onclick="selectRating(${n})">
+                                    ★
+                                </button>
+                            `,
+                              )
+                              .join("")}
+                        </div>
+                        <p id="rating-label" style="font-size:14px; color:var(--color-gray-600); margin-top:8px; min-height:20px; font-weight:500;"></p>
+
+                        <!-- Review text -->
+                        <div style="margin-top: 24px;">
+                            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Write a review <span style="font-weight: 400; color:var(--color-gray-500)">(optional)</span></label>
+                            <textarea id="review-text" class="input" rows="3" maxlength="500"
+                                style="width: 100%;"
+                                placeholder="Share your experience — was the solution clear? Was it delivered on time?"></textarea>
+                            <p id="char-count" style="font-size:11px; color:var(--color-gray-500); text-align:right; margin-top:4px;">0 / 500</p>
+                        </div>
+
+                        <button class="btn btn-primary" style="margin-top: 16px; width: 100%;" onclick="submitReview('${questionId}')"
+                            id="submit-review-btn" disabled>
+                            Submit Review
+                        </button>
+                    </div>`;
+
+          // Wire up char counter
+          document
+            .getElementById("review-text")
+            .addEventListener("input", function () {
+              document.getElementById("char-count").textContent =
+                `${this.value.length} / 500`;
+            });
+        } catch (e) {
+          console.error("Failed to load review section", e);
+        }
+      }
+
+      let selectedRating = 0;
+      const ratingLabels = {
+        1: "Poor",
+        2: "Fair",
+        3: "Good",
+        4: "Very Good",
+        5: "Excellent",
+      };
+
+      function hoverStars(n) {
+        document.querySelectorAll(".star-pick-btn").forEach((btn, i) => {
+          btn.style.color = i < n ? "#F59E0B" : "var(--color-gray-300)";
+        });
+        document.getElementById("rating-label").textContent =
+          ratingLabels[n] || "";
+      }
+
+      function resetStars() {
+        document.querySelectorAll(".star-pick-btn").forEach((btn, i) => {
+          btn.style.color =
+            i < selectedRating ? "#F59E0B" : "var(--color-gray-300)";
+        });
+        document.getElementById("rating-label").textContent = selectedRating
+          ? ratingLabels[selectedRating]
+          : "";
+      }
+
+      function selectRating(n) {
+        selectedRating = n;
+        resetStars();
+        document.getElementById("submit-review-btn").disabled = false;
+      }
+
+      async function submitReview(questionId) {
+        if (!selectedRating) {
+          toast("Please select a star rating.", "warning");
+          return;
+        }
+
+        const reviewText = document.getElementById("review-text").value.trim();
+        const btn = document.getElementById("submit-review-btn");
+        btn.disabled = true;
+        btn.textContent = "Submitting...";
+
+        try {
+          const res = await apiFetch(`/student/orders/${questionId}/review`, {
+            method: "POST",
+            body: JSON.stringify({
+              rating: selectedRating,
+              review_text: reviewText || null,
+            }),
+          });
+
+          if (res.ok) {
+            toast("Thank you for your review!");
+            loadDetail();
+          } else {
+            const d = await res.json();
+            toast(d.error || "Failed to submit review.", "error");
+            btn.disabled = false;
+            btn.textContent = "Submit Review";
+          }
+        } catch (e) {
+          toast("Network error. Try again.", "error");
+          btn.disabled = false;
+          btn.textContent = "Submit Review";
+        }
+      }
+
+      function renderStars(rating) {
+        return [1, 2, 3, 4, 5]
+          .map(
+            (n) =>
+              `<span style="color:${n <= rating ? "#F59E0B" : "var(--color-gray-300)"}">★</span>`,
+          )
+          .join("");
+      }
+
+      // ── Edit Logic ───────────────────────────────────────────
+      function openEditModal() {
+        document.getElementById("edit-modal").classList.add("active");
+      }
+
+      async function loadEditDomains(currentDomainId) {
+        try {
+          const res = await apiFetch("/auth/domains");
+          const domains = await res.json();
+          const select = document.getElementById("edit-q-domain");
+          select.innerHTML = "";
+          domains.forEach((d) => {
+            const opt = document.createElement("option");
+            opt.value = d.id;
+            opt.textContent = d.name;
+            if (d.id === currentDomainId) opt.selected = true;
+            select.appendChild(opt);
+          });
+        } catch (err) {}
+      }
+
+      async function updateQuestion() {
+        const title = document.getElementById("edit-q-title").value.trim();
+        const domain_id = document.getElementById("edit-q-domain").value;
+        const desc = document.getElementById("edit-q-desc").value.trim();
+        const deadline = document.getElementById("edit-q-deadline").value;
+        const btn = document.getElementById("update-btn");
+
+        if (!title) return toast("Title is required", "error");
+
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+
+        try {
+          const res = await apiFetch(`/student/orders/${qid}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              title,
+              domain_id,
+              description: desc,
+              deadline: deadline || null,
+            }),
+          });
+
+          if (res.ok) {
+            toast("Updated successfully!");
+            document.getElementById("edit-modal").classList.remove("active");
+            loadDetail();
+          } else {
+            const d = await res.json();
+            toast(d.error || "Failed to update", "error");
+          }
+        } catch (e) {
+          toast("Network error", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Save Changes";
+        }
+      }
+
+      // ── Post-Submission File Upload ──────────────────────────
+      async function handleNewFiles(files) {
+        for (const file of files) {
+          await uploadAndLinkFile(file);
+        }
+      }
+
+      async function uploadAndLinkFile(file) {
+        const progressEl = document.getElementById("new-files-progress");
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.style.borderStyle = "dashed";
+        item.innerHTML = `
+                <div>
+                    <div style="font-weight: 500; font-size: 14px;">${file.name}</div>
+                    <div class="status" style="font-size: 11px; color: var(--color-gray-500);">Uploading...</div>
+                </div>
+            `;
+        progressEl.appendChild(item);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          // 1. Upload
+          const uploadRes = await apiFetch("/files/upload", {
+            method: "POST",
+            body: formData,
+          });
+          const uploadData = await uploadRes.json();
+
+          if (!uploadRes.ok)
+            throw new Error(uploadData.error || "Upload failed");
+
+          // 2. Link
+          const linkRes = await apiFetch(`/student/orders/${qid}/files`, {
+            method: "POST",
+            body: JSON.stringify({ file_ids: [uploadData.file_id] }),
+          });
+
+          if (linkRes.ok) {
+            item.querySelector(".status").textContent = "✅ Added";
+            item.querySelector(".status").style.color = "var(--color-success)";
+            setTimeout(() => {
+              item.remove();
+              loadDetail(); // Refresh list
+            }, 1500);
+          } else {
+            const linkData = await linkRes.json();
+            throw new Error(linkData.error || "Linking failed");
+          }
+        } catch (err) {
+          item.querySelector(".status").textContent = "✕ " + err.message;
+          item.querySelector(".status").style.color = "var(--color-danger)";
+        }
+      }
+    </script>
+
+    <script>
+      document
+        .querySelector('[data-page="order-detail"]')
+        ?.classList.add("active");
+    </script>
+  </body>
+</html>

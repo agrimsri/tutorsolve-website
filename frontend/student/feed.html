@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Global Feed — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      min-height: 100vh;
+      background: #F8FAFC;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: var(--space-8);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .feed-header {
+      margin-bottom: var(--space-8);
+      padding: var(--space-8);
+      background: var(--gradient-primary);
+      border-radius: var(--radius-xl);
+      color: white;
+      box-shadow: var(--shadow-brand);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feed-header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 300px;
+      height: 300px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .feed-header h1 {
+      margin-bottom: 8px;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: white;
+    }
+
+    .feed-header p {
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 16px;
+      max-width: 600px;
+    }
+
+    .feed-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+    }
+
+    .feed-card {
+      background: var(--color-white);
+      padding: var(--space-6);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-gray-200);
+      transition: border-color 0.2s ease, box-shadow 0.25s ease;
+      position: relative;
+    }
+
+    .feed-card:hover {
+      border-color: var(--brand-primary-light);
+      box-shadow: var(--shadow-lg);
+      /* No scaling as requested */
+    }
+
+    .feed-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-3);
+    }
+
+    .feed-card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin: 0;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+    }
+
+    .feed-card-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      font-size: 13px;
+      color: var(--color-gray-500);
+      margin-bottom: var(--space-4);
+      font-weight: 500;
+    }
+
+    .feed-card-description {
+      font-size: 15px;
+      color: var(--color-gray-600);
+      line-height: 1.6;
+      margin-bottom: var(--space-5);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .badge-awaiting {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+
+    .badge-pending_payment {
+      background: #DBEAFE;
+      color: #1E40AF;
+      border: 1px solid #BFDBFE;
+    }
+
+    .badge-in_progress {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+
+    .badge-reviewing {
+      background: #FCE7F3;
+      color: #9D174D;
+      border: 1px solid #FBCFE8;
+    }
+
+    .badge-completed {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+    }
+
+    .review-section {
+      background: #F8FAFC;
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      margin-top: var(--space-4);
+      border: 1px solid var(--color-gray-200);
+      position: relative;
+    }
+
+    .review-section::before {
+      content: '"';
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      font-size: 40px;
+      color: var(--brand-primary);
+      opacity: 0.1;
+      font-family: serif;
+    }
+
+    .review-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-3);
+    }
+
+    .review-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--brand-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .review-text {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--color-gray-700);
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    .rating-stars {
+      color: #F59E0B;
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    .public-note-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: var(--space-4);
+      border: 1px solid #A7F3D0;
+    }
+
+    .btn-load-more {
+      width: 100%;
+      margin-top: 40px;
+      padding: 16px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border-radius: var(--radius-xl);
+      background: var(--color-white);
+      color: var(--brand-primary);
+      border: 2px solid var(--brand-primary-ultra);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-load-more:hover {
+      background: var(--brand-primary-ultra);
+      border-color: var(--brand-primary-light);
+    }
+
+    .meta-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/student/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/student/orders.html" class="sidebar-item" data-page="orders">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          My Orders
+        </a>
+        <a href="/student/feed.html" class="sidebar-item" data-page="feed">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="7" />
+            <path d="M1.5 8h13M8 1c2.5 0 4 3.5 4 7s-1.5 7-4 7-4-3.5-4-7 1.5-7 4-7z" />
+          </svg>
+          Global Feed
+        </a>
+        <a href="/student/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+    <div class="main-content">
+      <div class="feed-header">
+        <h1>Global Feed</h1>
+        <p>Live transparency on platform solutions and expert quality. See how we help students succeed.</p>
+      </div>
+
+      <div class="feed-list" id="feed-list">
+        <div style="text-align: center; padding: 60px; color: var(--color-gray-400);">
+          <div class="spinner" style="margin: 0 auto 16px;"></div>
+          Curating live activity...
+        </div>
+      </div>
+
+      <button class="btn btn-load-more" id="load-more" onclick="loadFeed()">
+        Explore More Solutions
+      </button>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    if (!requireRole("student")) throw new Error("Abort");
+
+    let currentPage = 1;
+
+    function renderStars(rating) {
+      if (!rating) return '';
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        stars += i <= rating ? '★' : '☆';
+      }
+      return `<span class="rating-stars">${stars}</span>`;
+    }
+
+    async function loadFeed() {
+      const btn = document.getElementById("load-more");
+      btn.textContent = "Loading Solutions...";
+      btn.disabled = true;
+
+      try {
+        const res = await apiFetch(`/student/feed?page=${currentPage}`);
+        const data = await res.json();
+
+        const list = document.getElementById("feed-list");
+        if (currentPage === 1) list.innerHTML = "";
+
+        if (data.length === 0) {
+          btn.style.display = "none";
+          if (currentPage === 1) list.innerHTML = `
+            <div style="text-align: center; padding: 80px; color: var(--color-gray-400); background: white; border-radius: var(--radius-xl); border: 1px dashed var(--color-gray-300);">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 24px; opacity: 0.3;">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+              <h3 style="color: var(--color-gray-600); margin-bottom: 8px;">No activity yet</h3>
+              <p>Be the first to post a question and get expert help!</p>
+            </div>
+          `;
+          return;
+        }
+
+        data.forEach(q => {
+          const card = document.createElement("div");
+          card.className = "feed-card";
+
+          let reviewHtml = "";
+          if (q.status === "completed" && (q.student_review || q.public_note)) {
+            reviewHtml = `
+              <div class="review-section">
+                <div class="review-header">
+                  <span class="review-label">${q.student_review ? 'Student Review' : 'Verified Solution Note'}</span>
+                  ${q.student_rating ? renderStars(q.student_rating) : ''}
+                </div>
+                <div class="review-text">
+                  ${q.student_review || q.public_note}
+                </div>
+                ${q.grade ? `<div class="public-note-tag">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  Certified Grade: ${q.grade}
+                </div>` : ''}
+              </div>
+            `;
+          }
+
+          const dateStr = new Date(q.created_at).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+
+          card.innerHTML = `
+            <div class="feed-card-header">
+              <h3 class="feed-card-title">${q.title}</h3>
+              <span class="badge badge-${q.status}">${q.status.replace("_", " ")}</span>
+            </div>
+            <div class="feed-card-meta">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                ${q.domain}
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                ${dateStr}
+              </div>
+            </div>
+            <div class="feed-card-description">
+              ${q.description || 'Step-by-step solution request for this topic.'}
+            </div>
+            ${reviewHtml}
+          `;
+          list.appendChild(card);
+        });
+
+        currentPage++;
+        btn.textContent = "Explore More Solutions";
+        btn.disabled = false;
+
+        if (data.length < 20) btn.style.display = "none";
+      } catch (e) {
+        console.error(e);
+        toast("Failed to load feed", "error");
+        btn.textContent = "Explore More Solutions";
+        btn.disabled = false;
+      }
+    }
+
+    loadFeed();
+  </script>
+
+  <script>
+    document.querySelector('[data-page="feed"]')?.classList.add("active");
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

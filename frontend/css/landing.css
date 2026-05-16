@@ -1,0 +1,551 @@
+:root {
+  /* Extended Palette for Modern Landing Look (reusing base.css variables) */
+  --accent-glow: rgba(78, 74, 229, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    #7c3aed 100%
+  );
+  --gradient-soft: linear-gradient(
+    180deg,
+    var(--brand-primary-ultra) 0%,
+    #ffffff 100%
+  );
+
+  /* Spacing & Radius Overrides / Additions */
+  --radius-20: 20px;
+  --radius-30: 30px;
+}
+
+body {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* --- Layout Utils (using base.css .container) --- */
+section {
+  padding: 100px 0;
+}
+
+/* --- Glassmorphism --- */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+/* --- Button Overrides for Premium Look --- */
+.btn {
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 10px 20px -5px var(--accent-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 15px 30px -5px var(--accent-glow);
+  filter: brightness(1.1);
+}
+
+.btn-secondary {
+  background: var(--color-white);
+  color: var(--color-gray-900);
+  border: 1px solid var(--color-gray-200);
+  backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+  background: var(--color-gray-50);
+  transform: translateY(-2px);
+}
+
+/* --- Hero Section --- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 120px;
+  background:
+    radial-gradient(
+      circle at top right,
+      var(--brand-primary-ultra),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      var(--brand-primary-ultra),
+      transparent 40%
+    );
+}
+
+.hero-content {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-headline {
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--color-black);
+  letter-spacing: -0.04em;
+  margin-bottom: 24px;
+}
+
+.hero-subtext {
+  font-size: 20px;
+  color: var(--color-gray-600);
+  margin-bottom: 48px;
+}
+
+.hero-search-bar {
+  max-width: 600px;
+  margin: 0 auto 40px;
+  position: relative;
+  padding: 8px;
+  background: white;
+  border-radius: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 8px;
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.hero-search-bar:focus-within {
+  transform: translateY(-5px);
+  box-shadow: 0 30px 60px rgba(78, 74, 229, 0.2);
+}
+
+.hero-search-bar input {
+  flex: 1;
+  border: none;
+  padding: 0 24px;
+  font-size: 18px;
+  outline: none;
+  border-radius: 40px;
+}
+
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-gray-700);
+  background: var(--color-white);
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.stat-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.ticker-wrap {
+  height: 30px;
+  overflow: hidden;
+  font-size: 14px;
+  color: var(--color-gray-500);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ticker-item {
+  animation: slideUp 3s infinite;
+}
+
+@keyframes slideUp {
+  0%,
+  20% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  25%,
+  45% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+
+  50% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+
+  55%,
+  75% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* --- Grid Sections --- */
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-header h2 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  padding: 40px;
+  background: white;
+  border-radius: var(--radius-30);
+  transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  border: 1px solid var(--color-gray-100);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+}
+
+.feature-card:hover::before {
+  opacity: 0.03;
+}
+
+.feature-card:hover {
+  transform: translateY(-15px);
+  box-shadow: 0 30px 60px -12px rgba(78, 74, 229, 0.15);
+  border-color: var(--brand-primary-light);
+}
+
+.feature-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--brand-primary-ultra);
+  color: var(--brand-primary);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* --- Bento Grid --- */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 250px);
+  gap: 24px;
+}
+
+.bento-item {
+  background: white;
+  border-radius: var(--radius-30);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-gray-100);
+  transition: all 0.3s ease;
+}
+
+.bento-item:hover {
+  transform: scale(1.02);
+}
+
+.bento-item.large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.bento-item.medium {
+  grid-column: span 2;
+}
+
+.bento-item img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.1;
+  z-index: 0;
+}
+
+.bento-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Testimonials --- */
+.testimonial-card {
+  background: white;
+  padding: 32px;
+  border-radius: var(--radius-20);
+  margin: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+}
+
+/* --- Contact & Footer --- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  background: white;
+  padding: 64px;
+  border-radius: var(--radius-30);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Form Element Overrides --- */
+.form-group input,
+.form-group textarea {
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.footer {
+  padding: 80px 0 40px;
+  background: var(--color-black);
+  color: white;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 64px;
+}
+
+.footer h4 {
+  margin-bottom: 24px;
+  font-size: 18px;
+}
+
+.footer ul {
+  list-style: none;
+}
+
+.footer ul li {
+  margin-bottom: 12px;
+}
+
+.footer a {
+  color: var(--color-gray-500);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer a:hover {
+  color: white;
+}
+
+/* --- Mobile Menu --- */
+/* Note: .nav-toggle visibility is handled entirely in base.css */
+
+@media (max-width: 992px) {
+  .nav-inner {
+    display: flex;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--color-white);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    z-index: 999;
+    transform: translateX(100%);
+    transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1);
+    display: flex;
+  }
+
+  .nav-links.open {
+    transform: translateX(0);
+  }
+
+  .nav-link {
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .nav-toggle {
+    display: block;
+    position: relative;
+    z-index: 1001;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .nav-toggle span {
+    width: 100%;
+    height: 2px;
+    background: var(--color-black);
+    transition: all 0.3s ease;
+  }
+
+  .nav-toggle.active span:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+  }
+
+  .nav-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .nav-toggle.active span:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+  }
+
+  .nav-actions {
+    display: none;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+    padding: 32px;
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bento-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .bento-item {
+    grid-column: span 2 !important;
+  }
+}
+
+/* --- Animations --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* --- How it Works Cards Hover Effects --- */
+.how-card {
+  transition: all 0.4s ease !important;
+}
+
+/* Card 1: Very light purple */
+.how-card.how-card-1:hover {
+  /* background: #f3e8ff !important; */
+  background: rgba(78, 74, 229, 0.2) !important;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.1) !important;
+  border-color: #f3e8ff !important;
+}
+.how-card.how-card-1:hover .how-card-badge {
+  background: white !important;
+}
+
+/* Card 2: A little darker purple */
+.how-card.how-card-2:hover {
+  /* background: #d8b4fe !important; */
+  background: rgba(78, 74, 229, 0.4) !important;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15) !important;
+  border-color: #d8b4fe !important;
+}
+.how-card.how-card-2:hover .how-card-badge {
+  background: white !important;
+}
+
+/* Card 3: More dark purple */
+.how-card.how-card-3:hover {
+  /* background: #a855f7 !important; */
+  background: rgba(78, 74, 229, 0.6) !important;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25) !important;
+  border-color: #a855f7 !important;
+}
+.how-card.how-card-3:hover h3,
+.how-card.how-card-3:hover p {
+  color: white !important;
+}
+.how-card.how-card-3:hover .how-card-badge {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+/* Card 4: Most dark purple */
+.how-card.how-card-4:hover {
+  /* background: #7e22ce !important; */
+  background: rgba(78, 74, 229, 0.8) !important;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3) !important;
+  border-color: #7e22ce !important;
+}
+.how-card.how-card-4:hover h3,
+.how-card.how-card-4:hover p {
+  color: white !important;
+}
+.how-card.how-card-4:hover .how-card-badge {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+}
+
+.how-card h3,
+.how-card p,
+.how-card .how-card-badge {
+  transition: all 0.4s ease !important;
+}

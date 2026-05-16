@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Detail — TutorSolve Expert</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/expert.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+
+<body>
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="/index.html" class="sidebar-logo">
+                <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+                <span class="navbar-logo-text">TutorSolve</span>
+            </a>
+
+            <nav class="sidebar-nav">
+                <p class="sidebar-section-label">Menu</p>
+                <a href="/expert/dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="1" y="1" width="6" height="6" rx="1" />
+                        <rect x="9" y="1" width="6" height="6" rx="1" />
+                        <rect x="1" y="9" width="6" height="6" rx="1" />
+                        <rect x="9" y="9" width="6" height="6" rx="1" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/expert/job-board.html" class="sidebar-item" data-page="job-board">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M2 4h12M2 8h8M2 12h10" />
+                    </svg>
+                    Job Board
+                </a>
+                <a href="/expert/my-tasks.html" class="sidebar-item" data-page="my-tasks">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+                    </svg>
+                    My Tasks
+                </a>
+                <a href="/expert/profile.html" class="sidebar-item" data-page="profile">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="8" cy="5" r="3" />
+                        <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+                    </svg>
+                    Profile
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="sidebar-item"
+                    style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main" style="padding:0;overflow:hidden">
+
+            <!-- Task info strip -->
+            <div class="task-info-strip" style="flex-direction:column;align-items:flex-start;gap:var(--space-3)">
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%">
+                    <div style="display:flex;align-items:center;gap:var(--space-3)">
+                        <a href="/expert/my-tasks.html" class="btn btn-ghost btn-sm">← Back</a>
+                        <div>
+                            <h2 id="task-title" class="page-title" style="font-size:18px"></h2>
+                            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-1)" id="task-meta">
+                                <span id="task-domain" class="badge badge-progress"></span>
+                                <span id="task-status"></span>
+                                <span id="task-deadline" style="font-size:13px;color:var(--color-gray-500)"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <p style="font-size:12px;color:var(--color-gray-500)">Your Payout</p>
+                        <p id="task-payout" style="font-size:22px;font-weight:700;color:var(--color-gray-900)"></p>
+                    </div>
+                </div>
+
+                <!-- Reference Files from Student -->
+                <div id="reference-files-section"
+                    style="display:none;width:100%;border-top:1px solid var(--color-gray-100);padding-top:var(--space-3)">
+                    <p
+                        style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--color-gray-500);margin-bottom:var(--space-2)">
+                        📎 Question Reference Files
+                    </p>
+                    <div id="reference-files-list" style="display:flex;flex-wrap:wrap;gap:var(--space-2)"></div>
+                </div>
+            </div>
+
+            <!-- Split layout: chat left, upload right -->
+            <div class="task-split">
+
+                <!-- Left: Thread B Chat -->
+                <div class="task-chat-panel">
+                    <div class="chat-panel-header"
+                        style="background:var(--color-warning-bg);color:#92400E;padding:var(--space-4);border-bottom:1px solid var(--color-gray-300);font-weight:600;">
+                        Chat with Admin
+                    </div>
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div id="chat-input-row" class="chat-input-row"
+                        style="display:flex;padding:var(--space-4);gap:var(--space-2);border-top:1px solid var(--color-gray-300);">
+                        <input id="chat-input" type="text" class="input" placeholder="Message admin...">
+                        <button class="btn btn-primary btn-sm" onclick="handleSend()">Send</button>
+                    </div>
+                </div>
+
+                <!-- Right: Upload Panel -->
+                <div class="task-upload-panel">
+                    <div class="chat-panel-header"
+                        style="background:var(--color-white);padding:var(--space-4);border-bottom:1px solid var(--color-gray-300);font-weight:600;">
+                        Submit Solution
+                    </div>
+
+                    <div style="padding:var(--space-6)">
+                        <!-- Upload zone -->
+                        <div id="upload-zone" class="upload-zone"
+                            onclick="document.getElementById('file-input').click()">
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--color-gray-300)"
+                                stroke-width="1.5" style="margin: 0 auto;">
+                                <path d="M16 4v16M8 12l8-8 8 8" />
+                                <path d="M4 24h24" />
+                            </svg>
+                            <p style="margin-top:var(--space-3);font-size:14px;color:var(--color-gray-500)">
+                                Drag & drop your solution file here
+                            </p>
+                            <p style="font-size:12px;color:var(--color-gray-500);margin-top:var(--space-1)">
+                                PDF, code files, images accepted
+                            </p>
+                            <button class="btn btn-secondary btn-sm" style="margin-top:var(--space-4)"
+                                onclick="event.stopPropagation();document.getElementById('file-input').click()">
+                                Choose File
+                            </button>
+                        </div>
+                        <input id="file-input" type="file" style="display:none"
+                            accept=".pdf,.py,.js,.java,.cpp,.c,.cs,.txt,.zip,.png,.jpg">
+
+                        <!-- Upload progress -->
+                        <div id="upload-progress-wrap" style="display:none;margin-top:var(--space-4)">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:var(--space-2)">
+                                <span id="upload-filename"></span>
+                                <span id="upload-pct">0%</span>
+                            </div>
+                            <div
+                                style="height:4px;background:var(--color-gray-100);border-radius:var(--radius-full);overflow:hidden">
+                                <div id="upload-bar"
+                                    style="height:100%;width:0;background:var(--brand-primary);transition:width .3s ease">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Already uploaded files -->
+                        <div style="margin-top:var(--space-6)">
+                            <p class="label" style="margin-bottom:var(--space-3)">Your Uploaded Files</p>
+                            <div id="uploaded-files" style="margin-bottom:var(--space-6)"></div>
+
+                            <div id="submit-action"
+                                style="display:none; border-top:1px solid var(--color-gray-100); padding-top:var(--space-6)">
+                                <button id="submit-btn" class="btn btn-primary" style="width:100%"
+                                    onclick="submitSolution()">
+                                    ✓ Mark as Done & Submit
+                                </button>
+                                <p
+                                    style="font-size:12px; color:var(--color-gray-500); margin-top:var(--space-3); text-align:center">
+                                    Only click this when you have uploaded all final files.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/modal.js"></script>
+    <script>
+        if (!requireRole("expert")) throw new Error("Abort");
+        document.querySelector('[data-page="my-tasks"]')?.classList.add("active");
+
+        const qid = new URLSearchParams(window.location.search).get("id");
+        if (!qid) window.location.href = "/expert/my-tasks.html";
+
+        let currentUserId = null;
+        let threadBId = null;
+        let currentTaskStatus = null;
+
+        // ── Chat ─────────────────────────────────────────────────
+        function handleSend() {
+            const input = document.getElementById("chat-input");
+            const val = input.value.trim();
+            if (!threadBId || !val) return;
+            sendMessage(val, threadBId);
+            input.value = "";
+        }
+
+        document.getElementById("chat-input")?.addEventListener("keydown", e => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // ── File Upload ───────────────────────────────────────────
+        const uploadZone = document.getElementById("upload-zone");
+        const fileInput = document.getElementById("file-input");
+
+        uploadZone.addEventListener("dragover", e => { e.preventDefault(); uploadZone.classList.add("drag-over"); });
+        uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("drag-over"));
+        uploadZone.addEventListener("drop", e => {
+            e.preventDefault();
+            uploadZone.classList.remove("drag-over");
+            if (e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files[0]) uploadFile(fileInput.files[0]);
+        });
+
+        async function uploadFile(file) {
+            const wrap = document.getElementById("upload-progress-wrap");
+            const bar = document.getElementById("upload-bar");
+            const pct = document.getElementById("upload-pct");
+            document.getElementById("upload-filename").textContent = escapeHtml(file.name);
+
+            wrap.style.display = "block";
+            bar.style.width = "10%";
+            pct.textContent = "10%";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await apiFetch(`/files/upload/${qid}`, { method: "POST", body: formData });
+
+                bar.style.width = "100%";
+                pct.textContent = "100%";
+
+                if (res.ok) {
+                    toast("File uploaded.");
+                    setTimeout(() => { wrap.style.display = "none"; }, 1500);
+                    loadUploadedFiles();
+                } else {
+                    const d = await res.json();
+                    toast(d.error || "Upload failed. Try again.", "error");
+                    wrap.style.display = "none";
+                }
+            } catch (e) {
+                toast("Upload failed due to network error.", "error");
+                wrap.style.display = "none";
+            }
+        }
+
+        // ── Page Init ─────────────────────────────────────────────
+        async function loadTaskDetail() {
+            try {
+                const meRes = await apiFetch("/auth/me");
+                const me = await meRes.json();
+                currentUserId = me.id;
+
+                const taskRes = await apiFetch(`/expert/tasks/${qid}`);
+                if (!taskRes.ok) {
+                    toast("Task not found.", "error");
+                    setTimeout(() => window.location.href = "/expert/my-tasks.html", 2000);
+                    return;
+                }
+                const task = await taskRes.json();
+                currentTaskStatus = task.status;
+
+                document.getElementById("task-title").textContent = task.title;
+                document.getElementById("task-domain").textContent = task.domain;
+                document.getElementById("task-payout").textContent = `₹${task.expert_payout || 0}`;
+                document.getElementById("task-status").innerHTML = `<span class="badge badge-${statusClass(task.status)}">${formatStatus(task.status)}</span>`;
+                document.getElementById("task-deadline").textContent = task.deadline ? `Due ${formatDate(task.deadline)}` : "No deadline";
+
+                // Show/hide submit button based on status
+                const btnAction = document.getElementById("submit-action");
+                const btn = document.getElementById("submit-btn");
+
+                if (["in_progress", "advance_paid"].includes(task.status)) {
+                    btnAction.style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = "✓ Mark as Done & Submit";
+                } else if (task.status === "reviewing") {
+                    btnAction.style.display = "block";
+                    btn.disabled = false;
+                    btn.textContent = "↻ Re-submit & Notify Admin";
+                } else {
+                    btnAction.style.display = "none";
+                }
+
+                // Thread B
+                const threadRes = await apiFetch(`/expert/tasks/${qid}/thread`);
+                if (threadRes.ok) {
+                    const t = await threadRes.json();
+                    threadBId = t.thread_id;
+                    initExpertChat(threadBId, currentUserId, "chat-messages");
+                } else {
+                    document.getElementById("chat-messages").innerHTML = `
+          <div class="chat-empty" style="text-align:center;padding:var(--space-6);color:var(--color-gray-500);">
+            <p>Chat will open once the task is active.</p>
+          </div>`;
+                    document.getElementById("chat-input-row").style.display = "none";
+                }
+
+                loadUploadedFiles();
+            } catch (e) {
+                toast("Failed to load task details.", "error");
+            }
+        }
+
+        async function loadUploadedFiles() {
+            try {
+                const res = await apiFetch(`/files/question/${qid}`);
+                const files = await res.json();
+
+                // Split into reference (student) and solution (expert) files
+                const referenceFiles = files.filter(f => f.category === "attachment" || f.uploader_type === "student");
+                const solutionFiles = files.filter(f => f.category === "solution" || f.uploader_type === "expert");
+
+                // --- Render reference files in the task header strip ---
+                const refSection = document.getElementById("reference-files-section");
+                const refList = document.getElementById("reference-files-list");
+                if (referenceFiles.length > 0) {
+                    refSection.style.display = "block";
+                    refList.innerHTML = referenceFiles.map(f => `
+                        <a href="#" onclick="viewFile('${f._id}'); return false;"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+                                  background:var(--color-gray-50);border:1px solid var(--color-gray-200);
+                                  border-radius:var(--radius-full);font-size:12px;color:var(--color-gray-700);
+                                  text-decoration:none;transition:all 0.2s;"
+                           onmouseover="this.style.background='var(--brand-primary-ultra)';this.style.borderColor='var(--brand-primary-light)'"
+                           onmouseout="this.style.background='var(--color-gray-50)';this.style.borderColor='var(--color-gray-200)'">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                <polyline points="13 2 13 9 20 9"/>
+                            </svg>
+                            ${escapeHtml(f.original_filename)}
+                        </a>
+                    `).join("");
+                } else {
+                    refSection.style.display = "none";
+                }
+
+                // --- Render expert's own solution files in the upload panel ---
+                const el = document.getElementById("uploaded-files");
+                if (!solutionFiles.length) {
+                    el.innerHTML = `<p style="font-size:13px;color:var(--color-gray-500)">No solution files uploaded yet.</p>`;
+                    return;
+                }
+                el.innerHTML = solutionFiles.map(f => {
+                    const canDelete = ["in_progress", "advance_paid", "reviewing"].includes(currentTaskStatus);
+                    const actionHtml = canDelete
+                        ? `<button class="btn btn-ghost btn-sm" style="color:var(--color-danger);padding:4px;" onclick="deleteFile('${f._id}')" title="Delete">
+                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                           </button>`
+                        : "";
+
+                    const uploadTime = f.uploaded_at ? new Date(f.uploaded_at).toLocaleString('en-IN', {
+                        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+                    }) : "N/A";
+
+                    return `
+                        <div class="uploaded-file-row" style="background:var(--color-white);border:1px solid var(--color-gray-200);border-radius:var(--radius-md);padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                          <div style="display:flex;align-items:center;gap:12px;">
+                            <div style="background:var(--color-gray-50);width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--color-gray-400);">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+                            </div>
+                            <div>
+                                <p style="font-size:14px;font-weight:600;color:var(--color-gray-900);margin-bottom:2px;">${escapeHtml(f.original_filename)}</p>
+                                <p style="font-size:11px;color:var(--color-gray-500)">${f.file_type.toUpperCase()} · ${uploadTime}</p>
+                            </div>
+                          </div>
+                          ${actionHtml}
+                        </div>
+                    `;
+                }).join("");
+            } catch (e) {
+                toast("Failed to load uploaded files", "error");
+            }
+        }
+
+        async function viewFile(fileId) {
+            const res = await apiFetch(`/files/${fileId}/url`);
+            const data = await res.json();
+            if (res.ok) {
+                window.open(data.url, "_blank");
+            } else {
+                toast("Error getting file URL", "error");
+            }
+        }
+
+        async function deleteFile(fileId) {
+            const confirmed = await showConfirmModal({
+                title: "Delete File",
+                message: "Are you sure you want to remove this file?",
+                confirmText: "Delete",
+                cancelText: "Cancel"
+            });
+            if (!confirmed) return;
+
+            try {
+                const res = await apiFetch(`/files/${fileId}`, { method: "DELETE" });
+                if (res.ok) {
+                    toast("File removed.");
+                    loadUploadedFiles();
+                } else {
+                    const d = await res.json();
+                    toast(d.error || "Delete failed", "error");
+                }
+            } catch (e) {
+                toast("Network error delete failed", "error");
+            }
+        }
+
+        async function submitSolution() {
+            const confirmed = await showConfirmModal({
+                title: "Submit Solution",
+                message: "Are you sure you want to mark this task as done and submit for review?",
+                confirmText: "Submit",
+                cancelText: "Cancel"
+            });
+            if (!confirmed) return;
+
+            try {
+                const res = await apiFetch(`/expert/tasks/${qid}/submit`, { method: "POST" });
+                if (res.ok) {
+                    toast("Task submitted for review!");
+
+                    if (threadBId) {
+                        sendMessage("I have uploaded the final solutions and marked the task as done. Please review.", threadBId);
+                    }
+
+                    loadTaskDetail();
+                } else {
+                    const d = await res.json();
+                    toast(d.error || "Submission failed", "error");
+                }
+            } catch (e) {
+                toast("Network error submission failed", "error");
+            }
+        }
+
+        loadTaskDetail();
+    </script>
+</body>
+
+</html>

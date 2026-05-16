@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/super-admin.css" />
+    <style>
+      .dashboard-layout {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        min-height: 100vh;
+      }
+
+      .dashboard-main {
+        overflow-y: auto;
+        background: var(--color-gray-50);
+        padding: var(--space-10);
+      }
+
+      .dashboard-main-inner {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-8);
+        max-width: 560px;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: var(--space-2);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Overview</p>
+          <a
+            href="/super-admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Finance
+          </p>
+          <a
+            href="/super-admin/financials.html"
+            class="sidebar-item"
+            data-page="financials"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+            </svg>
+            Financials
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Operations
+          </p>
+          <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 8h6M5 5h6M5 11h4" />
+            </svg>
+            KYC Queue
+          </a>
+          <a
+            href="/super-admin/users.html"
+            class="sidebar-item"
+            data-page="users"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="6" cy="5" r="3" />
+              <path d="M1 13c0-2.761 2.239-5 5-5" />
+              <path d="M11 8v6M14 11H8" />
+            </svg>
+            Users
+          </a>
+          <a
+            href="/super-admin/chat-spy.html"
+            class="sidebar-item"
+            data-page="chat-spy"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            Chat Spy
+          </a>
+          <a
+            href="/super-admin/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+          <div class="page-header">
+            <h1 class="page-title">My Profile</h1>
+            <div class="header-actions">
+              <button
+                id="edit-btn"
+                class="btn btn-secondary btn-sm"
+                onclick="toggleEdit()"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M11 2l3 3L5 14H2v-3L11 2z" />
+                </svg>
+                Edit Profile
+              </button>
+              <button
+                id="save-btn"
+                class="btn btn-primary btn-sm"
+                onclick="saveProfile()"
+                style="display: none"
+              >
+                Save Changes
+              </button>
+              <button
+                id="cancel-btn"
+                class="btn btn-ghost btn-sm"
+                onclick="toggleEdit()"
+                style="display: none"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 560px">
+            <div class="profile-field">
+              <span class="label">Display Name</span>
+              <span id="p-name" class="profile-value">—</span>
+              <input type="text" id="i-name" class="profile-input" />
+            </div>
+            <div class="profile-field">
+              <span class="label">Email Address</span>
+              <span id="p-email" class="profile-value">—</span>
+              <input type="text" id="i-email" class="profile-input" disabled />
+            </div>
+            <div class="profile-field">
+              <span class="label">Role</span>
+              <span class="badge badge-completed">Super Admin</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+      if (!requireRole("super_admin")) throw new Error("Abort");
+      document.querySelector('[data-page="profile"]')?.classList.add("active");
+
+      let isEditing = false;
+      let profileData = {};
+
+      async function loadProfile() {
+        try {
+          const res = await apiFetch("/auth/profile");
+          const data = await res.json();
+          if (res.ok) {
+            profileData = data;
+            renderProfile();
+          }
+        } catch (e) {
+          toast("Failed to load profile details.", "error");
+        }
+      }
+
+      function renderProfile() {
+        const data = profileData;
+        document.getElementById("p-name").textContent = data.name || "—";
+        document.getElementById("p-email").textContent = data.email || "—";
+
+        // Set inputs
+        document.getElementById("i-name").value = data.name || "";
+        document.getElementById("i-email").value = data.email || "";
+      }
+
+      function toggleEdit() {
+        isEditing = !isEditing;
+        const fields = document.querySelectorAll(".profile-field");
+        fields.forEach((f) => {
+          if (f.querySelector(".profile-input")) {
+            f.classList.toggle("editing", isEditing);
+          }
+        });
+
+        document.getElementById("edit-btn").style.display = isEditing
+          ? "none"
+          : "flex";
+        document.getElementById("save-btn").style.display = isEditing
+          ? "flex"
+          : "none";
+        document.getElementById("cancel-btn").style.display = isEditing
+          ? "flex"
+          : "none";
+      }
+
+      async function saveProfile() {
+        const name = document.getElementById("i-name").value.trim();
+
+        try {
+          const res = await apiFetch("/auth/profile", {
+            method: "PUT",
+            body: JSON.stringify({ name }),
+          });
+
+          if (res.ok) {
+            toast("Profile updated successfully!", "success");
+            profileData.name = name;
+            renderProfile();
+            toggleEdit();
+          } else {
+            toast("Failed to update profile", "error");
+          }
+        } catch (e) {
+          toast("An error occurred while saving.", "error");
+        }
+      }
+
+      loadProfile();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+  </body>
+</html>

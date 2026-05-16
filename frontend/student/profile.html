@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Profile — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-content {
+      flex: 1;
+      background: var(--color-gray-50);
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-8);
+      max-width: 560px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: var(--space-2);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/student/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/student/orders.html" class="sidebar-item" data-page="orders">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          My Orders
+        </a>
+        <a href="/student/feed.html" class="sidebar-item" data-page="feed">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="7" />
+            <path d="M1.5 8h13M8 1c2.5 0 4 3.5 4 7s-1.5 7-4 7-4-3.5-4-7 1.5-7 4-7z" />
+          </svg>
+          Global Feed
+        </a>
+        <a href="/student/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">My Profile</h1>
+        <div class="header-actions">
+          <button id="edit-btn" class="btn btn-secondary btn-sm" onclick="toggleEdit()">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M11 2l3 3L5 14H2v-3L11 2z" />
+            </svg>
+            Edit Profile
+          </button>
+          <button id="save-btn" class="btn btn-primary btn-sm" onclick="saveProfile()" style="display:none">
+            Save Changes
+          </button>
+          <button id="cancel-btn" class="btn btn-ghost btn-sm" onclick="toggleEdit()" style="display:none">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <div class="card" style="max-width: 560px;">
+        <div class="profile-field">
+          <span class="label">Full Name</span>
+          <span id="p-name" class="profile-value">—</span>
+          <input type="text" id="i-name" class="profile-input">
+        </div>
+
+        <div class="profile-field">
+          <span class="label">Email Address</span>
+          <span id="p-email" class="profile-value">—</span>
+          <input type="text" id="i-email" class="profile-input" disabled>
+        </div>
+
+        <div class="profile-field">
+          <span class="label">Degree / Field of Study</span>
+          <span id="p-degree" class="profile-value">—</span>
+          <input type="text" id="i-degree" class="profile-input">
+        </div>
+
+        <div class="profile-field">
+          <span class="label">Country</span>
+          <span id="p-country" class="profile-value" style="display:flex; align-items:center; gap:8px;">
+            <span id="p-country-text">—</span>
+            <span style="font-size:11px; font-weight:600; color:var(--color-gray-500); background:var(--color-gray-100); padding:2px 7px; border-radius:4px; letter-spacing:0.03em;">Locked</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    if (!requireRole("student")) throw new Error("Abort");
+    document.querySelector('[data-page="profile"]')?.classList.add("active");
+
+    let isEditing = false;
+    let profileData = {};
+
+    async function loadProfile() {
+      try {
+        const res = await apiFetch("/auth/profile");
+        const data = await res.json();
+        if (res.ok) {
+          profileData = data;
+          renderProfile();
+        }
+      } catch (e) {
+        toast("Failed to load profile details.", "error");
+      }
+    }
+
+    function renderProfile() {
+      const data = profileData;
+      document.getElementById("p-name").textContent    = data.name    || "—";
+      document.getElementById("p-email").textContent   = data.email   || "—";
+      document.getElementById("p-degree").textContent  = data.degree  || "—";
+      document.getElementById("p-country-text").textContent = data.country || "—";
+
+      // Set editable inputs
+      document.getElementById("i-name").value   = data.name   || "";
+      document.getElementById("i-email").value  = data.email  || "";
+      document.getElementById("i-degree").value = data.degree || "";
+      // Country input intentionally omitted — it is permanently locked
+    }
+
+    function toggleEdit() {
+      isEditing = !isEditing;
+      // Only toggle editing on fields that have an editable input
+      // Country field is permanently excluded
+      const editableFields = ["i-name", "i-degree"];
+      document.querySelectorAll('.profile-field').forEach(f => {
+        const inp = f.querySelector('.profile-input');
+        if (inp && editableFields.includes(inp.id)) {
+          f.classList.toggle('editing', isEditing);
+        }
+      });
+
+      document.getElementById("edit-btn").style.display   = isEditing ? "none"  : "flex";
+      document.getElementById("save-btn").style.display   = isEditing ? "flex"  : "none";
+      document.getElementById("cancel-btn").style.display = isEditing ? "flex"  : "none";
+    }
+
+    async function saveProfile() {
+      const name = document.getElementById("i-name").value.trim();
+      const degree = document.getElementById("i-degree").value.trim();
+
+      try {
+        const res = await apiFetch("/auth/profile", {
+          method: "PUT",
+          body: JSON.stringify({ name, degree })
+        });
+
+        if (res.ok) {
+          toast("Profile updated successfully!", "success");
+          profileData.name = name;
+          profileData.degree = degree;
+          renderProfile();
+          toggleEdit();
+        } else {
+          toast("Failed to update profile", "error");
+        }
+      } catch (e) {
+        toast("An error occurred while saving.", "error");
+      }
+    }
+
+    loadProfile();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

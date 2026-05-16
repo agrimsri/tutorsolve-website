@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+
+<body class="auth-body">
+  <div class="auth-layout">
+    <div class="auth-brand">
+      <img src="/assets/logo.svg" alt="TutorSolve" width="48">
+      <h2>TutorSolve</h2>
+      <p>Get verified expert help for your assignments.</p>
+    </div>
+    <div class="auth-form-panel">
+      <h1 class="auth-title">Create Account</h1>
+      <form id="signup-form">
+        <div class="form-group">
+          <label class="label">Full Name</label>
+          <input id="name" type="text" class="input" placeholder="Your name" required>
+        </div>
+        <div class="form-group">
+          <label class="label">Email</label>
+          <input id="email" type="email" class="input" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="label">Country</label>
+          <select id="country" class="input" required>
+            <option value="">Loading countries...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="label">Degree <span style="color:var(--color-gray-500)">(optional)</span></label>
+          <input id="degree" type="text" class="input" placeholder="e.g. BSc Computer Science">
+        </div>
+        <div class="form-group">
+          <label class="label">Password</label>
+          <div class="password-wrapper">
+            <input id="password" type="password" class="input" placeholder="Min. 8 characters" required minlength="8">
+            <button class="password-toggle" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="label">Confirm Password</label>
+          <div class="password-wrapper">
+            <input id="confirm" type="password" class="input" placeholder="Repeat password" required minlength="8">
+            <button class="password-toggle" type="button">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <button type="submit" id="signup-btn" class="btn btn-primary btn-lg" style="width:100%">Create Account</button>
+      </form>
+      <p class="auth-footer">
+        Already have an account? <a href="/auth/login.html">Log In</a> ·
+        <a href="/auth/expert-apply.html">Become an Expert</a>
+      </p>
+    </div>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    // NOTE: We do NOT redirect on page-load geo-check.
+    // Geo enforcement happens server-side on form submit.
+    // This avoids incorrectly blocking users behind proxies or
+    // developers testing locally.
+
+    async function loadCountries() {
+      const select = document.getElementById("country");
+      const BLOCKED = new Set(["IN", "PK"]);
+
+      try {
+        const res = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2");
+        const data = await res.json();
+        data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+        select.innerHTML = '<option value="">Select your country</option>';
+        data.forEach(country => {
+          if (BLOCKED.has(country.cca2)) return; // Skip blocked regions
+          const opt = document.createElement("option");
+          opt.value = country.cca2;
+          opt.textContent = country.name.common;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        select.innerHTML = `
+          <option value="">Select your country</option>
+          <option value="US">United States</option>
+          <option value="GB">United Kingdom</option>
+          <option value="CA">Canada</option>
+          <option value="AU">Australia</option>
+          <option value="AE">UAE</option>
+          <option value="SG">Singapore</option>
+          <option value="NG">Nigeria</option>
+          <option value="KE">Kenya</option>
+          <option value="OTHER">Other</option>
+        `;
+      }
+    }
+    loadCountries();
+
+    document.getElementById("signup-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // ── Step 1: Field validation (instant, no network) ──────
+      const country = document.getElementById("country").value;
+      if (!country) {
+        toast("Please select your country.", "warning");
+        return;
+      }
+
+      const password = document.getElementById("password").value;
+      const confirm  = document.getElementById("confirm").value;
+      if (password !== confirm) {
+        toast("Passwords do not match.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("signup-btn");
+      btn.disabled = true;
+      btn.textContent = "Checking region…";
+
+      // ── Step 2: Frontend geo-check (blocks before any record is created) ──
+      try {
+        const blocked = await geoCheck();
+        if (blocked) {
+          toast("Student signups aren't available in your region. You can apply as an expert.", "error");
+          btn.disabled = false;
+          btn.textContent = "Create Account";
+          return;
+        }
+      } catch (_) {
+        // geo-check network error → fail open, let the backend decide
+      }
+
+      // ── Step 3: Submit to backend (backend re-validates IP + country) ──
+      btn.textContent = "Creating account…";
+      try {
+        await signup({
+          name:     document.getElementById("name").value.trim(),
+          email:    document.getElementById("email").value.trim(),
+          country,
+          degree:   document.getElementById("degree").value.trim(),
+          password,
+        });
+      } catch (err) {
+        toast(err.message || "Signup failed. Please try again.", "error");
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+
+</html>

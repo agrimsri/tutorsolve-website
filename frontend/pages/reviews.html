@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-inner">
+            <a href="/index.html" class="logo">
+                <img src="/assets/logo.svg" alt="TutorSolve">
+                <span>TutorSolve</span>
+            </a>
+            <nav></nav>
+            <div class="nav-actions" id="nav-actions">
+                <!-- Populated by JS -->
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding-top: 100px; text-align: center;">
+        <h1>Reviews</h1>
+        <p>Coming soon.</p>
+    </main>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script>
+        // Populate navbar
+        const actions = document.getElementById("nav-actions");
+        if (typeof isLoggedIn === "function" && isLoggedIn()) {
+            const role = getRole();
+            const dashMap = {
+                student: "/student/dashboard.html",
+                expert: "/expert/dashboard.html",
+                employee: "/admin/dashboard.html",
+                super_admin: "/super-admin/dashboard.html"
+            };
+            actions.innerHTML = `
+        <a href="${dashMap[role] || '/index.html'}" class="btn btn-secondary btn-sm">Dashboard</a>
+        <button onclick="logout()" class="btn btn-ghost btn-sm">Logout</button>`;
+        } else {
+            actions.innerHTML = `
+        <a href="/auth/expert-apply.html" class="btn btn-ghost btn-sm">Become an Expert</a>
+        <a href="/auth/login.html"        class="btn btn-secondary btn-sm">Login</a>
+        <a href="/auth/signup.html"       class="btn btn-primary btn-sm">Sign Up</a>`;
+        }
+    </script>
+</body>
+</html>

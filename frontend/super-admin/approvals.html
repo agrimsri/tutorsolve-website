@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Approvals — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/super-admin.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+                <span class="navbar-logo-text">TutorSolve</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <p class="sidebar-section-label">Overview</p>
+                <a href="/super-admin/dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="1" y="1" width="6" height="6" rx="1" />
+                        <rect x="9" y="1" width="6" height="6" rx="1" />
+                        <rect x="1" y="9" width="6" height="6" rx="1" />
+                        <rect x="9" y="9" width="6" height="6" rx="1" />
+                    </svg>
+                    Dashboard
+                </a>
+
+                <p class="sidebar-section-label" style="margin-top:var(--space-4)">Finance</p>
+                <a href="/super-admin/financials.html" class="sidebar-item" data-page="financials">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+                    </svg>
+                    Financials
+                </a>
+                <a href="/super-admin/approvals.html" class="sidebar-item" data-page="approvals">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M13 4L6 11l-3-3" />
+                    </svg>
+                    Price Approvals
+                </a>
+
+                <p class="sidebar-section-label" style="margin-top:var(--space-4)">Operations</p>
+                <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="2" y="2" width="12" height="12" rx="2" />
+                        <path d="M5 8h6M5 5h6M5 11h4" />
+                    </svg>
+                    KYC Queue
+                </a>
+                <a href="/super-admin/users.html" class="sidebar-item" data-page="users">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="6" cy="5" r="3" />
+                        <path d="M1 13c0-2.761 2.239-5 5-5" />
+                        <path d="M11 8v6M14 11H8" />
+                    </svg>
+                    Users
+                </a>
+                <a href="/super-admin/chat-spy.html" class="sidebar-item" data-page="chat-spy">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+                        <circle cx="8" cy="8" r="2" />
+                    </svg>
+                    Chat Spy
+                </a>
+                <a href="/super-admin/profile.html" class="sidebar-item" data-page="profile">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="8" cy="5" r="3" />
+                        <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+                    </svg>
+                    Profile
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="sidebar-item"
+                    style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <div class="dashboard-main-inner">
+
+                <div class="page-header" style="justify-content: space-between;">
+                    <div>
+                        <h1 class="page-title">Price Approvals</h1>
+                        <p class="page-subtitle">
+                            Review and approve price quotes before students see them.
+                            This is the Maker-Checker step.
+                        </p>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div id="notif-bell">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <div id="notif-badge">0</div>
+                            <div id="notif-dropdown">
+                                <div id="notif-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="approvals-list"></div>
+
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script>
+        if (!requireRole("super_admin")) throw new Error("Abort");
+        document.querySelector('[data-page="approvals"]')?.classList.add("active");
+
+        async function loadApprovals() {
+            const res = await apiFetch("/superadmin/orders/pending-approvals");
+            const pending = await res.json();
+
+            const list = document.getElementById("approvals-list");
+
+            if (!pending.length) {
+                list.innerHTML = `<div class="empty-state"><h3>No pending approvals</h3><p>All price quotes have been reviewed.</p></div>`;
+                return;
+            }
+
+            list.innerHTML = pending.map(o => `
+      <div class="card approval-card" id="approval-${o._id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h3 style="font-size:16px;font-weight:600;color:var(--color-gray-900)">
+              ${escapeHtml(o.title)}
+            </h3>
+            <p style="font-size:13px;color:var(--color-gray-500);margin-top:var(--space-1)">
+              ${o.domain} · Posted ${timeAgo(o.created_at)}
+            </p>
+          </div>
+          <button class="btn btn-primary btn-sm"
+            onclick="approvePrice('${o._id}', this)">
+            ✓ Approve Price
+          </button>
+        </div>
+
+        <div class="approval-prices">
+          <div class="price-box price-box--student">
+            <p class="price-box-label">Student Price</p>
+            <p class="price-box-value">$${o.student_price?.toFixed(2)}</p>
+            <p class="price-box-sub">Visible to student after approval</p>
+          </div>
+          <div class="price-box" style="background:var(--color-gray-50);border:1px solid var(--color-gray-200);border-radius:var(--radius-md);padding:var(--space-4)">
+            <p class="price-box-label">Expert Payout</p>
+            <p class="price-box-value" style="color:var(--color-gray-700)">$${o.expert_payout?.toFixed(2) ?? '—'}</p>
+            <p class="price-box-sub">Paid to expert on completion</p>
+          </div>
+          <div class="price-box" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-md);padding:var(--space-4)">
+            <p class="price-box-label">Margin</p>
+            <p class="price-box-value" style="color:#16a34a">$${(o.student_price && o.expert_payout ? (o.student_price - o.expert_payout).toFixed(2) : '—')}</p>
+            <p class="price-box-sub">Platform revenue</p>
+          </div>
+        </div>
+
+        <p style="font-size:12px;color:var(--color-gray-500);margin-top:var(--space-3)">
+          Order ID: <code>${o._id.slice(-8)}</code>
+        </p>
+      </div>
+    `).join("");
+        }
+
+        async function approvePrice(questionId, btn) {
+            btn.disabled = true;
+            btn.textContent = "Approving...";
+
+            const res = await apiFetch(`/superadmin/orders/${questionId}/approve-price`, {
+                method: "POST"
+            });
+
+            if (res.ok) {
+                document.getElementById(`approval-${questionId}`)?.remove();
+                toast("Price approved. Student can now see the quote.");
+                if (!document.querySelector(".approval-card")) {
+                    document.getElementById("approvals-list").innerHTML =
+                        `<div class="empty-state"><h3>All caught up!</h3><p>No pending price approvals.</p></div>`;
+                }
+            } else {
+                btn.disabled = false;
+                btn.textContent = "✓ Approve Price";
+                toast("Approval failed. Try again.", "error");
+            }
+        }
+
+
+        loadApprovals();
+    </script>
+</body>
+
+</html>

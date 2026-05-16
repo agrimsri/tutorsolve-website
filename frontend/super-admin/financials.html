@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financials — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/super-admin.css" />
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Overview</p>
+          <a
+            href="/super-admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Finance
+          </p>
+          <a
+            href="/super-admin/financials.html"
+            class="sidebar-item"
+            data-page="financials"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+            </svg>
+            Financials
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Operations
+          </p>
+          <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 8h6M5 5h6M5 11h4" />
+            </svg>
+            KYC Queue
+          </a>
+          <a
+            href="/super-admin/users.html"
+            class="sidebar-item"
+            data-page="users"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="6" cy="5" r="3" />
+              <path d="M1 13c0-2.761 2.239-5 5-5" />
+              <path d="M11 8v6M14 11H8" />
+            </svg>
+            Users
+          </a>
+          <a
+            href="/super-admin/chat-spy.html"
+            class="sidebar-item"
+            data-page="chat-spy"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            Chat Spy
+          </a>
+          <a
+            href="/super-admin/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+          <div class="page-header">
+            <h1 class="page-title">Financials</h1>
+          </div>
+
+          <!-- Tab navigation -->
+          <div class="sa-tabs" id="tabs">
+            <button class="sa-tab active" onclick="switchTab('payouts')">
+              Payout Hub
+            </button>
+            <!-- <button class="sa-tab" onclick="switchTab('revenue')">Revenue</button> -->
+            <button class="sa-tab" onclick="switchTab('refunds')">
+              Refunds
+            </button>
+          </div>
+
+          <!-- Payouts tab -->
+          <div id="tab-payouts">
+            <!-- <p class="tab-description">
+            Experts with funds cleared (task completed &gt; 20 days ago). Mark as paid after manual transfer.
+          </p> -->
+            <div id="payouts-list"></div>
+          </div>
+
+          <!-- Revenue tab -->
+          <div id="tab-revenue" style="display: none">
+            <div class="sa-stats-grid" style="margin-bottom: var(--space-8)">
+              <div class="sa-stat-card sa-stat-card--wide">
+                <p class="stat-label">Total Inflow</p>
+                <p class="stat-value" id="rev-inflow">—</p>
+              </div>
+              <div class="sa-stat-card sa-stat-card--wide">
+                <p class="stat-label">Total Expert Payouts (Accrued)</p>
+                <p class="stat-value" id="rev-accrued">—</p>
+              </div>
+              <div class="sa-stat-card sa-stat-card--wide sa-stat-card--profit">
+                <p class="stat-label">Projected Profit</p>
+                <p class="stat-value" id="rev-profit">—</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Refunds tab -->
+          <div id="tab-refunds" style="display: none">
+            <div id="refunds-list"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+      if (!requireRole("super_admin")) throw new Error("Abort");
+      document
+        .querySelector('[data-page="financials"]')
+        ?.classList.add("active");
+
+      function switchTab(tab) {
+        ["payouts", "revenue", "refunds"].forEach((t) => {
+          document.getElementById(`tab-${t}`).style.display =
+            t === tab ? "block" : "none";
+        });
+        document.querySelectorAll(".sa-tab").forEach((el, i) => {
+          el.classList.toggle(
+            "active",
+            ["payouts", "revenue", "refunds"][i] === tab,
+          );
+        });
+        if (tab === "payouts") loadPayouts();
+        if (tab === "revenue") loadRevenue();
+        if (tab === "refunds") loadRefunds();
+      }
+
+      // ── Payouts ──────────────────────────────────────────────
+      async function loadPayouts() {
+        const res = await apiFetch("/superadmin/payouts/eligible");
+        const payouts = await res.json();
+        const list = document.getElementById("payouts-list");
+
+        if (!payouts.length) {
+          list.innerHTML = `<div class="empty-state"><h3>No eligible payouts</h3><p>No experts have pending cleared payouts.</p></div>`;
+          return;
+        }
+
+        list.innerHTML = `
+      <div class="sa-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Expert</th>
+              <th>Total Amount Unpaid</th>
+              <th>Tasks</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${payouts
+              .map(
+                (p) => `
+              <tr id="payout-row-${p.expert_id}">
+                <td>
+                  <div style="font-weight:500">${escapeHtml(p.expert_name || "Unknown")}</div>
+                  <code style="font-size:11px;color:var(--color-gray-500)">${p.expert_id.slice(-8)}</code>
+                </td>
+                <td><strong>₹${p.amount.toFixed(2)}</strong></td>
+                <td>${p.task_count} task(s)</td>
+                <td>
+                  <button class="btn btn-primary btn-sm"
+                    onclick="markPaid('${p.expert_id}', this)">
+                    Mark as Paid
+                  </button>
+                </td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>`;
+      }
+
+      async function markPaid(expertId, btn) {
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+        const res = await apiFetch(
+          `/superadmin/payouts/expert/${expertId}/pay`,
+          { method: "POST" },
+        );
+        if (res.ok) {
+          document.getElementById(`payout-row-${expertId}`)?.remove();
+          toast("Expert payout marked as paid.");
+        } else {
+          const d = await res.json();
+          toast(d.error || "Failed to process payout", "error");
+          btn.disabled = false;
+          btn.textContent = "Mark as Paid";
+        }
+      }
+
+      // ── Revenue ───────────────────────────────────────────────
+      async function loadRevenue() {
+        const res = await apiFetch("/superadmin/revenue");
+        const data = await res.json();
+        document.getElementById("rev-inflow").textContent =
+          `₹${data.total_inflow.toFixed(2)}`;
+        document.getElementById("rev-accrued").textContent =
+          `₹${data.total_accrued.toFixed(2)}`;
+        document.getElementById("rev-profit").textContent =
+          `₹${data.projected_profit.toFixed(2)}`;
+      }
+
+      // ── Refunds ───────────────────────────────────────────────
+      async function loadRefunds() {
+        const res = await apiFetch("/superadmin/refunds");
+        const refunds = await res.json();
+        const list = document.getElementById("refunds-list");
+
+        if (!refunds.length) {
+          list.innerHTML = `<div class="empty-state"><h3>No refund requests</h3><p>There are no pending refund requests at the moment.</p></div>`;
+          return;
+        }
+
+        list.innerHTML = `
+      <div class="sa-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Question</th>
+              <th>Refund Requested</th>
+              <th>Reason</th>
+              <th>Initiated By</th>
+              <th>Requested At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${refunds.map((r) => `
+              <tr id="refund-row-${r._id}">
+                <td><strong>${escapeHtml(r.student_name)}</strong></td>
+                <td>
+                  <div style="font-weight:500; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                       title="${escapeHtml(r.question_title)}">
+                    ${escapeHtml(r.question_title)}
+                  </div>
+                </td>
+                <td>
+                  <strong style="color:var(--color-danger)">₹${(r.refund_amount || r.advance_amount || 0).toFixed(2)}</strong>
+                  <div style="font-size:11px;color:var(--color-gray-500)">out of ₹${(r.advance_amount || 0).toFixed(2)} advance</div>
+                </td>
+                <td>
+                  <div style="max-width:220px; font-size:13px; color:var(--color-gray-700); line-height:1.4;"
+                       title="${escapeHtml(r.refund_reason || '')}">
+                    ${r.refund_reason
+                      ? `"${escapeHtml(r.refund_reason.length > 80 ? r.refund_reason.slice(0, 80) + '…' : r.refund_reason)}"`
+                      : '<span style="color:var(--color-gray-400);font-style:italic">No reason provided</span>'}
+                  </div>
+                </td>
+                <td>
+                  <span style="font-size:12px; background:var(--color-gray-100); padding:3px 8px; border-radius:9999px;">
+                    ${escapeHtml(r.initiated_by_name || 'Student')}
+                  </span>
+                </td>
+                <td style="font-size:12px;color:var(--color-gray-500);">
+                  ${r.refund_requested_at
+                    ? new Date(r.refund_requested_at).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})
+                    : '—'}
+                </td>
+                <td>
+                  <div style="display:flex;gap:var(--space-2);">
+                    <button class="btn btn-primary btn-sm"
+                      onclick="handleRefund('${r._id}', 'approve', this)"
+                      title="Approve refund of ₹${(r.refund_amount || r.advance_amount || 0).toFixed(2)} to student">
+                      ✓ Approve
+                    </button>
+                    <button class="btn btn-secondary btn-sm"
+                      onclick="handleRefund('${r._id}', 'deny', this)"
+                      title="Deny refund — order continues">
+                      ✕ Deny
+                    </button>
+                  </div>
+                </td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+      }
+
+      async function handleRefund(paymentId, action, btn) {
+        btn.disabled = true;
+        btn.textContent = "Processing...";
+        const res = await apiFetch(
+          `/superadmin/refunds/${paymentId}/${action}`,
+          { method: "POST" },
+        );
+        if (res.ok) {
+          document.getElementById(`refund-row-${paymentId}`)?.remove();
+          if (action === "approve") {
+            toast("✅ Refund approved — Stripe refund issued and student has been notified.");
+          } else {
+            toast("✕ Refund denied — order continues and student has been notified.");
+          }
+        } else {
+          btn.disabled = false;
+          btn.textContent = action === "approve" ? "✓ Approve" : "✕ Deny";
+          try {
+            const d = await res.json();
+            toast(d.error || "Action failed. Try again.", "error");
+          } catch {
+            toast("Action failed. Try again.", "error");
+          }
+        }
+      }
+
+      // Load payouts tab by default
+      loadPayouts();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+  </body>
+</html>

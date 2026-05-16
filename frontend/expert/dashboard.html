@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — TutorSolve Expert</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/expert.css">
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/expert/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/expert/job-board.html" class="sidebar-item" data-page="job-board">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 4h12M2 8h8M2 12h10" />
+          </svg>
+          Job Board
+        </a>
+        <a href="/expert/my-tasks.html" class="sidebar-item" data-page="my-tasks">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          My Tasks
+        </a>
+        <a href="/expert/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="dashboard-main">
+      <div class="dashboard-main-inner">
+
+        <!-- Page header -->
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Welcome back, <span id="expert-name"></span></h1>
+            <p class="page-subtitle">
+              Domain: <strong id="expert-domain"></strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- KYC Banner -->
+        <div id="kyc-banner"></div>
+
+        <!-- Stats row (hidden until approved) -->
+        <div id="stats-row" class="stats-row" style="display:none">
+          <div class="stat-card">
+            <p class="stat-label">Total Earnings</p>
+            <p class="stat-value" id="stat-earnings">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Quality Score</p>
+            <p class="stat-value" id="stat-quality">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">On-Time Rate</p>
+            <p class="stat-value" id="stat-ontime">—</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Tasks Completed</p>
+            <p class="stat-value" id="stat-completed">—</p>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div id="charts-row" style="display:none; grid-template-columns: 2fr 1fr; gap: 24px; margin-top: 24px;">
+          <div class="card">
+            <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Monthly Earnings</h3>
+            <div class="chart-wrapper">
+              <canvas id="earningsChart"></canvas>
+              <div id="earningsChart-loading" class="chart-loading">Loading...</div>
+            </div>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom: 16px; font-size: 16px; font-weight: 600;">Tasks by Status</h3>
+            <div class="chart-wrapper">
+              <canvas id="tasksChart"></canvas>
+              <div id="tasksChart-loading" class="chart-loading">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Tasks List -->
+        <div id="tasks-list-container" style="display:none; margin-top: 32px;">
+          <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">Active Tasks Preview</h2>
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+              <thead>
+                <tr style="background: var(--color-gray-50); border-bottom: 1px solid var(--color-gray-200);">
+                  <th style="padding: 12px 16px; font-weight: 600; color: var(--color-gray-700);">Task Title</th>
+                  <th style="padding: 12px 16px; font-weight: 600; color: var(--color-gray-700);">Status</th>
+                  <th style="padding: 12px 16px; font-weight: 600; color: var(--color-gray-700);">Payout</th>
+                  <th style="padding: 12px 16px; font-weight: 600; color: var(--color-gray-700);">Deadline</th>
+                  <th style="padding: 12px 16px; font-weight: 600; color: var(--color-gray-700); text-align: right;">
+                    Action</th>
+                </tr>
+              </thead>
+              <tbody id="active-tasks-table">
+                <tr>
+                  <td colspan="5" style="padding: 16px; text-align: center; color: var(--color-gray-500);">Loading...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    if (!requireRole("expert")) throw new Error("Abort");
+
+    // Active sidebar item
+    document.querySelector('[data-page="dashboard"]')?.classList.add("active");
+
+    async function loadDashboard() {
+      try {
+        const res = await apiFetch("/expert/dashboard");
+        if (!res) return;
+        const data = await res.json();
+
+        document.getElementById("kyc-banner").innerHTML = renderKYCBanner(data.kyc_status);
+        document.getElementById("expert-name").textContent = data.name;
+        document.getElementById("expert-domain").textContent = data.domain;
+
+        if (data.kyc_status === "approved") {
+          document.getElementById("stats-row").style.display = "grid";
+          document.getElementById("charts-row").style.display = "grid";
+          document.getElementById("tasks-list-container").style.display = "block";
+
+          document.getElementById("stat-earnings").textContent = `₹${(data.total_earnings || 0).toFixed(2)}`;
+          document.getElementById("stat-quality").textContent = `${(data.quality_score || 0).toFixed(1)} / 5`;
+          document.getElementById("stat-ontime").textContent = `${Math.round((data.on_time_rate || 0) * 100)}%`;
+          document.getElementById("stat-completed").textContent = data.tasks_completed || 0;
+
+          // Fetch charts and tasks
+          const [chartsRes, tasksRes] = await Promise.all([
+            apiFetch("/expert/dashboard/charts"),
+            apiFetch("/expert/tasks")
+          ]);
+
+          const chartsData = await chartsRes.json();
+          const tasksData = await tasksRes.json();
+
+          renderCharts(chartsData);
+          renderTasksList(tasksData);
+        } else {
+          document.getElementById("kyc-banner").style.display = "block";
+        }
+      } catch (e) {
+        toast("Failed to load dashboard data", "error");
+        console.error(e);
+      }
+    }
+
+    function renderCharts(data) {
+      document.getElementById("earningsChart-loading").style.display = "none";
+      document.getElementById("tasksChart-loading").style.display = "none";
+
+      // Earnings Line Chart
+      const earn = data.monthly_earnings || [];
+      const earnLabels = earn.map(e => e.month);
+      const earnData = earn.map(e => e.earned);
+
+      new Chart(document.getElementById('earningsChart'), {
+        type: 'line',
+        data: {
+          labels: earnLabels,
+          datasets: [{
+            label: 'Earnings (₹)',
+            data: earnData,
+            borderColor: CHART_COLORS.brandPrimary,
+            backgroundColor: CHART_COLORS.brandPrimary + '20',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          ...chartDefaults,
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => '₹' + v } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+
+      // Tasks by Status Bar Chart
+      const statusCounts = data.tasks_by_status || {};
+      const statusLabels = ["In Progress", "Under Review", "Completed"];
+      const statusData = [
+        statusCounts.in_progress || 0,
+        statusCounts.reviewing || 0,
+        statusCounts.completed || 0
+      ];
+
+      new Chart(document.getElementById('tasksChart'), {
+        type: 'bar',
+        data: {
+          labels: statusLabels,
+          datasets: [{
+            label: 'Tasks',
+            data: statusData,
+            backgroundColor: [CHART_COLORS.in_progress, CHART_COLORS.reviewing, CHART_COLORS.completed],
+            borderRadius: 4
+          }]
+        },
+        options: {
+          ...chartDefaults,
+          indexAxis: 'y',
+          plugins: {
+            ...chartDefaults.plugins,
+            legend: { display: false }
+          },
+          scales: {
+            x: { beginAtZero: true, grid: { display: false } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderTasksList(tasks) {
+      const tbody = document.getElementById("active-tasks-table");
+      tbody.innerHTML = "";
+
+      const activeTasks = tasks.filter(t => ["in_progress", "reviewing"].includes(t.status));
+      if (activeTasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="padding: 16px; text-align: center; color: var(--color-gray-500);">No active tasks. <a href="/expert/job-board.html">Browse Job Board</a></td></tr>`;
+        return;
+      }
+
+      activeTasks.slice(0, 5).forEach(t => {
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid var(--color-gray-200)";
+
+        // Calculate deadline countdown
+        let deadlineHtml = "—";
+        if (t.deadline) {
+          const dl = new Date(t.deadline);
+          const diffHours = (dl - new Date()) / (1000 * 60 * 60);
+          if (diffHours < 0) {
+            deadlineHtml = `<span style="color: var(--color-danger); font-weight: 500;">Overdue</span>`;
+          } else if (diffHours < 24) {
+            deadlineHtml = `<span style="color: var(--color-warning); font-weight: 500;">${Math.ceil(diffHours)}h left</span>`;
+          } else {
+            deadlineHtml = `<span style="color: var(--color-gray-700);">${Math.ceil(diffHours / 24)}d left</span>`;
+          }
+        }
+
+        tr.innerHTML = `
+          <td style="padding: 12px 16px; font-weight: 500;">${escapeHtml(t.title.substring(0, 40))}${t.title.length > 40 ? '...' : ''}</td>
+          <td style="padding: 12px 16px;"><span class="badge badge-${t.status}">${formatStatus(t.status)}</span></td>
+          <td style="padding: 12px 16px;">₹${(t.expert_payout || 0).toFixed(2)}</td>
+          <td style="padding: 12px 16px;">${deadlineHtml}</td>
+          <td style="padding: 12px 16px; text-align: right;">
+            <a href="/expert/task-detail.html?id=${t._id}" class="btn btn-secondary btn-sm">Open Task</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderKYCBanner(status) {
+      if (status === "approved") return "";
+      if (status === "rejected") return `
+      <div class="alert alert-danger kyc-banner">
+        <div>
+          <strong>Application Rejected</strong>
+          <p style="margin-top:4px;font-size:13px">Your KYC application was not approved. Please contact support for more information.</p>
+        </div>
+      </div>`;
+      return `
+      <div class="alert alert-warning kyc-banner">
+        <div>
+          <strong>Application Under Review</strong>
+          <p style="margin-top:4px;font-size:13px">Your documents are being reviewed. You'll be notified within 24–48 hours.</p>
+        </div>
+      </div>`;
+    }
+
+    loadDashboard();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

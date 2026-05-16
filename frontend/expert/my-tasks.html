@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tasks — TutorSolve Expert</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/expert.css">
+</head>
+
+<body>
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/expert/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/expert/job-board.html" class="sidebar-item" data-page="job-board">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M2 4h12M2 8h8M2 12h10" />
+          </svg>
+          Job Board
+        </a>
+        <a href="/expert/my-tasks.html" class="sidebar-item" data-page="my-tasks">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          My Tasks
+        </a>
+        <a href="/expert/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <div class="dashboard-main-inner">
+
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">My Tasks</h1>
+            <p class="page-subtitle">Tasks assigned to you by admin</p>
+          </div>
+        </div>
+
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="switchTab('ongoing')" id="tab-ongoing">Ongoing Tasks</button>
+          <button class="tab-btn" onclick="switchTab('completed')" id="tab-completed">Completed Tasks</button>
+        </div>
+
+        <div id="tasks-container">
+          <div class="empty-state">
+            <p>Loading tasks...</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    if (!requireRole("expert")) throw new Error("Abort");
+    document.querySelector('[data-page="my-tasks"]')?.classList.add("active");
+
+    let currentTab = "ongoing";
+    let allTasks = [];
+
+    function renderTasks() {
+      const container = document.getElementById("tasks-container");
+
+      // Sort tasks by ID (timestamp) descending
+      allTasks.sort((a, b) => b._id.localeCompare(a._id));
+
+      let filteredTasks = [];
+      let emptyMsg = "";
+
+      if (currentTab === "ongoing") {
+        filteredTasks = allTasks.filter(t => ["in_progress", "reviewing"].includes(t.status));
+        emptyMsg = "No ongoing tasks at the moment.";
+      } else {
+        filteredTasks = allTasks.filter(t => ["completed", "cancelled", "refunded"].includes(t.status));
+        emptyMsg = "No completed tasks yet.";
+      }
+
+      if (filteredTasks.length === 0) {
+        container.innerHTML = `
+        <div class="empty-state">
+          <h3>No tasks</h3>
+          <p>${emptyMsg}</p>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = filteredTasks.map(task => renderTaskCard(task)).join("");
+    }
+
+    function renderTaskCard(task) {
+      return `
+      <div class="card task-card" onclick="window.location.href='/expert/task-detail.html?id=${task._id}'">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="flex:1;min-width:0">
+            <h3 class="task-title">${escapeHtml(task.title)}</h3>
+            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-2);flex-wrap:wrap">
+              <span class="badge badge-${statusClass(task.status)}">${formatStatus(task.status)}</span>
+              <span class="badge badge-progress">${escapeHtml(task.domain)}</span>
+              ${task.deadline
+          ? `<span class="badge badge-awaiting">Due ${formatDate(task.deadline)}</span>`
+          : ""}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:var(--space-4)">
+            <p class="payout-amount">₹${task.expert_payout || 0}</p>
+            <p style="font-size:11px;color:var(--color-gray-500);margin-top:2px">Payout</p>
+          </div>
+        </div>
+        <div style="margin-top:var(--space-4);display:flex;justify-content:flex-end">
+          <span class="btn btn-secondary btn-sm">Open Task →</span>
+        </div>
+      </div>
+    `;
+    }
+
+    async function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+
+      renderTasks();
+    }
+
+    async function loadTasks() {
+      try {
+        const res = await apiFetch("/expert/tasks");
+        allTasks = await res.json();
+        renderTasks();
+      } catch (e) {
+        document.getElementById("tasks-container").innerHTML = `
+        <div class="empty-state">
+          <h3>Failed to load tasks</h3>
+          <p>An error occurred. Please try refreshing.</p>
+        </div>`;
+      }
+    }
+
+    loadTasks();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

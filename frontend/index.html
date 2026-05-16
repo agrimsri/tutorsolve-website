@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TutorSolve — Expert Help for Your Assignments</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/landing.css" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="nav-inner">
+        <a href="/index.html" class="logo">
+          <img src="./assets/logo.svg" alt="TutorSolve" />
+          <span>TutorSolve</span>
+        </a>
+        <nav>
+          <ul class="nav-links">
+            <li><a href="#how-it-works" class="nav-link">How it Works</a></li>
+            <li><a href="#services" class="nav-link">Services</a></li>
+            <li><a href="/pages/experts.html" class="nav-link">Experts</a></li>
+            <!-- <li><a href="#activity" class="nav-link">Activity</a></li> -->
+            <li><a href="#testimonials" class="nav-link">Reviews</a></li>
+          </ul>
+        </nav>
+        <div class="nav-actions" id="nav-actions">
+          <!-- Populated by JS -->
+        </div>
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero Section -->
+      <section class="hero">
+        <div class="container hero-content reveal">
+          <h1 class="hero-headline">Expert Help for Your Assignments.</h1>
+          <p class="hero-subtext">
+            Get instant access to verified experts. Solve any question in
+            minutes with step-by-step guidance.
+          </p>
+
+          <div class="hero-search-bar">
+            <input
+              type="text"
+              id="hero-input"
+              placeholder="Type your question here..."
+            />
+            <button id="hero-btn" class="btn btn-primary">Get Help Now</button>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-badge">
+              <span class="stat-dot"></span>
+              <span id="active-experts-count">...</span> Active Experts Online
+            </div>
+            <div class="stat-badge">
+              <span id="solved-count">...</span> Questions Solved
+            </div>
+          </div>
+
+          <div class="ticker-wrap">
+            <p class="ticker-item">Physics Question #992 just solved!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Services Section -->
+      <section id="services" class="services">
+        <div class="container">
+          <div class="section-header reveal">
+            <h2>Our Services</h2>
+            <p style="color: var(--color-gray-500)">
+              Everything you need to excel in your academics.
+            </p>
+          </div>
+          <div class="feature-grid">
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3>24/7 Expert Help</h3>
+              <p>
+                Our experts are available around the clock to help you with any
+                subject.
+              </p>
+            </div>
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3>Fast Responses</h3>
+              <p>
+                Get your questions answered in as little as 15 minutes by
+                verified professionals.
+              </p>
+            </div>
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <h3>Verified Experts</h3>
+              <p>
+                All our tutors undergo strict background checks and competency
+                tests.
+              </p>
+            </div>
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  />
+                </svg>
+              </div>
+              <h3>Multi-subject Support</h3>
+              <p>
+                From STEM to Humanities, we cover over 100+ academic
+                disciplines.
+              </p>
+            </div>
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <h3>Step-by-step Solutions</h3>
+              <p>
+                Don't just get the answer; understand the process with detailed
+                explanations.
+              </p>
+            </div>
+            <div class="feature-card reveal">
+              <div class="feature-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3 1.343 3 3-1.343 3-3 3m0-10V7m0 11v1"
+                  />
+                </svg>
+              </div>
+              <h3>Affordable Pricing</h3>
+              <p>
+                Flexible plans designed for student budgets. Pay only for what
+                you need.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- How it works Section -->
+      <section
+        id="how-it-works"
+        class="about"
+        style="background: var(--color-white)"
+      >
+        <div class="container">
+          <div class="reveal" style="text-align: center; margin-bottom: 70px">
+            <h2 style="font-size: 42px; margin-bottom: 18px">
+              How TutorSolve Works
+            </h2>
+
+            <p
+              style="
+                max-width: 760px;
+                margin: 0 auto;
+                color: var(--color-gray-600);
+                line-height: 1.8;
+              "
+            >
+              A secure, transparent, and structured workflow designed to protect
+              both students and experts while ensuring high-quality academic
+              assistance.
+            </p>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+              gap: 24px;
+              position: relative;
+            "
+          >
+            <div
+              class="how-card how-card-1"
+              style="
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-radius: 24px;
+                padding: 32px 28px;
+                position: relative;
+                transition: 0.3s ease;
+              "
+            >
+              <div
+                class="how-card-badge"
+                style="
+                  width: 52px;
+                  height: 52px;
+                  border-radius: 14px;
+                  background: var(--brand-primary-ultra);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  margin-bottom: 24px;
+                  color: var(--brand-primary);
+                "
+              >
+                01
+              </div>
+
+              <h3 style="margin-bottom: 14px; font-size: 22px">
+                Post Your Question
+              </h3>
+
+              <p style="color: var(--color-gray-600); line-height: 1.7">
+                Submit your assignment, coding task, report, or academic problem
+                with complete details and deadline requirements.
+              </p>
+            </div>
+
+            <div
+              class="how-card how-card-2"
+              style="
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-radius: 24px;
+                padding: 32px 28px;
+                position: relative;
+                transition: 0.3s ease;
+              "
+            >
+              <div
+                class="how-card-badge"
+                style="
+                  width: 52px;
+                  height: 52px;
+                  border-radius: 14px;
+                  background: var(--brand-primary-ultra);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  margin-bottom: 24px;
+                  color: var(--brand-primary);
+                "
+              >
+                02
+              </div>
+
+              <h3 style="margin-bottom: 14px; font-size: 22px">
+                Pay 50% to Start
+              </h3>
+
+              <p style="color: var(--color-gray-600); line-height: 1.7">
+                Once pricing is confirmed, you only pay half upfront so our
+                experts can immediately begin working on your task securely.
+              </p>
+            </div>
+
+            <div
+              class="how-card how-card-3"
+              style="
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-radius: 24px;
+                padding: 32px 28px;
+                position: relative;
+                transition: 0.3s ease;
+              "
+            >
+              <div
+                class="how-card-badge"
+                style="
+                  width: 52px;
+                  height: 52px;
+                  border-radius: 14px;
+                  background: var(--brand-primary-ultra);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  margin-bottom: 24px;
+                  color: var(--brand-primary);
+                "
+              >
+                03
+              </div>
+
+              <h3 style="margin-bottom: 14px; font-size: 22px">
+                Review 25% Preview
+              </h3>
+
+              <p style="color: var(--color-gray-600); line-height: 1.7">
+                Before final payment, you receive a secure preview of the
+                completed solution to verify quality and accuracy.
+              </p>
+            </div>
+
+            <div
+              class="how-card how-card-4"
+              style="
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.06);
+                border-radius: 24px;
+                padding: 32px 28px;
+                position: relative;
+                transition: 0.3s ease;
+              "
+            >
+              <div
+                class="how-card-badge"
+                style="
+                  width: 52px;
+                  height: 52px;
+                  border-radius: 14px;
+                  background: var(--brand-primary-ultra);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-weight: 700;
+                  margin-bottom: 24px;
+                  color: var(--brand-primary);
+                "
+              >
+                04
+              </div>
+
+              <h3 style="margin-bottom: 14px; font-size: 22px">
+                Unlock Final Solution
+              </h3>
+
+              <p style="color: var(--color-gray-600); line-height: 1.7">
+                Complete the remaining payment and instantly access the full
+                solution, files, explanations, and deliverables.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section id="testimonials" class="testimonials">
+        <div class="container">
+          <div class="section-header reveal">
+            <h2>Student Stories</h2>
+            <p style="color: var(--color-gray-500)">
+              Don't just take our word for it.
+            </p>
+          </div>
+          <div
+            id="testimonials-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 24px;
+            "
+          >
+            <div class="testimonial-card reveal">
+              <div style="color: #f59e0b; margin-bottom: 16px">★★★★★</div>
+              <p
+                style="
+                  font-style: italic;
+                  color: var(--color-gray-700);
+                  margin-bottom: 24px;
+                "
+              >
+                "The step-by-step solution for my Engineering Mechanics
+                assignment was a lifesaver. I finally understood the concepts!"
+              </p>
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #ccc;
+                  "
+                ></div>
+                <div>
+                  <h4 style="font-size: 14px">Sarah Jenkins</h4>
+                  <span style="font-size: 12px; color: var(--color-gray-500)"
+                    >Engineering Student</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="testimonial-card reveal">
+              <div style="color: #f59e0b; margin-bottom: 16px">★★★★★</div>
+              <p
+                style="
+                  font-style: italic;
+                  color: var(--color-gray-700);
+                  margin-bottom: 24px;
+                "
+              >
+                "Instant response and very high-quality work. The tutor even
+                stayed back to answer my follow-up questions."
+              </p>
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #ccc;
+                  "
+                ></div>
+                <div>
+                  <h4 style="font-size: 14px">David Chen</h4>
+                  <span style="font-size: 12px; color: var(--color-gray-500)"
+                    >Computer Science Major</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="testimonial-card reveal">
+              <div style="color: #f59e0b; margin-bottom: 16px">★★★★★</div>
+              <p
+                style="
+                  font-style: italic;
+                  color: var(--color-gray-700);
+                  margin-bottom: 24px;
+                "
+              >
+                "Affordable and reliable. I've been using TutorSolve for all my
+                Chemistry labs this semester."
+              </p>
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #ccc;
+                  "
+                ></div>
+                <div>
+                  <h4 style="font-size: 14px">Emma Rodriguez</h4>
+                  <span style="font-size: 12px; color: var(--color-gray-500)"
+                    >Pre-med Student</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact Section -->
+      <!-- <section id="contact" class="contact">
+        <div class="container">
+          <div class="contact-grid reveal">
+            <div>
+              <h2>Questions?</h2>
+              <p style="color: var(--color-gray-600); margin-top: 16px">
+                Our support team is always here to help. Reach out to us
+                anytime.
+              </p>
+              <div style="margin-top: 40px">
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    margin-bottom: 24px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 40px;
+                      height: 40px;
+                      background: var(--brand-primary-ultra);
+                      color: var(--brand-primary);
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <span>support@tutorsolve.com</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px">
+                  <div
+                    style="
+                      width: 40px;
+                      height: 40px;
+                      background: var(--brand-primary-ultra);
+                      color: var(--brand-primary);
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span>123 Academic Way, Education District</span>
+                </div>
+              </div>
+            </div>
+            <form>
+              <div class="form-group">
+                <label class="label">Name</label>
+                <input type="text" class="input" placeholder="Your name" />
+              </div>
+              <div class="form-group">
+                <label class="label">Email</label>
+                <input
+                  type="email"
+                  class="input"
+                  placeholder="your@email.com"
+                />
+              </div>
+              <div class="form-group">
+                <label class="label">Your Question</label>
+                <textarea
+                  class="input"
+                  rows="4"
+                  placeholder="How can we help?"
+                ></textarea>
+              </div>
+              <button type="button" class="btn btn-primary" style="width: 100%">
+                Send Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </section> -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a
+              href="/index.html"
+              class="logo"
+              style="color: white; margin-bottom: 24px"
+            >
+              <img src="/assets/logo.svg" alt="TutorSolve" />
+              <span>TutorSolve</span>
+            </a>
+            <p style="color: var(--color-gray-500); max-width: 300px">
+              Empowering students with instant access to academic expertise.
+            </p>
+          </div>
+          <div>
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#how-it-works" class="nav-link">How it Works</a></li>
+              <li><a href="#services" class="nav-link">Services</a></li>
+              <li>
+                <a href="/pages/experts.html" class="nav-link">Experts</a>
+              </li>
+              <!-- <li><a href="#activity" class="nav-link">Activity</a></li> -->
+              <li><a href="#testimonials" class="nav-link">Reviews</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Resources</h4>
+            <ul>
+              <li><a href="/auth/login.html">Login</a></li>
+              <li><a href="/auth/signup.html">Sign up</a></li>
+              <li><a href="/auth/expert-apply.html">Become an Expert</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <ul>
+              <li><a href="/privacy.html">Privacy Policy</a></li>
+              <li><a href="/terms.html">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          style="
+            padding-top: 40px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--color-gray-500);
+            font-size: 14px;
+          "
+        >
+          <p>&copy; 2024 TutorSolve. All rights reserved.</p>
+          <div style="display: flex; gap: 24px">
+            <a href="#"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"
+                /></svg
+            ></a>
+            <a href="#"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg
+            ></a>
+            <a href="#"
+              ><svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"
+                /></svg
+            ></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/landing.js"></script>
+    <script>
+      // Specific integration for auth state
+      const actions = document.getElementById("nav-actions");
+      if (typeof isLoggedIn === "function" && isLoggedIn()) {
+        actions.innerHTML = `
+                <a href="/${getRole()}/dashboard.html" class="btn btn-secondary btn-sm">Dashboard</a>
+                <button onclick="logout()" class="btn btn-ghost btn-sm">Logout</button>`;
+      } else {
+        actions.innerHTML = `
+                <a href="/auth/login.html" class="btn btn-ghost btn-sm">Login</a>
+                <a href="/auth/signup.html" class="btn btn-secondary btn-sm">Sign Up</a>
+                <a href="/auth/expert-apply.html" class="btn btn-primary btn-sm">Become an Expert</a>`;
+      }
+
+      // Hero form interaction
+      const heroBtn = document.getElementById("hero-btn");
+      if (heroBtn) {
+        heroBtn.addEventListener("click", async () => {
+          const q = document.getElementById("hero-input").value.trim();
+          if (!q) return;
+          sessionStorage.setItem("pending_question", q);
+
+          if (
+            typeof isLoggedIn === "function" &&
+            isLoggedIn() &&
+            getRole() === "student"
+          ) {
+            if (typeof apiFetch === "function") {
+              await apiFetch("/student/orders", {
+                method: "POST",
+                body: JSON.stringify({ title: q, domain: "Other" }),
+              });
+              window.location.href = "/student/orders.html";
+            } else {
+              window.location.href = "/student/dashboard.html";
+            }
+          } else {
+            window.location.href = "/auth/login.html";
+          }
+        });
+      }
+
+      // Fetch and render real stats
+      async function loadStats() {
+        try {
+          const res = await fetch(`${API_BASE}/public/stats`);
+          const stats = await res.json();
+          if (stats) {
+            const expertsEl = document.getElementById("active-experts-count");
+            const solvedEl = document.getElementById("solved-count");
+            if (expertsEl && stats.active_experts !== undefined) {
+              expertsEl.textContent = stats.active_experts;
+            }
+            if (solvedEl && stats.total_solved !== undefined) {
+              solvedEl.textContent = stats.total_solved.toLocaleString();
+            }
+          }
+        } catch (e) {
+          console.error("Failed to load real stats:", e);
+        }
+      }
+
+      // Fetch and render real reviews
+      async function loadRecentReviews() {
+        try {
+          const res = await fetch(`${API_BASE}/public/reviews?limit=3`);
+          const reviews = await res.json();
+
+          const grid = document.getElementById("testimonials-grid");
+          if (reviews && reviews.length > 0) {
+            grid.innerHTML = reviews
+              .map((r) => {
+                const stars = [1, 2, 3, 4, 5]
+                  .map(
+                    (n) =>
+                      `<span style="font-size:18px; color:${n <= r.rating ? "#F59E0B" : "var(--color-gray-300)"}">★</span>`,
+                  )
+                  .join("");
+
+                return `
+              <div class="testimonial-card reveal" style="opacity: 1; transform: none;">
+                <div style="margin-bottom: 16px;">${stars}</div>
+                <p style="font-style: italic; color: var(--color-gray-700); margin-bottom: 24px;">"${escapeHtml(r.review_text || "Great experience!")}"</p>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary-50); color: var(--color-primary-600); display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                    ${(r.student_name || "S").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 style="font-size: 14px;">${escapeHtml(r.student_name || "Student")}</h4>
+                    <span style="font-size: 12px; color: var(--color-gray-500);">Helped by ${escapeHtml(r.expert_name)} (${escapeHtml(r.domain)})</span>
+                  </div>
+                </div>
+              </div>
+            `;
+              })
+              .join("");
+          }
+        } catch (e) {
+          console.error("Failed to load real reviews:", e);
+        }
+      }
+
+      // Helper function for HTML escaping
+      function escapeHtml(text) {
+        if (!text) return "";
+        const p = document.createElement("p");
+        p.textContent = text;
+        return p.innerHTML;
+      }
+
+      // Call them on load
+      loadRecentReviews();
+      loadStats();
+    </script>
+  </body>
+</html>

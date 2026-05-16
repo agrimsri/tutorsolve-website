@@ -1,0 +1,40 @@
+/* Auth pages — login, signup, expert-apply */
+.auth-body { background: var(--color-white); min-height: 100vh; }
+
+.auth-layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: 100vh;
+}
+
+.auth-brand {
+  background: var(--brand-primary);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 48px;
+  gap: var(--space-6);
+}
+.auth-brand h2 { font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
+.auth-brand p  { font-size: 16px; opacity: .8; line-height: 1.6; max-width: 280px; }
+
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 64px;
+  max-width: 520px;
+}
+
+.auth-title { font-size: 28px; font-weight: 700; color: var(--color-gray-900);
+  letter-spacing: -.02em; margin-bottom: var(--space-2); }
+.auth-sub   { font-size: 15px; color: var(--color-gray-500); margin-bottom: var(--space-8); }
+.auth-footer { font-size: 14px; color: var(--color-gray-500); margin-top: var(--space-6); text-align: center; }
+.auth-footer a { color: var(--brand-primary); }
+
+@media (max-width: 768px) {
+  .auth-layout { grid-template-columns: 1fr; }
+  .auth-brand  { display: none; }
+  .auth-form-panel { padding: 40px 24px; max-width: 100%; }
+}

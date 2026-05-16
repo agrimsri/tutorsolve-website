@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>My Orders — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/expert.css">
+  <style>
+    .order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .order-card {
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-gray-300);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/student/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/student/orders.html" class="sidebar-item" data-page="orders">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          My Orders
+        </a>
+        <a href="/student/feed.html" class="sidebar-item" data-page="feed">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="7" />
+            <path d="M1.5 8h13M8 1c2.5 0 4 3.5 4 7s-1.5 7-4 7-4-3.5-4-7 1.5-7 4-7z" />
+          </svg>
+          Global Feed
+        </a>
+        <a href="/student/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+      <div class="dashboard-main-inner">
+
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">My Orders</h1>
+            <p class="page-subtitle">Track and manage your submitted questions</p>
+          </div>
+          <button class="btn btn-primary" onclick="document.getElementById('post-modal').classList.add('active')">Post a Question</button>
+        </div>
+
+        <div class="tabs-nav">
+          <button class="tab-btn active" onclick="switchTab('ongoing')" id="tab-ongoing">Ongoing</button>
+          <button class="tab-btn" onclick="switchTab('completed')" id="tab-completed">Completed</button>
+        </div>
+
+        <div class="order-list" id="order-list">
+          <div class="empty-state"><p>Loading...</p></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="modal" id="post-modal"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div class="modal-content"
+      style="background: #fff; padding: 32px; border-radius: var(--radius-lg); width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2>Post a Question</h2>
+        <button class="btn btn-ghost btn-sm"
+          onclick="document.getElementById('post-modal').classList.remove('active')">✕</button>
+      </div>
+      <div class="form-group">
+        <label class="label">Title</label>
+        <input type="text" id="q-title" class="input" placeholder="E.g. Help with Calculus assignment">
+      </div>
+      <div class="form-group">
+        <label class="label">Domain</label>
+        <select id="q-domain" class="input" required>
+          <option value="">Loading domains...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="label">Description (Optional)</label>
+        <textarea id="q-desc" class="input" rows="4" placeholder="Provide more details..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="label">Deadline <span
+            style="color: var(--color-gray-500); font-weight: 400;">(Optional)</span></label>
+        <input type="date" id="q-deadline" class="input" min="">
+      </div>
+
+      <div class="form-group">
+        <label class="label">Attachments</label>
+        <div id="upload-zone" class="upload-zone"
+          style="border: 2px dashed var(--color-gray-300); padding: 32px; text-align: center; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            style="margin-bottom: 8px; opacity: 0.5; display: inline-block;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+          </svg>
+          <p style="font-size: 13px; color: var(--color-gray-500);">Click or drag files to upload</p>
+        </div>
+        <input type="file" id="q-file-input" style="display: none;" multiple>
+        <div id="file-list" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+
+      <button class="btn btn-primary" id="submit-btn" style="width: 100%" onclick="postQuestion()">Submit
+        Question</button>
+    </div>
+  </div>
+
+  <style>
+    .modal.active {
+      display: flex !important;
+    }
+
+    .upload-zone.drag-over {
+      border-color: var(--color-primary);
+      background: var(--color-gray-50);
+    }
+  </style>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script>
+    if (!requireRole("student")) throw new Error("Abort");
+
+    let currentTab = "ongoing";
+    let allOrders = [];
+
+    async function loadOrders() {
+      try {
+        const res = await apiFetch("/student/orders");
+        allOrders = await res.json();
+        renderOrders();
+      } catch (e) {
+        toast("Failed to load orders.", "error");
+      }
+    }
+
+    function switchTab(tab) {
+      if (currentTab === tab) return;
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.add('active');
+      renderOrders();
+    }
+
+    function renderOrders() {
+      const list = document.getElementById("order-list");
+      list.innerHTML = "";
+      
+      const filtered = allOrders.filter(o => {
+        if (currentTab === "ongoing") {
+          return !["completed", "cancelled", "refunded"].includes(o.status);
+        } else {
+          return ["completed", "cancelled", "refunded"].includes(o.status);
+        }
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p style="color: var(--color-gray-500);">You don't have any ${currentTab} orders.</p>`;
+        return;
+      }
+
+      filtered.forEach(o => {
+        const card = document.createElement("div");
+        card.className = "order-card";
+
+        let priceHTML = "";
+        if (o.price_approved && o.student_price != null) {
+          priceHTML = `<div style="font-weight: 600; color: var(--color-gray-900); margin-top: 8px;">₹${o.student_price}</div>`;
+        }
+
+        card.innerHTML = `
+          <div>
+            <div style="font-weight: 600; font-size: 16px; color: var(--color-gray-900);">${escapeHtml(o.title)}</div>
+            <div style="font-size: 13px; color: var(--color-gray-500); margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+              <span class="badge badge-${o.status}">${o.status.replace(/_/g, " ")}</span>
+              <span>${escapeHtml(o.domain)}</span>
+              <span>Posted: ${new Date(o.created_at).toLocaleDateString()}</span>
+              ${o.deadline ? `<span style="color: var(--color-danger);">Due: ${new Date(o.deadline).toLocaleDateString()}</span>` : ""}
+            </div>
+            ${priceHTML}
+          </div>
+          <a href="/student/order-detail.html?id=${o._id}" class="btn btn-secondary btn-sm">View Details</a>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    loadOrders();
+
+    // --- Post Question Logic ---
+    async function loadDomains() {
+      try {
+        const res = await apiFetch("/auth/domains");
+        const domains = await res.json();
+        const select = document.getElementById("q-domain");
+        select.innerHTML = '<option value="">Select your domain</option>';
+        domains.forEach(d => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = d.name;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Failed to load domains", err);
+      }
+    }
+    loadDomains();
+
+    const uploadZone = document.getElementById("upload-zone");
+    const fileInput = document.getElementById("q-file-input");
+    const fileListEl = document.getElementById("file-list");
+    let pendingFiles = [];
+
+    if (uploadZone) {
+      uploadZone.onclick = () => fileInput.click();
+
+      uploadZone.ondragover = (e) => { e.preventDefault(); uploadZone.classList.add("drag-over"); };
+      uploadZone.ondragleave = () => uploadZone.classList.remove("drag-over");
+      uploadZone.ondrop = (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove("drag-over");
+        handleFiles(e.dataTransfer.files);
+      };
+
+      fileInput.onchange = () => handleFiles(fileInput.files);
+    }
+
+    function handleFiles(files) {
+      for (const file of files) {
+        pendingFiles.push(file);
+      }
+      renderFileList();
+    }
+
+    function removeFile(index) {
+      pendingFiles.splice(index, 1);
+      renderFileList();
+    }
+
+    function renderFileList() {
+      fileListEl.innerHTML = "";
+      pendingFiles.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = "uploaded-file-row";
+        item.style.marginBottom = "8px";
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid var(--color-gray-200); border-radius: var(--radius-md); background: var(--color-gray-50);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 28px; height: 28px; background: #fff; border: 1px solid var(--color-gray-200); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--color-gray-400);">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M4 0h5.293L13 3.707V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/></svg>
+              </div>
+              <div style="font-size: 13px; font-weight: 500; color: var(--color-gray-700); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${file.name}
+              </div>
+            </div>
+            <button class="btn-remove" onclick="removeFile(${index})" style="background: none; border: none; color: var(--color-gray-400); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.2s;" onmouseover="this.style.color='var(--color-danger)'" onmouseout="this.style.color='var(--color-gray-400)'">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        `;
+        fileListEl.appendChild(item);
+      });
+    }
+
+    async function uploadSingleFile(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await apiFetch("/files/upload", {
+        method: "POST",
+        body: formData
+      });
+      if (!res.ok) throw new Error(`Failed to upload ${file.name}`);
+      const data = await res.json();
+      return data.file_id;
+    }
+
+    async function postQuestion() {
+      const title = document.getElementById("q-title").value.trim();
+      const domain_id = document.getElementById("q-domain").value;
+      const desc = document.getElementById("q-desc").value.trim();
+      const deadline = document.getElementById("q-deadline").value;
+      const submitBtn = document.getElementById("submit-btn");
+
+      if (!title) return toast("Title is required", "error");
+      if (!domain_id) return toast("Domain is required", "error");
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading files...";
+
+      let fileIds = [];
+      try {
+        // 1. Upload all pending files
+        for (const file of pendingFiles) {
+          const fid = await uploadSingleFile(file);
+          fileIds.push(fid);
+        }
+
+        // 2. Create the order
+        submitBtn.textContent = "Creating order...";
+        const res = await apiFetch("/student/orders", {
+          method: "POST",
+          body: JSON.stringify({
+            title,
+            domain_id,
+            description: desc,
+            deadline: deadline || null,
+            file_ids: fileIds
+          })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast("Question posted successfully!", "success");
+          document.getElementById('post-modal').classList.remove('active');
+          loadOrders(); // Refresh order list
+
+          // Clear inputs
+          document.getElementById("q-title").value = "";
+          document.getElementById("q-domain").value = "";
+          document.getElementById("q-desc").value = "";
+          document.getElementById("q-deadline").value = "";
+          document.getElementById("file-list").innerHTML = "";
+          pendingFiles = [];
+        } else {
+          toast(data.error || "Failed to post question", "error");
+        }
+      } catch (e) {
+        toast(e.message, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Question";
+      }
+    }
+
+    // --- Pending Question Auto-open ---
+    // (No DOMContentLoaded needed — script is at bottom of body, DOM is ready)
+    const pendingQuestion = sessionStorage.getItem("pending_question");
+    if (pendingQuestion) {
+      document.getElementById("post-modal").classList.add("active");
+      document.getElementById("q-desc").value = pendingQuestion;
+      sessionStorage.removeItem("pending_question");
+    }
+  </script>
+
+  <script>
+    document.querySelector('[data-page="orders"]')?.classList.add("active");
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

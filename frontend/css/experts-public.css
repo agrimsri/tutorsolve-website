@@ -1,0 +1,184 @@
+/* Public Experts Page Styles */
+
+.experts-hero {
+    background: linear-gradient(135deg, var(--color-primary-50) 0%, #fff 100%);
+    border-bottom: 1px solid var(--color-gray-100);
+    padding-top: 80px; /* clears fixed navbar */
+}
+
+.experts-grid {
+    padding: 0 var(--space-4);
+}
+
+.expert-public-card {
+    background: #fff;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.expert-public-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary-100);
+}
+
+.expert-avatar {
+    width: 72px;
+    height: 72px;
+    background: var(--color-primary-600);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+    box-shadow: 0 4px 12px rgba(78, 74, 229, 0.2);
+}
+
+.expert-public-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: var(--space-1);
+    color: var(--color-gray-900);
+}
+
+.expert-domain-badge {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: var(--space-4);
+}
+
+.expert-stars {
+    display: flex;
+    gap: 2px;
+    margin-bottom: var(--space-1);
+}
+
+.expert-rating-text {
+    font-size: 13px;
+    color: var(--color-gray-500);
+}
+
+.expert-stats {
+    display: flex;
+    gap: var(--space-8);
+    margin: var(--space-6) 0;
+    border-top: 1px solid var(--color-gray-50);
+    border-bottom: 1px solid var(--color-gray-50);
+    padding: var(--space-4) 0;
+    width: 100%;
+    justify-content: center;
+}
+
+.expert-stat {
+    flex: 1;
+}
+
+.expert-stat-value {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--color-gray-900);
+}
+
+.expert-stat-label {
+    font-size: 10px;
+    color: var(--color-gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+}
+
+.expert-reviews-btn {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Modal Enhancements */
+.reviews-modal-inner {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#modal-reviews-list {
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gray-300) transparent;
+}
+
+#modal-reviews-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#modal-reviews-list::-webkit-scrollbar-thumb {
+    background-color: var(--color-gray-300);
+    border-radius: 10px;
+}
+
+.review-item {
+    padding: var(--space-5) 0;
+    border-bottom: 1px solid var(--color-gray-100);
+    animation: fadeIn 0.3s ease;
+}
+
+.review-item-text {
+    margin-top: var(--space-3);
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-gray-700);
+    font-style: italic;
+    background: var(--color-gray-50);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Domain Filter Pills ─────────────────────────────────── */
+.domain-pill {
+    background: #fff;
+    border: 1px solid var(--color-gray-200);
+    padding: 8px 16px;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-gray-500);
+    transition: all 0.2s;
+    font-family: var(--font-sans);
+}
+
+.domain-pill:hover {
+    border-color: var(--color-primary-300);
+    color: var(--color-primary-600);
+    background: var(--color-primary-50);
+}
+
+.domain-pill.active {
+    background: var(--color-primary-600);
+    border-color: var(--color-primary-600);
+    color: #fff;
+    font-weight: 600;
+}

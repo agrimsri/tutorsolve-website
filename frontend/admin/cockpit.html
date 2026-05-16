@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Cockpit — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve Admin</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/admin/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/admin/orders.html" class="sidebar-item" data-page="orders">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          Orders
+        </a>
+        <a href="/admin/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- COCKPIT MAIN AREA -->
+    <div class="cockpit-main"
+      style="flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--color-gray-50); position: relative;">
+
+      <!-- FLOATING BELL NOTIFICATION IN ADMIN -->
+      <div style="position: absolute; top: 16px; right: 24px; z-index: 9999;">
+        <div id="notif-bell">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <div id="notif-badge">0</div>
+          <div id="notif-dropdown" style="right: 0;">
+            <div id="notif-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cockpit-split">
+        <!-- LEFT PANEL: Thread A Student Chat -->
+        <div class="chat-panel chat-panel--student">
+          <div class="chat-panel-header" id="header-student">Student</div>
+          <div id="chat-a"
+            style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+            <!-- chat injected here -->
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Thread B Expert Chat -->
+        <div class="chat-panel chat-panel--expert">
+          <div class="chat-panel-header" id="header-expert">Expert</div>
+          <div id="chat-b"
+            style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+            <!-- chat injected here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER CONTROLS PANEL -->
+      <div class="order-controls-panel">
+        <div class="order-controls-inner" id="order-controls">
+          <div style="padding: 24px; color: var(--color-gray-500); width: 100%; text-align: center;">
+            No order selected. Please open an order from the Orders list.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/chat.js"></script>
+  <script src="/js/notifications.js"></script>
+  <script src="/js/modal.js"></script>
+  <script>
+    if (!requireRole("employee")) throw new Error("Abort");
+
+    const qid = new URLSearchParams(window.location.search).get("id");
+    let currentUserId = null;
+    var activeOrderId = null;
+
+    apiFetch("/auth/me").then(r => {
+      if (!r || !r.ok) {
+        console.error("auth/me failed", r?.status);
+        toast("Failed to authenticate. Please login again.", "error");
+        return;
+      }
+      return r.json();
+    }).then(me => {
+      if (!me) return;
+      currentUserId = me.id;
+      // Open directly after auth — no setTimeout race condition
+      if (qid) openOrder(qid);
+    }).catch(err => {
+      console.error("Auth init error:", err);
+      toast("Failed to initialize dashboard.", "error");
+    });
+
+    function formatStatus(s) { return s.replace(/_/g, " "); }
+
+    async function openOrder(questionId) {
+      const isSameOrder = (activeOrderId === questionId);
+      activeOrderId = questionId;
+
+      const res = await apiFetch(`/admin/orders/${questionId}`);
+      const order = await res.json();
+
+      if (!res.ok) {
+        toast(order.error || "Failed to load order", "error");
+        return;
+      }
+
+      renderOrderControls(order);
+
+      // Update headers
+      document.getElementById("header-student").textContent = `Student: ${order.student_name || 'Unknown'}`;
+      document.getElementById("header-expert").textContent = order.expert_name ? `Expert: ${order.expert_name}` : "Expert";
+
+      // If it's a different order, we must destroy previous chat state
+      if (!isSameOrder) {
+        destroyChat();
+      }
+
+      // Handle claiming logic
+      if (!order.assigned_employee_id) {
+        document.getElementById("chat-a").innerHTML = `
+                <div class="chat-empty" style="background: var(--color-gray-50); height: 100%; justify-content: center;">
+                    <p style="font-weight: 600; font-size: 16px; color: var(--color-gray-700);">No Admin Assigned</p>
+                    <p style="font-size: 14px; margin-bottom: 16px; color: var(--color-gray-500);">Claim this order to start negotiating.</p>
+                    <button class="btn btn-primary" onclick="startNegotiation('${questionId}')">
+                        Claim Order
+                    </button>
+                </div>`;
+        document.getElementById("chat-b").innerHTML = `
+                <div class="chat-empty">
+                    <p>Order must be claimed first.</p>
+                </div>`;
+        return;
+      }
+
+      let needsChatInit = false;
+
+      // Chat A
+      if (order.thread_a_id) {
+        const containerA = document.getElementById("chat-a");
+        // Re-init if it's a new order or if the container is currently showing the "Claim" or "Empty" placeholder
+        if (!isSameOrder || containerA.querySelector(".chat-empty")) {
+          setupChatContainer("chat-a", order.thread_a_id);
+          needsChatInit = true;
+        }
+      } else {
+        document.getElementById("chat-a").innerHTML = `
+                <div class="chat-empty">
+                    <p>Negotiation not started yet.</p>
+                    <button class="btn btn-primary btn-sm" onclick="startNegotiation('${questionId}')">
+                        Start Negotiation
+                    </button>
+                </div>`;
+      }
+
+      // Chat B
+      if (order.thread_b_id) {
+        const containerB = document.getElementById("chat-b");
+        if (!isSameOrder || containerB.querySelector(".chat-empty")) {
+          setupChatContainer("chat-b", order.thread_b_id);
+          needsChatInit = true;
+        }
+      } else {
+        document.getElementById("chat-b").innerHTML = `
+                <div class="chat-empty">
+                    <p>No expert assigned yet.</p>
+                </div>`;
+      }
+
+      if (needsChatInit) {
+        destroyChat();
+        initAdminChat(
+          order.thread_a_id || null,
+          order.thread_b_id || null,
+          currentUserId,
+          "chat-a-messages",
+          "chat-b-messages"
+        );
+      }
+    }
+
+    function setupChatContainer(panelId, threadId) {
+      document.getElementById(panelId).innerHTML = `
+            <div id="${panelId}-messages" class="chat-messages" style="flex:1; overflow-y:auto; padding:16px;"></div>
+            <div class="chat-input-row" style="padding:12px; border-top:1px solid #eee; display:flex; gap:8px;">
+                <input type="text" id="${panelId}-input" class="input" placeholder="Message..." style="flex:1;">
+                <button class="btn btn-primary btn-sm" onclick="sendChatFromPanel('${threadId}', '${panelId}-input')">Send</button>
+            </div>
+        `;
+
+      const inputEl = document.getElementById(`${panelId}-input`);
+      inputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendChatFromPanel(threadId, `${panelId}-input`);
+        }
+      });
+    }
+
+    function sendChatFromPanel(threadId, inputId) {
+      const val = document.getElementById(inputId).value.trim();
+      if (!val) return;
+      sendAdminMessage(threadId, val);
+      document.getElementById(inputId).value = "";
+    }
+
+    async function startNegotiation(questionId) {
+      const res = await apiFetch(`/admin/orders/${questionId}/start-negotiation`, { method: "POST" });
+      if (res.ok) {
+        toast("Negotiation started!");
+        openOrder(questionId);
+      } else {
+        toast("Failed to start negotiation", "error");
+      }
+    }
+
+    function renderOrderControls(order) {
+      const panel = document.getElementById("order-controls");
+      panel.innerHTML = renderOrderInfoStrip(order);
+
+      if (order.status === "cancelled") {
+        panel.innerHTML += `<div style="padding: 24px; text-align: center; color: var(--color-danger); font-weight: 500;">This order has been cancelled.</div>`;
+        return;
+      }
+
+      if (order.status === "refunded") {
+        panel.innerHTML += `<div style="padding: 24px; text-align: center; color: var(--color-warning); font-weight: 500;">✔️ This order has been refunded. No further actions required.</div>`;
+        return;
+      }
+
+      // Show Initiate Refund button when advance is paid but not yet completed
+      const canRefund = order.payment?.advance_paid && !order.payment?.completion_paid;
+      if (canRefund) {
+        const isAlreadyRequested = (order.payment?.status === 'refund_requested');
+        panel.innerHTML += `
+          <div style="display:flex; justify-content:flex-end; margin-bottom: var(--space-4);">
+            ${isAlreadyRequested
+              ? `<span style="font-size:13px; font-weight:600; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:6px 14px; border-radius:9999px;">⏳ Refund Requested — Awaiting Super Admin</span>`
+              : `<button class="btn btn-sm" style="color:#dc2626; border:1.5px solid #dc2626; background:#fff; font-weight:500;"
+                  onclick="openRefundModal('${order._id}', ${order.payment.advance_amount})">⚠️ Initiate Refund</button>`
+            }
+          </div>`;
+      }
+
+      const step1Done = order.price_approved;
+      const step1Active = !order.price_approved;
+
+      const step2Done = !!order.payment?.advance_paid;
+      const step2Active = step1Done && !step2Done;
+      const step2Locked = !step1Done;
+
+      const step3Done = !!order.assigned_expert_id;
+      const step3Active = step2Done && !step3Done;
+      const step3Locked = !step2Done;
+
+      const step4Done = !!order.payment?.completion_paid || ['completed', 'refunded'].includes(order.status);
+      const step4Active = step3Done && !step4Done;
+      const step4Locked = !step3Done;
+
+      const step5Done = ['completed'].includes(order.status);
+      const step5Active = step4Done && !step5Done;
+      const step5Locked = !step4Done;
+
+      let html = `<div class="workflow-stepper">
+        <div class="workflow-stepper-header">
+            <h3 style="margin: 0; font-size: 16px; color: var(--color-gray-800);">Order Roadmap</h3>
+            <button class="btn btn-ghost btn-sm" onclick="openOrder('${order._id}')" title="Refresh Roadmap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+            </button>
+        </div>
+      `;
+
+      // Step 1: Pricing
+      html += `
+        <div class="workflow-step ${step1Done ? 'done' : (step1Active ? 'active' : 'locked')}">
+            <div class="workflow-step-header">
+                <div class="workflow-step-badge">${step1Done ? '✓' : '1'}</div>
+                Set Prices
+            </div>
+            <div class="workflow-step-body">
+                ${!step2Done
+          ? renderPricingSectionInner(order)
+          : `<div class="workflow-step-summary">Approved: ₹${order.student_price} Student / ₹${order.expert_payout} Expert</div>`
+        }
+            </div>
+        </div>
+      `;
+
+      // Step 2: Advance Payment
+      html += `
+        <div class="workflow-step ${step2Done ? 'done' : (step2Active ? 'active' : 'locked')}">
+            <div class="workflow-step-header">
+                <div class="workflow-step-badge">${step2Done ? '✓' : '2'}</div>
+                Advance Payment
+            </div>
+            <div class="workflow-step-body">
+                ${step2Locked ? `<div class="workflow-step-summary">Complete Step 1 first.</div>` : ''}
+                ${step2Active ? `
+                    <div style="margin-bottom:12px;font-size:13px;color:var(--color-gray-600)">Student pays 50% advance to start work.</div>
+                    ${order.payment ? `
+                        <div style="background: var(--color-gray-50); border: 1px solid var(--color-gray-200); padding: 12px; border-radius: var(--radius-md); margin-bottom: 12px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-size:12px; color:var(--color-gray-500);">Advance Amount:</span>
+                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">₹${order.payment.advance_amount}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="font-size:12px; color:var(--color-gray-500);">Completion Amount:</span>
+                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">₹${order.payment.completion_amount}</span>
+                            </div>
+                        </div>
+                        <div class="workflow-step-summary" style="color:#d97706;font-weight:500; display:flex; align-items:center; gap:8px;">
+                            <div class="spinner-small" style="width:14px; height:14px;"></div>
+                            Waiting for student payment...
+                        </div>
+                        <button class="btn btn-secondary btn-sm" style="margin-top:12px; width:100%;" onclick="setupPayment('${order._id}')">Re-send Payment Link</button>
+                    ` : `
+                        <button class="btn btn-primary btn-sm" style="width:100%;" onclick="setupPayment('${order._id}')">Activate Payment Link</button>
+                    `}
+                ` : ''}
+                ${step2Done ? `<div class="workflow-step-summary">Advance Paid: ₹${order.payment.advance_amount}</div>` : ''}
+            </div>
+        </div>
+      `;
+
+      // Step 3: Assign Expert
+      const assignedExp = order.interested_experts && order.assigned_expert_id ? order.interested_experts.find(e => e._id === order.assigned_expert_id) : null;
+      html += `
+        <div class="workflow-step ${step3Done ? 'done' : (step3Active ? 'active' : 'locked')}">
+            <div class="workflow-step-header">
+                <div class="workflow-step-badge">${step3Done ? '✓' : '3'}</div>
+                Assign Expert
+            </div>
+            <div class="workflow-step-body">
+                ${step3Locked ? `<div class="workflow-step-summary">Complete advance payment first.</div>` : ''}
+                ${step3Active ? renderAssignmentSectionInner(order) : ''}
+                ${step3Done ? `
+                    <div class="workflow-step-summary" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>Expert Assigned: <strong>${assignedExp ? assignedExp.name : order.assigned_expert_id}</strong></span>
+                        <button class="btn btn-secondary btn-sm" style="color:var(--color-danger); border-color:var(--color-danger);" onclick="unassignExpert('${order._id}')">Remove & Reassign</button>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+      `;
+
+      // Step 4: Solution Phase
+      html += `
+        <div class="workflow-step ${step4Done ? 'done' : (step4Active ? 'active' : 'locked')}">
+            <div class="workflow-step-header">
+                <div class="workflow-step-badge">${step4Done ? '✓' : '4'}</div>
+                Solution Phase & Forwarding
+            </div>
+            <div class="workflow-step-body">
+                ${step4Locked ? `<div class="workflow-step-summary">Assign an expert first.</div>` : ''}
+                ${(step4Active || step4Done) ? renderFilesSectionInner(order) : ''}
+            </div>
+        </div>
+      `;
+
+      // Step 5: Completion & Feedback
+      html += `
+        <div class="workflow-step ${step5Done ? 'done' : (step5Active ? 'active' : 'locked')}">
+            <div class="workflow-step-header">
+                <div class="workflow-step-badge">${step5Done ? '✓' : '5'}</div>
+                Completion & Feedback
+            </div>
+            <div class="workflow-step-body">
+                ${step5Locked ? `<div class="workflow-step-summary">Wait for full payment.</div>` : ''}
+                ${(step5Active || step5Done) ? `
+                    <div style="margin-bottom:12px;font-size:13px;color:var(--color-gray-600)">
+                      ${order.payment?.completion_paid ? `✅ Completion Paid: ₹${order.payment.completion_amount}` : `⏳ Waiting for completion payment...`}
+                    </div>
+                    ${step5Done ? `<div class="workflow-step-summary">Order closed.</div>` : renderFeedbackSectionInner(order)}
+                ` : ''}
+            </div>
+        </div>
+      `;
+
+      html += `</div>`;
+      panel.innerHTML += html;
+
+      if (step3Active && document.getElementById("interested-list")) {
+        loadInterestedExperts(order._id);
+      }
+    }
+
+    function renderOrderInfoStrip(order) {
+      const studentFiles = (order.files || []).filter(f => f.category === "attachment" || f.uploader_role === "student");
+
+      return `
+            <div style="width: 100%; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: var(--space-4);">
+                <div>
+                   <h2 style="font-size: 20px; font-weight: 700; margin-bottom:4px; color: var(--color-gray-900);">${order.title}</h2>
+                   <div style="display:flex; gap: 12px; align-items:center; font-size:13px; color:var(--color-gray-500); margin-bottom: var(--space-2);">
+                     <span>${order.domain}</span>
+                     <span class="badge badge-${order.status}">${formatStatus(order.status)}</span>
+                     ${order.deadline ? `<span><span style="color:var(--color-danger); font-weight: 500;">Deadline:</span> ${new Date(order.deadline).toLocaleDateString()}</span>` : ''}
+                   </div>
+                   
+                </div>
+            </div>
+
+            ${order.description ? `
+              <div style="background: var(--color-white); border: 1px solid var(--color-gray-200); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: var(--space-2); color: var(--color-gray-900);">Question Description</h4>
+                <div style="font-size: 14px; color: var(--color-gray-700); line-height: 1.6; white-space: pre-wrap;">${order.description}</div>
+              </div>
+            ` : ''}
+
+            ${studentFiles.length > 0 ? `
+              <div style="margin-bottom: var(--space-4);">
+                <p class="label" style="margin-bottom: var(--space-2); font-size: 11px; text-transform: uppercase; color: var(--color-gray-400);">Student Attachments</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-2);">
+                  ${studentFiles.map(f => `
+                    <div class="file-row" style="padding: 10px; margin-bottom: 0;">
+                      <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <p style="font-size:13px; font-weight:500; margin-bottom: 2px;">${f.original_filename}</p>
+                        <p style="font-size:11px; color:var(--color-gray-500)">${f.file_type.toUpperCase()}</p>
+                      </div>
+                      <button class="btn btn-secondary btn-sm" onclick="previewFile('${f._id}')">View</button>
+                    </div>
+                  `).join("")}
+                </div>
+              </div>
+            ` : ''}
+
+            <div style="width: 100%; border-bottom: 1px solid var(--color-gray-200); margin: var(--space-4) 0 var(--space-2) 0;"></div>
+        `;
+    }
+
+    function renderPricingSectionInner(order) {
+      const buttonText = order.student_price ? "Update Price Quote" : "Set Price Quote";
+      return `
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-4)">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="label">Student Price (₹)</label>
+                    <input id="student-price" type="number" class="input" step="0.01" min="0" value="${order.student_price || ""}">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="label">Expert Payout (₹)</label>
+                    <input id="expert-payout" type="number" class="input" step="0.01" min="0" value="${order.expert_payout || ""}">
+                </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="submitQuote('${order._id}')">${buttonText}</button>`;
+    }
+
+
+
+    async function submitQuote(questionId) {
+      const studentPrice = parseFloat(document.getElementById("student-price").value);
+      const expertPayout = parseFloat(document.getElementById("expert-payout").value);
+
+      if (!studentPrice || !expertPayout) {
+        toast("Both prices are required.", "error"); return;
+      }
+      if (expertPayout >= studentPrice) {
+        toast("Expert payout must be less than student price.", "error"); return;
+      }
+
+      const res = await apiFetch(`/admin/orders/${questionId}/quote`, {
+        method: "POST",
+        body: JSON.stringify({ student_price: studentPrice, expert_payout: expertPayout })
+      });
+
+      if (res.ok) {
+        toast("Price quote saved.");
+        openOrder(questionId);
+      } else {
+        const d = await res.json();
+        toast(d.error || "Failed to save quote", "error");
+      }
+    }
+
+    async function setupPayment(questionId) {
+      const res = await apiFetch(`/payments/setup/${questionId}`, { method: "POST" });
+      const data = await res.json();
+
+      if (res.ok) {
+        toast(`Payment ready — Advance: ₹${data.advance} / Completion: ₹${data.completion}`);
+        sendMessageToThread(activeOrderId, "A",
+          `Your quote has been confirmed. Advance payment: ₹${data.advance}. ` +
+          `Log in to your order page to pay and get started.`
+        );
+        openOrder(questionId);
+      } else {
+        toast(data.error || "Failed to set up payment", "error");
+      }
+    }
+
+    function renderAssignmentSectionInner(order) {
+      return `
+            <p class="label" style="margin-bottom:var(--space-3)">Interested Experts</p>
+            <div id="interested-list">
+                <p style="font-size:13px;color:var(--color-gray-500)">Loading...</p>
+            </div>
+            <p class="label" style="margin-top:var(--space-5);margin-bottom:var(--space-3)">
+                Search by Expert ID or Name
+            </p>
+            <div style="display:flex;gap:var(--space-3)">
+                <input id="expert-search" type="text" class="input"
+                    placeholder="Expert ID or name..." style="flex:1"
+                    oninput="searchExperts(this.value, '${order.domain}')">
+            </div>
+            <div id="expert-search-results" style="margin-top:var(--space-3)"></div>
+      `;
+    }
+
+    async function loadInterestedExperts(questionId) {
+      const res = await apiFetch(`/admin/orders/${questionId}/interested-experts`);
+      const experts = await res.json();
+      const list = document.getElementById("interested-list");
+
+      if (experts.length === 0) {
+        list.innerHTML = `<p style="font-size:13px;color:var(--color-gray-500)">No experts have expressed interest yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = experts.map(e => `
+            <div class="expert-card">
+                <div>
+                    <p style="font-weight:500;font-size:14px">${e.name}</p>
+                    <p style="font-size:12px;color:var(--color-gray-500)">
+                        ${e.domain} · ⭐ ${e.quality_score}/5 · ${e.tasks_completed} tasks
+                    </p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="assignExpert('${questionId}', '${e._id}')">
+                    Assign
+                </button>
+            </div>
+        `).join("");
+    }
+
+    let searchTimeout = null;
+    async function searchExperts(query, domain) {
+      clearTimeout(searchTimeout);
+      if (!query.trim()) {
+        document.getElementById("expert-search-results").innerHTML = ""; return;
+      }
+      searchTimeout = setTimeout(async () => {
+        const res = await apiFetch(`/admin/experts/search?q=${encodeURIComponent(query)}&domain=${domain}`);
+        const experts = await res.json();
+        const results = document.getElementById("expert-search-results");
+
+        results.innerHTML = experts.map(e => `
+                <div class="expert-card">
+                    <div>
+                        <p style="font-weight:500;font-size:14px">${e.name}</p>
+                        <p style="font-size:12px;color:var(--color-gray-500)">
+                            ${e.domain} · ⭐ ${e.quality_score}/5
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="assignExpert('${activeOrderId}', '${e._id}')">
+                        Assign
+                    </button>
+                </div>
+            `).join("") || `<p style="font-size:13px;color:var(--color-gray-500)">No experts found.</p>`;
+      }, 400);
+    }
+
+    async function assignExpert(questionId, expertId) {
+      const res = await apiFetch(`/admin/orders/${questionId}/assign`, {
+        method: "POST", body: JSON.stringify({ expert_id: expertId })
+      });
+
+      if (res.ok) { toast("Expert assigned."); openOrder(questionId); }
+      else { const d = await res.json(); toast(d.error || "Failed", "error"); }
+    }
+
+    async function unassignExpert(questionId) {
+      const confirmed = await showConfirmModal({
+        title: "Remove Expert",
+        message: "Are you sure you want to remove the currently assigned expert? You can assign a new expert afterward.",
+        confirmText: "Remove Expert",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) return;
+
+      const res = await apiFetch(`/admin/orders/${questionId}/assign`, {
+        method: "DELETE"
+      });
+
+      if (res.ok) { toast("Expert removed."); openOrder(questionId); }
+      else { const d = await res.json(); toast(d.error || "Failed to remove", "error"); }
+    }
+
+    function renderFilesSectionInner(order) {
+      if (!order.files || order.files.length === 0) {
+        return `<p style="font-size:13px;color:var(--color-gray-500)">No files uploaded yet.</p>`;
+      }
+
+      const expertFiles = order.files.filter(f => f.category === "solution" || f.uploader_role === "expert");
+
+      let html = "";
+
+      if (expertFiles.length > 0) {
+        const hasUnforwarded = expertFiles.some(f => !f.forwarded_at);
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h4 style="font-size:12px;text-transform:uppercase;color:var(--color-gray-500);letter-spacing:0.05em;margin:0;">Expert Solutions</h4>
+            ${hasUnforwarded ? `<button class="btn btn-primary btn-sm" onclick="forwardAllSolutions('${order._id}')">Forward All to Student</button>` : ""}
+          </div>
+        `;
+        html += expertFiles.map(f => renderFileRow(f, order)).join("");
+      }
+
+      return html;
+    }
+
+    function renderFileRow(f, order) {
+      return `
+            <div class="file-row">
+                <div>
+                    <p style="font-size:14px;font-weight:500">${f.original_filename}</p>
+                    <p style="font-size:12px;color:var(--color-gray-500)">
+                        ${f.file_type.toUpperCase()} ·
+                        Uploaded ${new Date(f.uploaded_at).toLocaleDateString()} ·
+                        ${f.forwarded_at ? "✓ Forwarded to student" : "Not forwarded yet"}
+                    </p>
+                </div>
+                <div style="display:flex;gap:var(--space-2)">
+                    <button class="btn btn-secondary btn-sm" onclick="previewFile('${f._id}')">Review</button>
+                </div>
+            </div>
+      `;
+    }
+
+    async function previewFile(fileId) {
+      const res = await apiFetch(`/admin/files/${fileId}/url`);
+      const data = await res.json();
+      if (res.ok) window.open(data.url, "_blank");
+      else toast("Failed to get file URL", "error");
+    }
+
+    async function forwardAllSolutions(questionId) {
+      const confirmed = await showConfirmModal({
+        title: "Forward Solutions",
+        message: "Forward ALL solution files to the student? This will also notify them and allow them to see previews.",
+        confirmText: "Forward Now",
+        cancelText: "Cancel"
+      });
+      if (!confirmed) return;
+
+      const res = await apiFetch(`/admin/orders/${questionId}/forward-solutions`, { method: "POST" });
+      if (res.ok) {
+        toast("All solutions forwarded.");
+        openOrder(questionId);
+      } else {
+        const d = await res.json();
+        toast(d.error || "Forward failed", "error");
+      }
+    }
+
+    function renderFeedbackSectionInner(order) {
+      return `
+            <div class="form-group">
+                <label class="label">Expert Rating (1–5)</label>
+                <div id="star-rating" style="display:flex;gap:8px;margin-bottom:var(--space-4)">
+                    ${[1, 2, 3, 4, 5].map(n => `
+                        <button class="star-btn" data-value="${n}" onclick="setRating(${n})">★</button>
+                    `).join("")}
+                </div>
+                <input id="rating-val" type="hidden" value="">
+            </div>
+            <div class="form-group">
+                <label class="label">Grade</label>
+                <select id="feedback-grade" class="input">
+                    <option value="">Select grade</option>
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="label">Public Feedback Note</label>
+                <textarea id="feedback-note" class="input" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="submitFeedback('${order._id}')">
+                Submit Feedback
+            </button>`;
+    }
+
+    let selectedRating = null;
+    function setRating(value) {
+      selectedRating = value;
+      document.getElementById("rating-val").value = value;
+      document.querySelectorAll(".star-btn").forEach((btn, i) => {
+        btn.style.color = i < value ? "#F59E0B" : "var(--color-gray-300)";
+      });
+    }
+
+    async function submitFeedback(questionId) {
+      const note = document.getElementById("feedback-note").value.trim();
+      const grade = document.getElementById("feedback-grade").value;
+
+      if (!selectedRating) { toast("Please select a rating.", "error"); return; }
+
+      const res = await apiFetch(`/admin/orders/${questionId}/feedback`, {
+        method: "POST",
+        body: JSON.stringify({ rating: selectedRating, public_note: note || null, grade: grade || null })
+      });
+
+      if (res.ok) { toast("Feedback submitted."); openOrder(questionId); }
+      else { const d = await res.json(); toast(d.error || "Failed", "error"); }
+    }
+
+
+    async function sendMessageToThread(questionId, threadType, body) {
+      const res = await apiFetch(`/admin/orders/${questionId}`);
+      const order = await res.json();
+      const threadId = threadType === "A" ? order.thread_a_id : order.thread_b_id;
+      if (!threadId) return;
+
+      await apiFetch(`/chat/${threadId}/messages`, {
+        method: "POST", body: JSON.stringify({ body })
+      });
+    }
+
+    // ── Refund Modal ──────────────────────────────────────────────
+    function openRefundModal(questionId, advanceAmount) {
+      document.getElementById("refund-modal-qid").value = questionId;
+      document.getElementById("refund-reason-input").value = "";
+      document.getElementById("refund-amount-input").value = advanceAmount || "";
+      document.getElementById("refund-amount-input").max = advanceAmount || "";
+      document.getElementById("refund-modal-desc").textContent = `The student paid ₹${advanceAmount || 0} in advance. You can request a partial or full refund.`;
+      
+      const btn = document.getElementById("refund-submit-btn");
+      if (btn) {
+          btn.disabled = false;
+          btn.textContent = "Submit Refund Request";
+      }
+
+      document.getElementById("refund-modal").classList.add("active");
+      document.getElementById("refund-amount-input").focus();
+    }
+
+    function closeRefundModal() {
+      document.getElementById("refund-modal").classList.remove("active");
+    }
+
+    async function submitRefundModal() {
+      const questionId = document.getElementById("refund-modal-qid").value;
+      const reason     = document.getElementById("refund-reason-input").value.trim();
+      const refundAmount = document.getElementById("refund-amount-input").value;
+
+      if (!reason) {
+        toast("Please provide a reason for the refund.", "error");
+        return;
+      }
+      if (!refundAmount || parseFloat(refundAmount) <= 0) {
+        toast("Please provide a valid refund amount.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("refund-submit-btn");
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+
+      try {
+        const res  = await apiFetch(`/admin/orders/${questionId}/initiate-refund`, {
+          method: "POST",
+          body:   JSON.stringify({ reason: reason, refund_amount: parseFloat(refundAmount) })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          closeRefundModal();
+          toast("✅ Refund escalated to Super Admin for approval.", "success");
+          openOrder(questionId);
+        } else {
+          toast(data.error || "Failed to initiate refund.", "error");
+          btn.disabled = false;
+          btn.textContent = "Submit Refund Request";
+        }
+      } catch (e) {
+        console.error("Refund error:", e);
+        toast("Request failed. Please try again.", "error");
+        btn.disabled = false;
+        btn.textContent = "Submit Refund Request";
+      }
+    }
+
+    window.addEventListener("beforeunload", destroyChat);
+  </script>
+
+  <script>
+    document.querySelector('[data-page="cockpit"]')?.classList.add("active");
+  </script>
+
+  <!-- Refund Modal -->
+  <div class="modal" id="refund-modal">
+    <div class="modal-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--color-gray-900);">⚠️ Initiate Refund</h2>
+        <button class="btn btn-ghost btn-sm" onclick="closeRefundModal()">✕</button>
+      </div>
+      <p id="refund-modal-desc" style="font-size: 14px; color: var(--color-gray-600); margin-bottom: 16px; line-height: 1.6;">
+        This will send a refund request to the Super Admin for approval.
+        The advance amount will be refunded to the student if approved.
+        Please provide a clear reason below.
+      </p>
+      <input type="hidden" id="refund-modal-qid">
+      <div class="form-group">
+        <label class="label">Refund Amount (₹) <span style="color:var(--color-danger)">*</span></label>
+        <input type="number" id="refund-amount-input" class="input" step="0.01" min="0.01" style="width: 100%;">
+      </div>
+      <div class="form-group">
+        <label class="label">Reason for Refund <span style="color:var(--color-danger)">*</span></label>
+        <textarea id="refund-reason-input" class="input" rows="4"
+          placeholder="e.g. Student is dissatisfied with the solution quality, expert did not respond, etc."
+          style="width: 100%; resize: vertical;"></textarea>
+      </div>
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button id="refund-submit-btn" class="btn btn-primary" style="flex:1;" onclick="submitRefundModal()">
+          Submit Refund Request
+        </button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="closeRefundModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

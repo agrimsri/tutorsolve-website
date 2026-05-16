@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oversight — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+</head>
+
+<body>
+  <div style="padding:60px 24px;text-align:center;font-family:system-ui,sans-serif">
+    <h2 style="font-size:24px;font-weight:600;color:#111">Oversight</h2>
+    <p id="user-info" style="color:#6b7280;margin-top:8px"></p>
+    <p style="margin-top:8px;color:#10b981">✓ Auth working correctly</p>
+    <button onclick="logout()"
+      style="margin-top:24px;padding:10px 20px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer;background:#fff">
+      Logout
+    </button>
+  </div>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    if (!isLoggedIn()) window.location.href = "/auth/login.html";
+    apiFetch("/auth/me").then(r => r.json()).then(data => {
+      document.getElementById("user-info").textContent = data.email + " · " + data.role;
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

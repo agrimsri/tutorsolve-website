@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Orders — TutorSolve</title>
+  <link rel="stylesheet" href="/css/base.css">
+  <style>
+    .dashboard-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 32px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-gray-300);
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-awaiting_quote {
+      background: #FFFBEB;
+      color: #92400E;
+    }
+
+    .badge-pending_payment {
+      background: #EFF6FF;
+      color: #1E40AF;
+    }
+
+    .badge-in_progress {
+      background: #ECFDF5;
+      color: #065F46;
+    }
+
+    .badge-reviewing {
+      background: #FEF2F2;
+      color: #991B1B;
+    }
+
+    .badge-completed {
+      background: #ECFDF5;
+      color: #065F46;
+    }
+
+    .info-row {
+      font-size: 13px;
+      color: var(--color-gray-500);
+      margin-top: 4px;
+    }
+
+    .price-row {
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    /* ── Filter Pills ── */
+    .filter-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .filter-pill {
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--color-gray-300);
+      background: #fff;
+      color: var(--color-gray-600);
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .filter-pill:hover {
+      border-color: #6366f1;
+      color: #6366f1;
+    }
+
+    .filter-pill.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.30);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+        <span class="navbar-logo-text">TutorSolve Admin</span>
+      </a>
+
+      <nav class="sidebar-nav">
+        <p class="sidebar-section-label">Menu</p>
+        <a href="/admin/dashboard.html" class="sidebar-item" data-page="dashboard">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="1" width="6" height="6" rx="1" />
+            <rect x="9" y="1" width="6" height="6" rx="1" />
+            <rect x="1" y="9" width="6" height="6" rx="1" />
+            <rect x="9" y="9" width="6" height="6" rx="1" />
+          </svg>
+          Dashboard
+        </a>
+        <a href="/admin/orders.html" class="sidebar-item" data-page="orders">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+          </svg>
+          Orders
+        </a>
+        <a href="/admin/profile.html" class="sidebar-item" data-page="profile">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="5" r="3" />
+            <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+          </svg>
+          Profile
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button onclick="logout()" class="sidebar-item"
+          style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+          <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+          </svg>
+          Logout
+        </button>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px;">
+        <h1>All Orders</h1>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input
+            type="text"
+            id="order-search"
+            class="input"
+            style="width: 240px; font-size: 14px;"
+            placeholder="Search by title..."
+            oninput="onSearch(this.value)"
+          />
+          <button class="btn btn-secondary btn-sm" onclick="loadOrders()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="filter-pills" id="status-filters"></div>
+
+      <div id="orders-list">
+        <p style="color: var(--color-gray-500);">Loading orders...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    if (!requireRole("employee")) throw new Error("Abort");
+
+    // Map tab name -> array of statuses that belong in it
+    const FILTER_STATUSES = {
+      "":              null,  // All — no filter
+      "negotiation":   ["awaiting_quote", "pending_payment"],
+      "advance_paid":  ["in_progress", "reviewing"],
+      "completed":     ["completed", "cancelled", "refunded"],
+    };
+
+    const STATUS_FILTERS = [
+      { label: "All",                value: "" },
+      { label: "Under Negotiation",  value: "negotiation" },
+      { label: "Advance Paid",       value: "advance_paid" },
+      { label: "Completed",          value: "completed" },
+    ];
+
+    let activeFilter = "";
+    let allOrders = [];
+    let searchQuery = "";
+
+    function onSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      renderOrders();
+    }
+
+    function renderFilters() {
+      const container = document.getElementById("status-filters");
+      container.innerHTML = STATUS_FILTERS.map(f => `
+        <button class="filter-pill ${activeFilter === f.value ? 'active' : ''}"
+                onclick="setFilter('${f.value}')">
+          ${f.label}
+        </button>
+      `).join("");
+    }
+
+    function setFilter(val) {
+      activeFilter = val;
+      renderFilters();
+      renderOrders();
+    }
+
+    function statusLabel(s) {
+      return s.replace(/_/g, " ");
+    }
+
+    function renderOrderCard(order) {
+      const canNegotiate = !order.has_thread_a;
+      const inNegotiation = order.has_thread_a;
+
+      let priceRow = "";
+      if (order.student_price) {
+        priceRow = `<div class="price-row">💰 Quote: <strong>₹${order.student_price}</strong> ${order.price_approved ? "✅ Approved" : "⏳ Pending approval"}</div>`;
+      }
+
+      return `
+        <div class="card" id="card-${order._id}">
+          <div class="card-header">
+            <div>
+              <div class="card-title">${order.title}</div>
+              <div class="info-row">
+                ${order.domain} · Posted ${new Date(order.created_at).toLocaleDateString()}
+                ${order.deadline ? ` · <span style="color: var(--color-danger);">Deadline: ${new Date(order.deadline).toLocaleDateString()}</span>` : ""}
+              </div>
+              ${priceRow}
+            </div>
+            <span class="badge badge-${order.status}">${statusLabel(order.status)}</span>
+          </div>
+          <div class="card-actions">
+            ${canNegotiate ? `
+              <button class="btn btn-primary btn-sm" id="neg-btn-${order._id}" onclick="startNegotiation('${order._id}')">
+                Start Negotiation
+              </button>
+            ` : ""}
+            ${inNegotiation ? `
+              <button class="btn btn-secondary btn-sm" onclick="openCockpit('${order._id}')" style="margin-left: auto;">
+                View Detail
+              </button>
+            ` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrders() {
+      const list = document.getElementById("orders-list");
+      const allowedStatuses = FILTER_STATUSES[activeFilter];
+
+      let filtered = allowedStatuses
+        ? allOrders.filter(o => allowedStatuses.includes(o.status))
+        : allOrders;
+
+      if (searchQuery) {
+        filtered = filtered.filter(o =>
+          (o.title || "").toLowerCase().includes(searchQuery)
+        );
+      }
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p style="color:var(--color-gray-500)">No orders found.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(renderOrderCard).join("");
+    }
+
+    async function loadOrders() {
+      const res = await apiFetch("/admin/orders");
+      const list = document.getElementById("orders-list");
+
+      if (!res.ok) {
+        list.innerHTML = `<p style="color:var(--color-danger)">Failed to load orders</p>`;
+        return;
+      }
+
+      allOrders = await res.json();
+      renderOrders();
+    }
+
+    async function startNegotiation(questionId) {
+      const btn = document.getElementById(`neg-btn-${questionId}`);
+      btn.disabled = true;
+      btn.textContent = "Starting...";
+
+      const res = await apiFetch(`/admin/orders/${questionId}/start-negotiation`, { method: "POST" });
+      const data = await res.json();
+
+      if (res.ok) {
+        toast("Negotiation started! Chat with student is now open.", "success");
+        setTimeout(() => window.location.href = `/admin/cockpit.html?id=${questionId}`, 800);
+      } else {
+        toast(data.error || "Failed to start negotiation", "error");
+        btn.disabled = false;
+        btn.textContent = "Start Negotiation";
+      }
+    }
+
+    function openCockpit(questionId) {
+      window.location.href = `/admin/cockpit.html?id=${questionId}`;
+    }
+
+    renderFilters();
+    loadOrders();
+  </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelector('[data-page="orders"]')?.classList.add("active");
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="/js/notifications.js"></script>
+</body>
+
+</html>

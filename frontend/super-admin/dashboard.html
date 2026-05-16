@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Super Admin — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/super-admin.css" />
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Overview</p>
+          <a
+            href="/super-admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Finance
+          </p>
+          <a
+            href="/super-admin/financials.html"
+            class="sidebar-item"
+            data-page="financials"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+            </svg>
+            Financials
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Operations
+          </p>
+          <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 8h6M5 5h6M5 11h4" />
+            </svg>
+            KYC Queue
+          </a>
+          <a
+            href="/super-admin/users.html"
+            class="sidebar-item"
+            data-page="users"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="6" cy="5" r="3" />
+              <path d="M1 13c0-2.761 2.239-5 5-5" />
+              <path d="M11 8v6M14 11H8" />
+            </svg>
+            Users
+          </a>
+          <a
+            href="/super-admin/chat-spy.html"
+            class="sidebar-item"
+            data-page="chat-spy"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            Chat Spy
+          </a>
+          <a
+            href="/super-admin/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner" style="max-width: 1400px">
+          <div
+            class="page-header"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 24px;
+            "
+          >
+            <div>
+              <h1 class="page-title">Platform Overview</h1>
+              <p class="page-subtitle">Real-time platform metrics</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px">
+              <button
+                onclick="loadDashboard()"
+                class="btn btn-secondary btn-sm"
+              >
+                ↻ Refresh
+              </button>
+              <div id="notif-bell">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <div id="notif-badge">0</div>
+                <div id="notif-dropdown">
+                  <div id="notif-list"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats grid -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              gap: 24px;
+              margin-bottom: 32px;
+            "
+          >
+            <div class="card">
+              <p
+                style="
+                  color: var(--color-gray-500);
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Total Active Orders
+              </p>
+              <p
+                id="stat-active-orders"
+                style="font-size: 28px; font-weight: 700; margin-top: 8px"
+              >
+                -
+              </p>
+            </div>
+            <div class="card">
+              <p
+                style="
+                  color: var(--color-gray-500);
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Completed Orders
+              </p>
+              <p
+                id="stat-completed-orders"
+                style="font-size: 28px; font-weight: 700; margin-top: 8px"
+              >
+                -
+              </p>
+            </div>
+            <div
+              class="card"
+              style="background: var(--color-warning-bg); border-color: #fde68a"
+            >
+              <p
+                style="
+                  color: #92400e;
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Pending KYC
+              </p>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-top: 8px;
+                "
+              >
+                <p
+                  id="stat-pending-kyc"
+                  style="font-size: 28px; font-weight: 700; color: #92400e"
+                >
+                  -
+                </p>
+                <a
+                  href="/super-admin/kyc.html"
+                  class="btn btn-secondary btn-sm"
+                  style="background: white; border-color: #fde68a"
+                  >Review</a
+                >
+              </div>
+            </div>
+            <div
+              class="card"
+              style="background: var(--color-danger-bg); border-color: #fecaca"
+            >
+              <p
+                style="
+                  color: #991b1b;
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Pending Approvals
+              </p>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-top: 8px;
+                "
+              >
+                <p
+                  id="stat-pending-approvals"
+                  style="font-size: 28px; font-weight: 700; color: #991b1b"
+                >
+                  -
+                </p>
+                <a
+                  href="/super-admin/approvals.html"
+                  class="btn btn-secondary btn-sm"
+                  style="background: white; border-color: #fecaca"
+                  >Review</a
+                >
+              </div>
+            </div>
+            <div class="card">
+              <p
+                style="
+                  color: var(--color-gray-500);
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Total Revenue
+              </p>
+              <p
+                id="stat-inflow"
+                style="font-size: 28px; font-weight: 700; margin-top: 8px"
+              >
+                ₹-
+              </p>
+            </div>
+            <div class="card">
+              <p
+                style="
+                  color: var(--color-gray-500);
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Accrued Payouts
+              </p>
+              <p
+                id="stat-accrued"
+                style="font-size: 28px; font-weight: 700; margin-top: 8px"
+              >
+                ₹-
+              </p>
+            </div>
+            <div
+              class="card"
+              style="background: var(--color-success-bg); border-color: #a7f3d0"
+            >
+              <p
+                style="
+                  color: #065f46;
+                  font-size: 14px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                "
+              >
+                Projected Profit
+              </p>
+              <p
+                id="stat-profit"
+                style="
+                  font-size: 28px;
+                  font-weight: 700;
+                  margin-top: 8px;
+                  color: #065f46;
+                "
+              >
+                ₹-
+              </p>
+            </div>
+          </div>
+
+          <!-- Charts Grid 1 -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+              gap: 24px;
+              margin-bottom: 24px;
+            "
+          >
+            <div class="card">
+              <h3
+                style="margin-bottom: 16px; font-size: 16px; font-weight: 600"
+              >
+                Monthly Revenue
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="revChart"></canvas>
+                <div id="revChart-loading" class="chart-loading">
+                  Loading...
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3
+                style="margin-bottom: 16px; font-size: 16px; font-weight: 600"
+              >
+                Expert Pool Health
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="healthChart"></canvas>
+                <div id="healthChart-loading" class="chart-loading">
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid 2 -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 24px;
+              margin-bottom: 32px;
+            "
+          >
+            <div class="card">
+              <h3
+                style="margin-bottom: 16px; font-size: 16px; font-weight: 600"
+              >
+                Revenue vs Expert Payouts
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="marginChart"></canvas>
+                <div id="marginChart-loading" class="chart-loading">
+                  Loading...
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3
+                style="margin-bottom: 16px; font-size: 16px; font-weight: 600"
+              >
+                New Signups Over Time
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="signupsChart"></canvas>
+                <div id="signupsChart-loading" class="chart-loading">
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: KYC Queue & Activity Feed -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+              gap: 24px;
+              margin-bottom: 32px;
+            "
+          >
+            <!-- Inline KYC Queue -->
+            <div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 16px;
+                "
+              >
+                <h2 style="font-size: 18px; font-weight: 600">
+                  KYC Review Queue
+                </h2>
+                <a href="/super-admin/kyc.html" class="btn btn-ghost btn-sm"
+                  >View All</a
+                >
+              </div>
+              <div class="card" style="padding: 0; overflow: hidden">
+                <table
+                  style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    text-align: left;
+                    font-size: 14px;
+                  "
+                >
+                  <thead>
+                    <tr
+                      style="
+                        background: var(--color-gray-50);
+                        border-bottom: 1px solid var(--color-gray-200);
+                      "
+                    >
+                      <th
+                        style="
+                          padding: 12px 16px;
+                          font-weight: 600;
+                          color: var(--color-gray-700);
+                        "
+                      >
+                        Expert Name
+                      </th>
+                      <th
+                        style="
+                          padding: 12px 16px;
+                          font-weight: 600;
+                          color: var(--color-gray-700);
+                        "
+                      >
+                        Domain
+                      </th>
+                      <th
+                        style="
+                          padding: 12px 16px;
+                          font-weight: 600;
+                          color: var(--color-gray-700);
+                          text-align: right;
+                        "
+                      >
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="kyc-inline-table">
+                    <tr>
+                      <td
+                        colspan="3"
+                        style="
+                          padding: 16px;
+                          text-align: center;
+                          color: var(--color-gray-500);
+                        "
+                      >
+                        Loading...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div style="display: flex; flex-direction: column">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 16px;
+                "
+              >
+                <h2 style="font-size: 18px; font-weight: 600">
+                  Recent Activity
+                </h2>
+                <span style="font-size: 12px; color: var(--color-gray-500)"
+                  >Auto-refreshes</span
+                >
+              </div>
+              <div
+                class="card"
+                id="activity-feed"
+                style="
+                  flex: 1;
+                  padding: 16px;
+                  overflow-y: auto;
+                  max-height: 300px;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                "
+              >
+                <div style="text-align: center; color: var(--color-gray-500)">
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+      if (!requireRole("super_admin")) throw new Error("Abort");
+
+      const page =
+        window.location.pathname.split("/").pop().replace(".html", "") ||
+        "dashboard";
+      document.querySelectorAll(".sidebar-item[data-page]").forEach((el) => {
+        if (el.dataset.page === page) el.classList.add("active");
+      });
+
+      let chartsRendered = false;
+
+      async function loadDashboard() {
+        try {
+          const [statsRes, chartsRes, activityRes, kycRes] = await Promise.all([
+            apiFetch("/superadmin/stats"),
+            apiFetch("/superadmin/dashboard/charts"),
+            apiFetch("/superadmin/activity"),
+            apiFetch("/superadmin/experts/pending"),
+          ]);
+
+          if (statsRes.ok) {
+            const data = await statsRes.json();
+            document.getElementById("stat-active-orders").textContent =
+              data.active_orders;
+            document.getElementById("stat-completed-orders").textContent =
+              data.completed_orders;
+            document.getElementById("stat-pending-kyc").textContent =
+              data.pending_kyc;
+            document.getElementById("stat-pending-approvals").textContent =
+              data.pending_approvals;
+            document.getElementById("stat-inflow").textContent =
+              `₹${data.total_inflow.toFixed(2)}`;
+            document.getElementById("stat-accrued").textContent =
+              `₹${data.total_accrued.toFixed(2)}`;
+            document.getElementById("stat-profit").textContent =
+              `₹${data.projected_profit.toFixed(2)}`;
+          }
+
+          if (chartsRes.ok && !chartsRendered) {
+            renderCharts(await chartsRes.json());
+            chartsRendered = true;
+          }
+
+          if (kycRes.ok) {
+            renderKYCQueue(await kycRes.json());
+          }
+
+          if (activityRes.ok) {
+            renderActivityFeed(await activityRes.json());
+          }
+        } catch (e) {
+          console.error("Dashboard load failed", e);
+          toast("Error loading dashboard data", "error");
+        }
+      }
+
+      function renderCharts(data) {
+        document.getElementById("revChart-loading").style.display = "none";
+        document.getElementById("healthChart-loading").style.display = "none";
+        document.getElementById("marginChart-loading").style.display = "none";
+        document.getElementById("signupsChart-loading").style.display = "none";
+
+        // Monthly Revenue
+        new Chart(document.getElementById("revChart"), {
+          type: "bar",
+          data: {
+            labels: (data.monthly_revenue || []).map((d) => d.month),
+            datasets: [
+              {
+                label: "Revenue (₹)",
+                data: (data.monthly_revenue || []).map((d) => d.revenue),
+                backgroundColor: CHART_COLORS.brandPrimary,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              y: { beginAtZero: true, ticks: { callback: (v) => "₹" + v } },
+              x: { grid: { display: false } },
+            },
+          },
+        });
+
+        // Expert Pool Health
+        const health = data.expert_health || {};
+        new Chart(document.getElementById("healthChart"), {
+          type: "doughnut",
+          data: {
+            labels: ["Approved", "Pending", "Rejected"],
+            datasets: [
+              {
+                data: [
+                  health.approved || 0,
+                  health.pending || 0,
+                  health.rejected || 0,
+                ],
+                backgroundColor: [
+                  CHART_COLORS.completed,
+                  CHART_COLORS.awaiting_quote,
+                  CHART_COLORS.refunded,
+                ],
+                borderWidth: 0,
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            ...chartDefaults,
+            cutout: "70%",
+            plugins: {
+              ...chartDefaults.plugins,
+              legend: { position: "bottom" },
+            },
+          },
+        });
+
+        // Margin
+        const margins = data.margin_comparison || [];
+        new Chart(document.getElementById("marginChart"), {
+          type: "bar",
+          data: {
+            labels: margins.map((m) => m.month),
+            datasets: [
+              {
+                label: "Revenue",
+                data: margins.map((m) => m.revenue),
+                backgroundColor: CHART_COLORS.brandPrimary,
+                borderRadius: 4,
+              },
+              {
+                label: "Payouts",
+                data: margins.map((m) => m.payout),
+                backgroundColor: CHART_COLORS.reviewing,
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              y: { beginAtZero: true, ticks: { callback: (v) => "₹" + v } },
+              x: { grid: { display: false } },
+            },
+          },
+        });
+
+        // Signups
+        const signups = data.signups_over_time || [];
+        new Chart(document.getElementById("signupsChart"), {
+          type: "line",
+          data: {
+            labels: signups.map((s) => s.date),
+            datasets: [
+              {
+                label: "Students",
+                data: signups.map((s) => s.students),
+                borderColor: CHART_COLORS.completed,
+                backgroundColor: CHART_COLORS.completed + "20",
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: "Experts",
+                data: signups.map((s) => s.experts),
+                borderColor: CHART_COLORS.awaiting_quote,
+                backgroundColor: CHART_COLORS.awaiting_quote + "20",
+                fill: true,
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            ...chartDefaults,
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1 } },
+              x: { grid: { display: false } },
+            },
+          },
+        });
+      }
+
+      function renderKYCQueue(items) {
+        const tbody = document.getElementById("kyc-inline-table");
+        tbody.innerHTML = "";
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="padding: 16px; text-align: center; color: var(--color-gray-500);">Queue is empty</td></tr>`;
+          return;
+        }
+
+        items.slice(0, 5).forEach((e) => {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid var(--color-gray-200)";
+          tr.innerHTML = `
+          <td style="padding: 12px 16px; font-weight: 500;">${escapeHtml(e.name)}</td>
+          <td style="padding: 12px 16px;"><span class="badge" style="background: var(--color-gray-100); color: var(--color-gray-700);">${escapeHtml(e.domain)}</span></td>
+          <td style="padding: 12px 16px; text-align: right;">
+            <a href="/super-admin/kyc.html" class="btn btn-secondary btn-sm">Review</a>
+          </td>
+        `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderActivityFeed(activities) {
+        const feed = document.getElementById("activity-feed");
+        feed.innerHTML = "";
+        if (activities.length === 0) {
+          feed.innerHTML = `<div style="text-align: center; color: var(--color-gray-500);">No recent activity</div>`;
+          return;
+        }
+
+        activities.forEach((a) => {
+          const div = document.createElement("div");
+          div.style.padding = "10px";
+          div.style.background = "var(--color-gray-50)";
+          div.style.borderRadius = "8px";
+          div.innerHTML = `
+          <div style="font-size: 13px; font-weight: 500; color: var(--color-gray-900);">${escapeHtml(a.message)}</div>
+          <div style="font-size: 11px; color: var(--color-gray-500); margin-top: 4px;">${timeAgo(a.timestamp)}</div>
+        `;
+          feed.appendChild(div);
+        });
+      }
+
+      loadDashboard();
+      setInterval(loadDashboard, 30000);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+  </body>
+</html>

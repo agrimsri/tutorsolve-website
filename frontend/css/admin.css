@@ -1,0 +1,377 @@
+/* Admin cockpit styles */
+
+/* ── Base card + status badges ───────────────────────────── */
+.card {
+    background: var(--color-white);
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.form-group {
+    margin-bottom: var(--space-4);
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.badge-awaiting_quote {
+    background: #FFFBEB;
+    color: #92400E;
+}
+
+.badge-pending_payment {
+    background: #EFF6FF;
+    color: #1E40AF;
+}
+
+.badge-in_progress {
+    background: #ECFDF5;
+    color: #065F46;
+}
+
+.badge-reviewing {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+.badge-completed {
+    background: #ECFDF5;
+    color: #065F46;
+}
+
+
+/* ── Cockpit Layout ──────────────────────────────────────── */
+.cockpit-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    height: calc(100vh - var(--navbar-height));
+    overflow: hidden;
+}
+
+.cockpit-sidebar {
+    border-right: 1px solid var(--color-gray-300);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.cockpit-sidebar-header {
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-gray-100);
+    background: var(--color-gray-50);
+}
+
+.cockpit-sidebar-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.filter-pill {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-gray-300);
+    background: var(--color-white);
+    color: var(--color-gray-700);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.filter-pill.active,
+.filter-pill:hover {
+    background: var(--brand-primary-ultra);
+    border-color: var(--brand-primary-light);
+    color: var(--brand-primary);
+}
+
+#orders-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.order-sidebar-card {
+    padding: var(--space-4) var(--space-5);
+    border-bottom: 1px solid var(--color-gray-100);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.order-sidebar-card:hover {
+    background: var(--color-gray-50);
+}
+
+.order-sidebar-card.active {
+    background: var(--brand-primary-ultra);
+}
+
+.order-sidebar-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-gray-900);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+/* ── Split Chat Area ─────────────────────────────────────── */
+.cockpit-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.cockpit-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex: 1;
+    gap: 0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-gray-300);
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--color-gray-300);
+}
+
+.chat-panel:last-child {
+    border-right: none;
+}
+
+.chat-panel-header {
+    padding: 8px var(--space-4);
+    background: var(--color-gray-50);
+    border-bottom: 1px solid var(--color-gray-100);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--color-gray-500);
+}
+
+.chat-panel--student .chat-panel-header {
+    background: var(--brand-primary-ultra);
+    color: var(--brand-primary);
+}
+
+.chat-panel--expert .chat-panel-header {
+    background: var(--color-warning-bg);
+    color: #92400E;
+}
+
+.chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: var(--space-4);
+    color: var(--color-gray-500);
+    font-size: 14px;
+    padding: var(--space-8);
+    text-align: center;
+}
+
+/* ── Order Controls Panel ────────────────────────────────── */
+.order-controls-panel {
+    height: 300px;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-gray-300);
+    background: var(--color-white);
+}
+
+.order-controls-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-6);
+}
+
+.control-section {
+    padding: var(--space-4);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    background: #fff;
+}
+
+.control-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--color-gray-500);
+    margin-bottom: var(--space-4);
+}
+
+/* Expert cards in assignment section */
+.expert-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.expert-card:last-child {
+    border-bottom: none;
+}
+
+/* File rows */
+.file-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.file-row:last-child {
+    border-bottom: none;
+}
+
+/* Star rating */
+.star-btn {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-gray-300);
+    padding: 0;
+    transition: color 0.1s;
+}
+
+.star-btn:hover {
+    color: #F59E0B;
+}
+/* ── Workflow Stepper ────────────────────────────────────── */
+.workflow-stepper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+}
+
+.workflow-stepper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--space-2) var(--space-2) var(--space-2);
+}
+
+.workflow-step {
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.workflow-step:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.workflow-step-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: linear-gradient(to right, var(--color-gray-50), var(--color-white));
+    border-bottom: 1px solid var(--color-gray-100);
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--color-gray-800);
+}
+
+.workflow-step-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-gray-200);
+    color: var(--color-gray-600);
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.workflow-step-body {
+    padding: var(--space-4);
+    background: var(--color-white);
+}
+
+/* States */
+.workflow-step.active {
+    border-color: var(--brand-primary);
+    box-shadow: 0 4px 12px rgba(78, 74, 229, 0.15), 0 0 0 1px var(--brand-primary);
+    z-index: 10;
+}
+
+.workflow-step.active .workflow-step-header {
+    background: linear-gradient(to right, var(--brand-primary-ultra), var(--color-white));
+    color: var(--brand-primary-dark);
+    border-bottom-color: var(--brand-primary-light);
+}
+
+.workflow-step.active .workflow-step-badge {
+    background: var(--brand-primary);
+    color: var(--color-white);
+    box-shadow: 0 0 8px rgba(78, 74, 229, 0.4);
+}
+
+.workflow-step.done {
+    background: var(--color-gray-50);
+    border-color: var(--color-gray-200);
+}
+
+.workflow-step.done .workflow-step-header {
+    color: var(--color-success-text);
+    background: linear-gradient(to right, #ECFDF5, var(--color-white));
+}
+
+.workflow-step.done .workflow-step-badge {
+    background: var(--color-success-text);
+    color: var(--color-white);
+    box-shadow: 0 0 8px rgba(6, 95, 70, 0.2);
+}
+
+.workflow-step.locked {
+    opacity: 0.5;
+    pointer-events: none;
+    background: var(--color-gray-50);
+}
+
+.workflow-step-summary {
+    font-size: 13px;
+    color: var(--color-gray-600);
+    background: var(--color-gray-50);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    border-left: 3px solid var(--color-gray-300);
+}
+.workflow-step.done .workflow-step-summary {
+    border-left-color: var(--color-success-text);
+    background: #F0FDF4;
+}
+.workflow-step.active .workflow-step-summary {
+    border-left-color: var(--brand-primary);
+    background: var(--brand-primary-ultra);
+}

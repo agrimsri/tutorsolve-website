@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile — TutorSolve Expert</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/expert.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a href="/index.html" class="sidebar-logo">
+                <img src="/assets/logo.svg" alt="TutorSolve" width="28">
+                <span class="navbar-logo-text">TutorSolve</span>
+            </a>
+
+            <nav class="sidebar-nav">
+                <p class="sidebar-section-label">Menu</p>
+                <a href="/expert/dashboard.html" class="sidebar-item" data-page="dashboard">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="1" y="1" width="6" height="6" rx="1" />
+                        <rect x="9" y="1" width="6" height="6" rx="1" />
+                        <rect x="1" y="9" width="6" height="6" rx="1" />
+                        <rect x="9" y="9" width="6" height="6" rx="1" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/expert/job-board.html" class="sidebar-item" data-page="job-board">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M2 4h12M2 8h8M2 12h10" />
+                    </svg>
+                    Job Board
+                </a>
+                <a href="/expert/my-tasks.html" class="sidebar-item" data-page="my-tasks">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+                    </svg>
+                    My Tasks
+                </a>
+                <a href="/expert/profile.html" class="sidebar-item" data-page="profile">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="8" cy="5" r="3" />
+                        <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+                    </svg>
+                    Profile
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button onclick="logout()" class="sidebar-item"
+                    style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
+                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            <div class="dashboard-main-inner">
+
+                <div class="page-header">
+                    <h1 class="page-title">My Profile</h1>
+                    <div class="header-actions">
+                        <button id="edit-btn" class="btn btn-secondary btn-sm" onclick="toggleEdit()">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
+                                stroke-width="1.5">
+                                <path d="M11 2l3 3L5 14H2v-3L11 2z" />
+                            </svg>
+                            Edit Profile
+                        </button>
+                        <button id="save-btn" class="btn btn-primary btn-sm" onclick="saveProfile()"
+                            style="display:none">
+                            Save Changes
+                        </button>
+                        <button id="cancel-btn" class="btn btn-ghost btn-sm" onclick="toggleEdit()"
+                            style="display:none">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" style="max-width:560px">
+                    <!-- <div class="card-header">
+                        <p class="card-title">Account Details</p>
+                        <p class="card-subtitle">Your profile information as submitted during registration.</p>
+                    </div> -->
+
+                    <div class="profile-field">
+                        <span class="label">Full Name</span>
+                        <span id="p-name" class="profile-value">—</span>
+                        <input type="text" id="i-name" class="profile-input">
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Email</span>
+                        <span id="p-email" class="profile-value">—</span>
+                        <input type="text" id="i-email" class="profile-input" disabled>
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Phone</span>
+                        <span id="p-phone" class="profile-value">—</span>
+                        <input type="text" id="i-phone" class="profile-input">
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Domain</span>
+                        <span id="p-domain" class="profile-value">—</span>
+                        <input type="text" id="i-domain" class="profile-input">
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">KYC Status</span>
+                        <span id="p-kyc" class="profile-value">—</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Tasks Completed</span>
+                        <span id="p-tasks" class="profile-value">—</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Average Rating</span>
+                        <span id="p-rating" class="profile-value">—</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Total Reviews</span>
+                        <span id="p-reviews" class="profile-value">—</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="label">Total Earnings</span>
+                        <span id="p-earnings" class="profile-value">—</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script>
+        if (!requireRole("expert")) throw new Error("Abort");
+        document.querySelector('[data-page="profile"]')?.classList.add("active");
+
+        let isEditing = false;
+        let profileData = {};
+
+        async function loadProfile() {
+            try {
+                const [dashRes, meRes] = await Promise.all([
+                    apiFetch("/expert/dashboard"),
+                    apiFetch("/auth/me")
+                ]);
+                const data = await dashRes.json();
+                const me = await meRes.json();
+                profileData = { ...data, email: me.email };
+
+                renderProfile();
+            } catch (e) {
+                toast("Failed to load profile details.", "error");
+            }
+        }
+
+        function renderProfile() {
+            const data = profileData;
+            document.getElementById("p-name").textContent = data.name || "—";
+            document.getElementById("p-email").textContent = data.email || "—";
+            document.getElementById("p-phone").textContent = data.phone || "Not provided";
+            document.getElementById("p-domain").textContent = data.domain || "—";
+            document.getElementById("p-tasks").textContent = data.tasks_completed ?? 0;
+            document.getElementById("p-reviews").textContent = data.review_count ?? 0;
+            document.getElementById("p-earnings").textContent = `₹${(data.total_earnings || 0).toFixed(2)}`;
+
+            // Set inputs
+            document.getElementById("i-name").value = data.name || "";
+            document.getElementById("i-email").value = data.email || "";
+            document.getElementById("i-phone").value = data.phone || "";
+            document.getElementById("i-domain").value = data.domain || "";
+
+            const avg = data.average_rating || 0;
+            const stars = [1, 2, 3, 4, 5].map(n =>
+                `<span style="color:${n <= Math.round(avg) ? '#F59E0B' : '#d1d5db'}">★</span>`
+            ).join("");
+            document.getElementById("p-rating").innerHTML =
+                avg > 0
+                    ? `${stars} <span style="font-size:13px;color:var(--color-gray-500);margin-left:4px">${avg.toFixed(1)} / 5</span>`
+                    : `<span style="color:var(--color-gray-400)">No ratings yet</span>`;
+
+            const statusClass = data.kyc_status === 'approved' ? 'completed' : data.kyc_status === 'rejected' ? 'refunded' : 'pending';
+            document.getElementById("p-kyc").innerHTML = `
+                <span class="badge badge-${statusClass}">
+                    ${(data.kyc_status || 'pending').toUpperCase()}
+                </span>`;
+        }
+
+        function toggleEdit() {
+            isEditing = !isEditing;
+            const fields = document.querySelectorAll('.profile-field');
+            fields.forEach(f => {
+                if (f.querySelector('.profile-input')) {
+                    f.classList.toggle('editing', isEditing);
+                }
+            });
+
+            document.getElementById("edit-btn").style.display = isEditing ? "none" : "flex";
+            document.getElementById("save-btn").style.display = isEditing ? "flex" : "none";
+            document.getElementById("cancel-btn").style.display = isEditing ? "flex" : "none";
+        }
+
+        async function saveProfile() {
+            const name = document.getElementById("i-name").value.trim();
+            const phone = document.getElementById("i-phone").value.trim();
+            const domain = document.getElementById("i-domain").value.trim();
+
+            try {
+                const res = await apiFetch("/auth/profile", {
+                    method: "PUT",
+                    body: JSON.stringify({ name, phone, domain })
+                });
+
+                if (res.ok) {
+                    toast("Profile updated successfully!", "success");
+                    profileData.name = name;
+                    profileData.phone = phone;
+                    profileData.domain = domain;
+                    renderProfile();
+                    toggleEdit();
+                } else {
+                    const err = await res.json();
+                    toast(err.error || "Failed to update profile", "error");
+                }
+            } catch (e) {
+                toast("An error occurred while saving.", "error");
+            }
+        }
+
+        loadProfile();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+</body>
+
+</html>

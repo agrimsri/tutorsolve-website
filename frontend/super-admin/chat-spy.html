@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Spy — TutorSolve</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/super-admin.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+  </head>
+
+  <body>
+    <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Overview</p>
+          <a
+            href="/super-admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Finance
+          </p>
+          <a
+            href="/super-admin/financials.html"
+            class="sidebar-item"
+            data-page="financials"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 7h5" />
+            </svg>
+            Financials
+          </a>
+
+          <p class="sidebar-section-label" style="margin-top: var(--space-4)">
+            Operations
+          </p>
+          <a href="/super-admin/kyc.html" class="sidebar-item" data-page="kyc">
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="12" height="12" rx="2" />
+              <path d="M5 8h6M5 5h6M5 11h4" />
+            </svg>
+            KYC Queue
+          </a>
+          <a
+            href="/super-admin/users.html"
+            class="sidebar-item"
+            data-page="users"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="6" cy="5" r="3" />
+              <path d="M1 13c0-2.761 2.239-5 5-5" />
+              <path d="M11 8v6M14 11H8" />
+            </svg>
+            Users
+          </a>
+          <a
+            href="/super-admin/chat-spy.html"
+            class="sidebar-item"
+            data-page="chat-spy"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 8s3-5 7-5 7 5 7 5-3 5-7 5-7-5-7-5z" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            Chat Spy
+          </a>
+          <a
+            href="/super-admin/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
+
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">Chat Spy</h1>
+              <p class="page-subtitle">
+                Read-only access to any active thread. You are invisible —
+                participants are not notified.
+              </p>
+            </div>
+          </div>
+
+          <!-- Thread picker & Search -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: var(--space-6);
+              margin-bottom: var(--space-6);
+            "
+          >
+            <!-- Search Employee -->
+            <div class="card">
+              <p class="label" style="margin-bottom: var(--space-3)">
+                Search by Employee Name or Email
+              </p>
+              <div
+                style="display: flex; gap: var(--space-3); position: relative"
+              >
+                <input
+                  type="text"
+                  id="emp-search"
+                  class="input"
+                  style="flex: 1"
+                  placeholder="John Doe or employee@example.com"
+                  oninput="handleEmployeeSearchInput()"
+                  autocomplete="off"
+                />
+                <button
+                  class="btn btn-secondary btn-md"
+                  onclick="searchEmployeeQuestions()"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee Questions Results -->
+          <div
+            id="emp-results"
+            style="display: none; margin-bottom: var(--space-6)"
+          >
+            <h3 style="margin-bottom: var(--space-3); font-size: 16px">
+              Assigned Questions
+            </h3>
+            <div
+              id="emp-questions-list"
+              style="display: flex; flex-direction: column; gap: var(--space-3)"
+            >
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Read-only chat view -->
+          <div id="spy-view" style="display: none">
+            <div class="card" style="padding: 0; overflow: hidden">
+              <div class="chat-panel-header" id="spy-header">
+                Thread — Read Only
+              </div>
+              <div
+                id="spy-messages"
+                class="chat-messages-area"
+                style="height: 480px; overflow-y: auto"
+              ></div>
+              <div
+                style="
+                  padding: var(--space-4);
+                  background: var(--color-gray-50);
+                  border-top: 1px solid var(--color-gray-100);
+                  font-size: 13px;
+                  color: var(--color-gray-500);
+                  text-align: center;
+                "
+              >
+                👁 You are in read-only mode. Participants cannot see you.
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/chat.js"></script>
+    <script>
+      if (!requireRole("super_admin")) throw new Error("Abort");
+      document.querySelector('[data-page="chat-spy"]')?.classList.add("active");
+
+      let spyUserId = null;
+
+      async function init() {
+        const me = await apiFetch("/auth/me").then((r) => r.json());
+        spyUserId = me.id;
+        loadThreads();
+      }
+
+      async function loadThreads() {
+        const res = await apiFetch("/superadmin/threads");
+        const threads = await res.json();
+        const select = document.getElementById("thread-select");
+
+        select.innerHTML =
+          `<option value="">— Select a thread —</option>` +
+          threads
+            .map(
+              (t) => `
+        <option value="${t._id}">
+          ${t.thread_type === "A" ? "Student ↔ Admin" : "Expert ↔ Admin"}
+          — ${escapeHtml(t.question_title)} (${t._id.slice(-6)})
+        </option>
+      `,
+            )
+            .join("");
+      }
+
+      function openThread() {
+        const threadId = document.getElementById("thread-select").value;
+        if (!threadId) {
+          toast("Select a thread first.", "warning");
+          return;
+        }
+        const selected = document.getElementById("thread-select");
+        const label = selected.options[selected.selectedIndex].text;
+        openSpyThread(threadId, label);
+      }
+
+      function openSpyThread(threadId, label) {
+        // Destroy previous spy session
+        destroyChat();
+        document.getElementById("spy-messages").innerHTML = "";
+
+        // Show the spy view
+        document.getElementById("spy-view").style.display = "block";
+        document.getElementById("spy-header").textContent =
+          `👁 Monitoring: ${label}`;
+
+        // Use initStudentChat (which handles a single thread) for read only spy mode
+        initStudentChat(threadId, spyUserId, "spy-messages");
+      }
+
+      let searchTimeout;
+      function handleEmployeeSearchInput() {
+        clearTimeout(searchTimeout);
+        const query = document.getElementById("emp-search").value.trim();
+
+        searchTimeout = setTimeout(async () => {
+          if (query.length > 0) {
+            searchEmployeeQuestions();
+          } else {
+            document.getElementById("emp-results").style.display = "none";
+          }
+        }, 300);
+      }
+
+      async function searchEmployeeQuestions() {
+        const query = document.getElementById("emp-search").value.trim();
+        if (!query) {
+          return;
+        }
+
+        try {
+          const res = await apiFetch(
+            `/superadmin/spy/employee-questions?q=${encodeURIComponent(query)}`,
+          );
+
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(
+              data.error || "Failed to fetch employee questions.",
+            );
+          }
+
+          const questions = await res.json();
+          const resultsContainer = document.getElementById("emp-results");
+          const list = document.getElementById("emp-questions-list");
+
+          resultsContainer.style.display = "block";
+          list.innerHTML = "";
+
+          if (questions.length === 0) {
+            list.innerHTML = `<div class="card"><p>No questions found for matching employees.</p></div>`;
+            return;
+          }
+
+          questions.forEach((q) => {
+            let btnsHtml = "";
+            if (q.student_thread_id) {
+              btnsHtml += `<button class="btn btn-primary btn-sm" onclick="openSpyThread('${q.student_thread_id}', 'Student ↔ Admin — ${escapeHtml(q.title)}')">Monitor Student Chat</button>`;
+            }
+            if (q.expert_thread_id) {
+              btnsHtml += `<button class="btn btn-secondary btn-sm" onclick="openSpyThread('${q.expert_thread_id}', 'Expert ↔ Admin — ${escapeHtml(q.title)}')">Monitor Expert Chat</button>`;
+            }
+
+            list.innerHTML += `
+                        <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <h4 style="margin:0 0 4px 0">${escapeHtml(q.title)}</h4>
+                                <div style="font-size:12px; color:var(--color-gray-500)">
+                                    <span class="badge badge-${statusClass(q.status)}">${formatStatus(q.status)}</span>
+                                    <span style="margin-left:8px">${escapeHtml(q.domain)}</span>
+                                    <span style="margin-left:8px; color: var(--brand-primary); font-weight: 500;">Assigned to: ${escapeHtml(q.employee_name)}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:var(--space-2)">
+                                ${btnsHtml || '<span style="font-size:12px; color:var(--color-gray-500)">No active threads</span>'}
+                            </div>
+                        </div>
+                    `;
+          });
+        } catch (err) {
+          toast(err.message, "error");
+        }
+      }
+
+      init();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/notifications.js"></script>
+  </body>
+</html>
