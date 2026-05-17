@@ -90,12 +90,33 @@
     document.getElementById("apply-form").addEventListener("submit", async (e) => {
       e.preventDefault();
 
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+
       const formData = new FormData(e.target);
+      
+      const password = formData.get("password");
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!passwordRegex.test(password)) {
+        toast("Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.", "error");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.style.transition = "opacity 0.2s ease";
+      btn.style.opacity = "0.7";
+      btn.textContent = "Submitting...";
+
       try {
         await expertApply(formData);
-        toast("Application submitted! You will be notified once approved.", "success");
-        e.target.reset();
+        toast("Application submitted! Redirecting to login...", "success");
+        setTimeout(() => {
+          window.location.href = "/auth/login.html";
+        }, 1500);
       } catch (err) {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.textContent = originalText;
         toast(err.message, "error");
       }
     });
