@@ -203,6 +203,8 @@ def expert_apply():
             "cv_url":         cv_url,
             "id_proof_url":   id_proof_url,
             "display_name":   name,              # Show full name as provided
+            "about_me":       "",
+            "qualifications": "",
             "average_rating": 0.0,
             "review_count":   0,
             "total_earnings": 0.0,
@@ -331,6 +333,8 @@ def get_profile():
                 "domain":  domain_name,
                 "domain_id": str(p.get("domain_id")) if p.get("domain_id") else None,
                 "bio":     p.get("bio", ""),
+                "about_me": p.get("about_me") or p.get("bio", ""),
+                "qualifications": p.get("qualifications", ""),
                 "kyc":     p.get("kyc_status")
             })
     elif role == Role.EMPLOYEE:
@@ -373,7 +377,13 @@ def update_profile():
             update_fields["display_name"] = name  # Update display name too
         if "phone" in data: update_fields["phone"] = data["phone"].strip()
         if "bio" in data:   update_fields["bio"]   = data["bio"].strip()
-        
+        if "about_me" in data:
+            about_me = data["about_me"].strip()
+            update_fields["about_me"] = about_me
+            update_fields["bio"] = about_me
+        if "qualifications" in data:
+            update_fields["qualifications"] = data["qualifications"].strip()
+
         # Domain update: accepts domain_id (preferred) or domain (fallback string)
         if "domain_id" in data and data["domain_id"]:
             try:

@@ -125,6 +125,18 @@
                         <span class="label">KYC Status</span>
                         <span id="p-kyc" class="profile-value">—</span>
                     </div>
+                    <div class="profile-field profile-field-stacked">
+                        <span class="label">About Me</span>
+                        <span id="p-about" class="profile-value profile-value-long">—</span>
+                        <textarea id="i-about" class="profile-input profile-textarea" rows="4"
+                            placeholder="Share your teaching style, strengths, and what students can expect."></textarea>
+                    </div>
+                    <div class="profile-field profile-field-stacked">
+                        <span class="label">Qualifications</span>
+                        <span id="p-qualifications" class="profile-value profile-value-long">—</span>
+                        <textarea id="i-qualifications" class="profile-input profile-textarea" rows="4"
+                            placeholder="Add degrees, certifications, experience, tools, or subject specialties."></textarea>
+                    </div>
                     <div class="profile-field">
                         <span class="label">Tasks Completed</span>
                         <span id="p-tasks" class="profile-value">—</span>
@@ -172,6 +184,11 @@
         let profileData = {};
         let domainsList = [];
 
+        const renderText = (value, fallback = "Not added yet") => {
+            const text = (value || "").trim();
+            return text || fallback;
+        };
+
         async function loadDomains() {
             try {
                 const res = await apiFetch("/auth/domains");
@@ -212,6 +229,8 @@
             document.getElementById("p-email").textContent = data.email || "—";
             document.getElementById("p-phone").textContent = data.phone || "Not provided";
             document.getElementById("p-domain").textContent = data.domain || "—";
+            document.getElementById("p-about").textContent = renderText(data.about_me || data.bio);
+            document.getElementById("p-qualifications").textContent = renderText(data.qualifications);
             document.getElementById("p-tasks").textContent = data.tasks_completed ?? 0;
             document.getElementById("p-reviews").textContent = data.review_count ?? 0;
             document.getElementById("p-earnings").textContent = `₹${(data.total_earnings || 0).toFixed(2)}`;
@@ -220,6 +239,8 @@
             document.getElementById("i-name").value = data.name || "";
             document.getElementById("i-email").value = data.email || "";
             document.getElementById("i-phone").value = data.phone || "";
+            document.getElementById("i-about").value = data.about_me || data.bio || "";
+            document.getElementById("i-qualifications").value = data.qualifications || "";
             
             const domainSelect = document.getElementById("i-domain");
             if (data.domain_id) {
@@ -268,6 +289,8 @@
         async function saveProfile() {
             const name = document.getElementById("i-name").value.trim();
             const phone = document.getElementById("i-phone").value.trim();
+            const about_me = document.getElementById("i-about").value.trim();
+            const qualifications = document.getElementById("i-qualifications").value.trim();
             const domainSelect = document.getElementById("i-domain");
             const domain_id = domainSelect.value;
             const domainName = domainSelect.options[domainSelect.selectedIndex]?.textContent || "";
@@ -275,13 +298,16 @@
             try {
                 const res = await apiFetch("/auth/profile", {
                     method: "PUT",
-                    body: JSON.stringify({ name, phone, domain_id })
+                    body: JSON.stringify({ name, phone, domain_id, about_me, qualifications })
                 });
 
                 if (res.ok) {
                     toast("Profile updated successfully!", "success");
                     profileData.name = name;
                     profileData.phone = phone;
+                    profileData.about_me = about_me;
+                    profileData.bio = about_me;
+                    profileData.qualifications = qualifications;
                     profileData.domain_id = domain_id;
                     profileData.domain = domainName;
                     renderProfile();

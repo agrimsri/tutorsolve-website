@@ -34,6 +34,8 @@ def public_experts():
             "review_count":   e.get("review_count", 0),
             "tasks_completed": e.get("tasks_completed", 0),
             "quality_score":  e.get("quality_score", 0.0),
+            "about_me":       e.get("about_me") or e.get("bio", ""),
+            "qualifications": e.get("qualifications", ""),
             # Never expose: name, email, phone, user_id, cv_url, id_proof_url
         })
 
