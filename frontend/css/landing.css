@@ -273,6 +273,36 @@ section {
   margin-bottom: 24px;
 }
 
+.services-section {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(78, 74, 229, 0.08),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.service-card h3 {
+  font-size: 22px;
+  margin-bottom: 14px;
+  color: var(--color-gray-900);
+}
+
+.service-card p {
+  color: var(--color-gray-600);
+  line-height: 1.75;
+}
+
+.service-card .feature-icon {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.service-card-wide {
+  grid-column: span 2;
+}
+
 /* --- Bento Grid --- */
 .bento-grid {
   display: grid;
@@ -470,20 +500,37 @@ section {
   color: white;
 }
 
+.footer .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
 .footer-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 1.5fr repeat(4, 1fr);
   gap: 40px;
-  margin-bottom: 64px;
+  margin-bottom: 48px;
+  align-items: start;
+}
+
+.footer-brand p {
+  color: var(--color-gray-500);
+  max-width: 320px;
+  line-height: 1.8;
+  margin-top: 16px;
 }
 
 .footer h4 {
   margin-bottom: 24px;
   font-size: 18px;
+  color: white;
 }
 
 .footer ul {
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .footer ul li {
@@ -493,11 +540,53 @@ section {
 .footer a {
   color: var(--color-gray-500);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .footer a:hover {
   color: white;
+}
+
+.footer-contact p {
+  margin-bottom: 14px;
+  color: var(--color-gray-500);
+}
+
+.footer-contact a {
+  color: var(--color-gray-500);
+}
+
+.footer-social {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 32px;
+  border-top: 1px solid #333;
+  color: var(--color-gray-500);
+  font-size: 14px;
+}
+
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* --- Mobile Menu --- */
@@ -527,6 +616,10 @@ section {
 }
 
 @media (max-width: 992px) {
+  .service-card-wide {
+    grid-column: span 1;
+  }
+
   .hero {
     min-height: auto;
     padding-top: 110px;
@@ -732,6 +825,10 @@ section {
 }
 
 @media (max-width: 640px) {
+  .service-card h3 {
+    font-size: 20px;
+  }
+
   .hero-headline {
     font-size: clamp(32px, 10vw, 44px);
     margin-bottom: 16px;

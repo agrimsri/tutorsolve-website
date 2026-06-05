@@ -6,70 +6,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Become an Expert — TutorSolve</title>
   <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/public.css">
   <link rel="stylesheet" href="/css/auth.css">
 </head>
 
 <body class="auth-body">
-  <div class="auth-layout">
-    <div class="auth-brand">
-      <img src="/assets/logo.svg" alt="TutorSolve" width="48">
-      <h2>Become an Expert</h2>
-      <p>Earn by solving academic tasks for students worldwide.</p>
+  <header class="header">
+    <div class="nav-inner">
+      <a href="/index.html" class="logo">
+        <img src="/assets/logo.svg" alt="TutorSolve">
+        <span>TutorSolve</span>
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/index.html#how-it-works" class="nav-link">How it Works</a></li>
+          <li><a href="/index.html#our-services" class="nav-link">Our Services</a></li>
+          <li><a href="/pages/ask-question.html" class="nav-link">Ask a Question</a></li>
+          <li><a href="/pages/experts.html" class="nav-link">Our Experts</a></li>
+          <li><a href="/index.html#testimonials" class="nav-link">Reviews</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions" id="nav-actions"></div>
+      <div class="nav-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
-    <div class="auth-form-panel">
-      <h1 class="auth-title">Apply as Expert</h1>
-      <p class="auth-sub">Your application will be reviewed within 24 hours.</p>
-      <form id="apply-form" enctype="multipart/form-data">
-        <div class="form-group">
-          <label class="label">Full Name</label>
-          <input name="name" type="text" class="input" required>
-        </div>
-        <div class="form-group">
-          <label class="label">Email</label>
-          <input name="email" type="email" class="input" required>
-        </div>
-        <div class="form-group">
-          <label class="label">Phone</label>
-          <input name="phone" type="tel" class="input" placeholder="+91 9876543210">
-        </div>
-        <div class="form-group">
-          <label class="label">Domain</label>
-          <select id="domain-select" name="domain" class="input" required>
-            <option value="">Loading domains...</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="label">Password</label>
-          <div class="password-wrapper">
-            <input name="password" type="password" class="input" required>
-            <button class="password-toggle" type="button">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="label">Upload CV <span style="color:var(--color-gray-500)">(PDF)</span></label>
-          <input name="cv" type="file" class="input" accept=".pdf,.doc,.docx" required>
-        </div>
-        <div class="form-group">
-          <label class="label">Upload ID Proof</label>
-          <input name="id_proof" type="file" class="input" accept="image/*,.pdf" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Submit Application</button>
-      </form>
-      <p class="auth-footer">Already approved? <a href="/auth/login.html">Log In</a></p>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-shell">
+      <div class="auth-layout">
+        <section class="auth-form-panel">
+          <h2 class="auth-title">Apply as Expert</h2>
+          <p class="auth-sub">Your application will be reviewed within 24 hours.</p>
+          <form id="apply-form" enctype="multipart/form-data">
+            <div class="form-group">
+              <label class="label">Full Name</label>
+              <input name="name" type="text" class="input" required>
+            </div>
+            <div class="form-group">
+              <label class="label">Email</label>
+              <input name="email" type="email" class="input" required>
+            </div>
+            <div class="form-group">
+              <label class="label">Phone</label>
+              <input name="phone" type="tel" class="input" placeholder="+91 9876543210">
+            </div>
+            <div class="form-group">
+              <label class="label">Domain</label>
+              <select id="domain-select" name="domain" class="input" required>
+                <option value="">Loading domains...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label">Password</label>
+              <div class="password-wrapper">
+                <input name="password" type="password" class="input" required>
+                <button class="password-toggle" type="button">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="label">Upload CV <span style="color:var(--color-gray-500)">(PDF)</span></label>
+              <input name="cv" type="file" class="input" accept=".pdf,.doc,.docx" required>
+            </div>
+            <div class="form-group">
+              <label class="label">Upload ID Proof</label>
+              <input name="id_proof" type="file" class="input" accept="image/*,.pdf" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%">Submit Application</button>
+          </form>
+          <p class="auth-footer">Already approved? <a href="/auth/login.html">Log In</a></p>
+        </section>
+      </div>
     </div>
-  </div>
+  </main>
   <script src="/js/runtime-env.js"></script>
-    <script src="/js/runtime-config.js"></script>
-    <script src="/js/api.js"></script>
+  <script src="/js/runtime-config.js"></script>
+  <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/toast.js"></script>
   <script src="/js/utils.js"></script>
+  <script src="/js/landing.js"></script>
   <script>
     async function loadDomains() {
       try {
