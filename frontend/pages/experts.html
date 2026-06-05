@@ -298,33 +298,25 @@
       });
 
       // ── Experts ──────────────────────────────────────────────
-      const DOMAINS = [
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "Computer Science",
-        "Engineering",
-        "Economics",
-        "Statistics",
-        "Literature",
-        "History",
-        "Law",
-        "Other",
-      ];
-
       let allExperts = [];
       let currentDomain = "";
 
-      // Populate domain filter pills
-      const filterEl = document.getElementById("domain-filters");
-      DOMAINS.forEach((d) => {
-        const btn = document.createElement("button");
-        btn.className = "domain-pill";
-        btn.textContent = d;
-        btn.onclick = () => filterByDomain(d, btn);
-        filterEl.appendChild(btn);
-      });
+      async function loadDomainFilters() {
+        const filterEl = document.getElementById("domain-filters");
+        try {
+          const res = await fetch(`${API_BASE}/auth/domains`);
+          const domains = await res.json();
+          domains.forEach(({ name }) => {
+            const btn = document.createElement("button");
+            btn.className = "domain-pill";
+            btn.textContent = name;
+            btn.onclick = () => filterByDomain(name, btn);
+            filterEl.appendChild(btn);
+          });
+        } catch (e) {
+          console.error("Failed to load domain filters", e);
+        }
+      }
 
       async function loadExperts(domain = "") {
         const url = domain
@@ -539,6 +531,7 @@
         return p.innerHTML;
       }
 
+      loadDomainFilters();
       loadExperts();
     </script>
 

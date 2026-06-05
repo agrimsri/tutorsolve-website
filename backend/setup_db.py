@@ -108,6 +108,10 @@ def seed_data(db):
         print(f"Super Admin already exists: {admin_email}")
 
     # 2. Domains
+    db.domains.update_many(
+        {"name": {"$nin": DOMAINS}},
+        {"$set": {"is_active": False}}
+    )
     for domain_name in DOMAINS:
         existing_domain = db.domains.find_one({"name": domain_name})
         if not existing_domain:
@@ -118,8 +122,10 @@ def seed_data(db):
             })
             print(f"Created Domain: {domain_name}")
         else:
-            # Silent skip or print if needed
-            pass
+            db.domains.update_one(
+                {"_id": existing_domain["_id"]},
+                {"$set": {"is_active": True}}
+            )
     print("Domains seeding check complete.")
 
 def main():

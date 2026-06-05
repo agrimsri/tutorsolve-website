@@ -14,7 +14,7 @@ from app.blueprints.auth import auth_bp
 from app.extensions import get_db
 from app.models.user import make_identity, make_additional_claims
 from app.services.geo_service import is_blocked_country, get_real_ip
-from app.utils.constants import Role, KYCStatus, BLOCKED_COUNTRIES
+from app.utils.constants import Role, KYCStatus, BLOCKED_COUNTRIES, DOMAINS
 from app.utils.helpers import oid
 
 
@@ -114,8 +114,14 @@ def signup():
 @auth_bp.route("/domains", methods=["GET"])
 def get_domains():
     db = get_db()
-    domains = list(db.domains.find({}))
-    return jsonify([{"id": str(d["_id"]), "name": d["name"]} for d in domains]), 200
+    domains = list(db.domains.find({"is_active": {"$ne": False}}))
+    domains_by_name = {d["name"]: d for d in domains}
+    ordered_domains = [
+        {"id": str(domains_by_name[name]["_id"]), "name": name}
+        for name in DOMAINS
+        if name in domains_by_name
+    ]
+    return jsonify(ordered_domains), 200
 
 @auth_bp.route("/expert-apply", methods=["POST"])
 def expert_apply():

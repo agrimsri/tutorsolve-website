@@ -24,11 +24,41 @@ function normalizeRole(role) {
     return r;
 }
 
+function parseJwtPayload(token) {
+    try {
+        const parts = (token || "").split(".");
+        if (parts.length !== 3) return null;
+        const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+        const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=");
+        return JSON.parse(atob(padded));
+    } catch {
+        return null;
+    }
+}
+
+function isTokenExpired(token) {
+    const payload = parseJwtPayload(token);
+    if (!payload || typeof payload.exp !== "number") return true;
+    return payload.exp * 1000 <= Date.now();
+}
+
+function redirectToHome() {
+    if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") {
+        window.location.href = "/index.html";
+    }
+}
+
 async function apiFetch(path, options = {}) {
     const token = localStorage.getItem("ts_token");
     const headers = {
         ...options.headers
     };
+
+    if (token && isTokenExpired(token)) {
+        clearAuth();
+        redirectToHome();
+        return;
+    }
 
     // Only set Content-Type for JSON bodies
     if (options.body && !(options.body instanceof FormData)) {
@@ -46,9 +76,8 @@ async function apiFetch(path, options = {}) {
 
     const res = await fetch(`${API_BASE}${path}`, fetchOptions);
     if (res.status === 401 && !path.includes("/auth/login")) {
-        localStorage.removeItem("ts_token");
-        localStorage.removeItem("ts_role");
-        window.location.href = "/auth/login.html";
+        clearAuth();
+        redirectToHome();
         return;
     }
 
@@ -57,7 +86,14 @@ async function apiFetch(path, options = {}) {
 
 function getToken() { return localStorage.getItem("ts_token"); }
 function getRole() { return normalizeRole(localStorage.getItem("ts_role")); }
-function isLoggedIn() { return !!getToken(); }
+function isLoggedIn() {
+    const token = getToken();
+    if (!token || isTokenExpired(token)) {
+        clearAuth();
+        return false;
+    }
+    return true;
+}
 
 function saveAuth(token, role) {
     localStorage.setItem("ts_token", token);
@@ -71,12 +107,13 @@ function clearAuth() {
 
 function requireRole(expectedRole) {
     if (!isLoggedIn()) {
-        window.location.href = "/auth/login.html";
+        redirectToHome();
         return false;
     }
     const role = getRole();
     if (role !== normalizeRole(expectedRole)) {
-        window.location.href = "/auth/login.html";
+        clearAuth();
+        redirectToHome();
         return false;
     }
     return true;

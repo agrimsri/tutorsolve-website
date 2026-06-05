@@ -32,7 +32,21 @@ class PaymentStatus:
 BLOCKED_COUNTRIES = ["IN", "PK"]
 
 DOMAINS = [
-    "Mathematics", "Physics", "Chemistry", "Biology",
-    "Computer Science", "Engineering", "Economics",
-    "Statistics", "Literature", "History", "Law", "Other",
+    "Mathematics & Statistics",
+    "Physics",
+    "Chemistry",
+    "Medical Work",
+    "Programming, Computer Science & Data Science",
+    "Software Tools & Simulations",
+    "Mechanical Engineering",
+    "Electrical & Electronic Engineering",
+    "Civil Engineering",
+    "Business & Management",
+    "Accounting & Finance",
+    "Economics",
+    "Psychology",
+    "Medical & Healthcare",
+    "Law",
+    "History & Humanities",
+    "Other",
 ]
