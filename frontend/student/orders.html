@@ -172,6 +172,19 @@
     let currentTab = "ongoing";
     let allOrders = [];
 
+    function openPostQuestionModalFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      if (
+        params.get("open_post_modal") !== "1" &&
+        params.get("post_question") !== "1"
+      ) {
+        return;
+      }
+
+      document.getElementById("post-modal")?.classList.add("active");
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+
     async function loadOrders() {
       try {
         const res = await apiFetch("/student/orders");
@@ -227,7 +240,7 @@
             </div>
             ${priceHTML}
           </div>
-          <a href="/student/order-detail.html?id=${o._id}" class="btn btn-secondary btn-sm" onclick="sessionStorage.setItem('last_order_id','${o._id}')">View Details</a>
+          <a href="/student/order-detail.html?id=${o._id}" class="btn btn-secondary btn-sm" onclick="rememberStudentOrder('${o._id}')">View Details</a>
         `;
         list.appendChild(card);
       });
@@ -363,7 +376,14 @@
         const data = await res.json();
         if (res.ok) {
           toast("Question posted successfully!", "success");
+          if (data.question_id && typeof rememberStudentOrder === "function") {
+            rememberStudentOrder(data.question_id);
+          }
           document.getElementById('post-modal').classList.remove('active');
+          if (data.question_id) {
+            window.location.href = getStudentOrderDetailUrl(data.question_id);
+            return;
+          }
           loadOrders(); // Refresh order list
 
           // Clear inputs
@@ -431,7 +451,14 @@
 
         await window.PendingQuestionDraft.clearDraft();
         sessionStorage.removeItem("pending_question");
+        if (data.question_id && typeof rememberStudentOrder === "function") {
+          rememberStudentOrder(data.question_id);
+        }
         toast("Question posted successfully!", "success");
+        if (data.question_id) {
+          window.location.href = getStudentOrderDetailUrl(data.question_id);
+          return;
+        }
         await loadOrders();
       } catch (err) {
         toast(err.message || "Failed to auto-submit your saved question.", "error");
@@ -446,6 +473,7 @@
 
     // --- Pending Question Auto-open ---
     // (No DOMContentLoaded needed — script is at bottom of body, DOM is ready)
+    openPostQuestionModalFromUrl();
     autoSubmitPendingDraft();
 
     if (!window.PendingQuestionDraft || !window.PendingQuestionDraft.hasDraft()) {

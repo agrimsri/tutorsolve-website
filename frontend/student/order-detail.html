@@ -628,14 +628,19 @@
         _params.get("id") ||
         _params.get("question_id") ||
         _params.get("order_id") ||
-        sessionStorage.getItem("last_order_id");
+        sessionStorage.getItem("last_order_id") ||
+        localStorage.getItem("ts_last_student_order_id");
       if (!qid) {
         toast("Missing order id. Opening your orders list.", "error");
         setTimeout(() => {
           window.location.href = "/student/orders.html";
         }, 1200);
       } else {
-        sessionStorage.setItem("last_order_id", qid);
+        if (typeof rememberStudentOrder === "function") {
+          rememberStudentOrder(qid);
+        } else {
+          sessionStorage.setItem("last_order_id", qid);
+        }
       }
 
       async function loadDetail() {

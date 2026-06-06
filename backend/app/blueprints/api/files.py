@@ -323,5 +323,15 @@ def forward_file(file_id):
                 body=f"Admin has shared a solution for: {question['title']}",
                 link=f"/student/order-detail.html?id={file['question_id']}"
             )
+            
+            # Send email to student
+            from app.services.email_service import send_solution_uploaded_email
+            user = db.users.find_one({"_id": student["user_id"]})
+            if user:
+                send_solution_uploaded_email(
+                    student_email=user.get("email"),
+                    student_name=user.get("name", "Student"),
+                    question_title=question.get("title", "Your Question")
+                )
 
     return jsonify({"status": "forwarded"}), 200

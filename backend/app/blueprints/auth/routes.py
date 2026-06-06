@@ -54,6 +54,18 @@ def _hash_reset_token(raw_token):
     return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
 
 
+def _validate_phone_number(phone):
+    """Validate phone number - must contain 10-15 digits and only phone formatting chars"""
+    if not phone:
+        return True  # Optional field
+    import re
+    phone = phone.strip()
+    if not re.match(r'^[+0-9\s().-]+$', phone):
+        return False
+    phone_digits = re.sub(r'\D', '', phone)
+    return 10 <= len(phone_digits) <= 15
+
+
 # Remote local storage folder - everything should go to S3
 # UPLOAD_FOLDER = os.path.join("app", "static", "uploads", "kyc")
 # os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -129,11 +141,18 @@ def expert_apply():
     email    = (request.form.get("email") or "").strip().lower()
     name     = (request.form.get("name") or "").strip()
     phone    = (request.form.get("phone") or "").strip()
+    whatsapp_number = (request.form.get("whatsapp_number") or "").strip()
     domain_id = (request.form.get("domain") or "").strip()
     password = request.form.get("password") or ""
 
     if not all([email, name, domain_id, password]):
         return jsonify({"error": "All fields are required"}), 400
+
+    if phone and not _validate_phone_number(phone):
+        return jsonify({"error": "Phone number must contain 10-15 digits"}), 400
+
+    if whatsapp_number and not _validate_phone_number(whatsapp_number):
+        return jsonify({"error": "WhatsApp number must contain 10-15 digits"}), 400
 
     cv_file = request.files.get("cv")
     if not cv_file or not cv_file.filename:
@@ -196,6 +215,7 @@ def expert_apply():
             "user_id":        user_id,
             "name":           name,
             "phone":          phone or None,
+            "whatsapp_number": whatsapp_number or None,
             "domain_id":      domain_doc["_id"],
             "domain":         domain_doc["name"],
 
@@ -375,7 +395,16 @@ def update_profile():
             name = data["name"].strip()
             update_fields["name"] = name
             update_fields["display_name"] = name  # Update display name too
-        if "phone" in data: update_fields["phone"] = data["phone"].strip()
+        if "phone" in data:
+            phone = data["phone"].strip()
+            if phone and not _validate_phone_number(phone):
+                return jsonify({"error": "Phone number must contain 10-15 digits"}), 400
+            update_fields["phone"] = phone
+        if "whatsapp_number" in data:
+            whatsapp_number = data["whatsapp_number"].strip()
+            if whatsapp_number and not _validate_phone_number(whatsapp_number):
+                return jsonify({"error": "WhatsApp number must contain 10-15 digits"}), 400
+            update_fields["whatsapp_number"] = whatsapp_number
         if "bio" in data:   update_fields["bio"]   = data["bio"].strip()
         if "about_me" in data:
             about_me = data["about_me"].strip()

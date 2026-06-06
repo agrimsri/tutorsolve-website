@@ -773,11 +773,18 @@
             getRole() === "student"
           ) {
             if (typeof apiFetch === "function") {
-              await apiFetch("/student/orders", {
-                method: "POST",
-                body: JSON.stringify({ title: q, domain: "Other" }),
-              });
-              window.location.href = "/student/orders.html";
+              try {
+                const detailUrl =
+                  typeof createStudentOrderFromLandingQuestion === "function"
+                    ? await createStudentOrderFromLandingQuestion(q)
+                    : null;
+                window.location.href = detailUrl || "/student/orders.html";
+              } catch (err) {
+                if (typeof toast === "function") {
+                  toast(err.message || "Failed to create your order.", "error");
+                }
+                window.location.href = "/student/orders.html";
+              }
             } else {
               window.location.href = "/student/dashboard.html";
             }

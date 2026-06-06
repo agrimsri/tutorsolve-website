@@ -1,174 +1,308 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Profile — TutorSolve Expert</title>
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/expert.css">
-</head>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/expert.css" />
+  </head>
 
-<body>
+  <body>
     <div class="dashboard-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <a href="/index.html" class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve</span>
+        </a>
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <a href="/index.html" class="sidebar-logo">
-                <img src="/assets/logo.svg" alt="TutorSolve" width="28">
-                <span class="navbar-logo-text">TutorSolve</span>
-            </a>
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Menu</p>
+          <a
+            href="/expert/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="9" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="9" y="9" width="6" height="6" rx="1" />
+            </svg>
+            Dashboard
+          </a>
+          <a
+            href="/expert/job-board.html"
+            class="sidebar-item"
+            data-page="job-board"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M2 4h12M2 8h8M2 12h10" />
+            </svg>
+            Job Board
+          </a>
+          <a
+            href="/expert/my-tasks.html"
+            class="sidebar-item"
+            data-page="my-tasks"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
+            </svg>
+            My Tasks
+          </a>
+          <a
+            href="/expert/super-admin-chat.html"
+            class="sidebar-item"
+            data-page="super-admin-chat"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M2.5 3.5h11v7h-3.2L7.2 13.5v-3H2.5v-7z" />
+            </svg>
+            Super Admin Chat
+            <span id="sa-chat-unread-badge" class="sa-chat-unread-badge"
+              >0</span
+            >
+          </a>
+          <a
+            href="/expert/profile.html"
+            class="sidebar-item"
+            data-page="profile"
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="8" cy="5" r="3" />
+              <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+            </svg>
+            Profile
+          </a>
+        </nav>
 
-            <nav class="sidebar-nav">
-                <p class="sidebar-section-label">Menu</p>
-                <a href="/expert/dashboard.html" class="sidebar-item" data-page="dashboard">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <rect x="1" y="1" width="6" height="6" rx="1" />
-                        <rect x="9" y="1" width="6" height="6" rx="1" />
-                        <rect x="1" y="9" width="6" height="6" rx="1" />
-                        <rect x="9" y="9" width="6" height="6" rx="1" />
-                    </svg>
-                    Dashboard
-                </a>
-                <a href="/expert/job-board.html" class="sidebar-item" data-page="job-board">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M2 4h12M2 8h8M2 12h10" />
-                    </svg>
-                    Job Board
-                </a>
-                <a href="/expert/my-tasks.html" class="sidebar-item" data-page="my-tasks">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M4 4h8M4 8h5M3 12l2 2 4-4" />
-                    </svg>
-                    My Tasks
-                </a>
-                <a href="/expert/super-admin-chat.html" class="sidebar-item" data-page="super-admin-chat">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M2.5 3.5h11v7h-3.2L7.2 13.5v-3H2.5v-7z" />
-                    </svg>
-                    Super Admin Chat
-                    <span id="sa-chat-unread-badge" class="sa-chat-unread-badge">0</span>
-                </a>
-                <a href="/expert/profile.html" class="sidebar-item" data-page="profile">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="8" cy="5" r="3" />
-                        <path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" />
-                    </svg>
-                    Profile
-                </a>
-            </nav>
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            <svg
+              class="sidebar-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
+      </aside>
 
-            <div class="sidebar-footer">
-                <button onclick="logout()" class="sidebar-item"
-                    style="width:100%;border:none;background:none;cursor:pointer;text-align:left">
-                    <svg class="sidebar-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6" />
-                    </svg>
-                    Logout
-                </button>
+      <main class="dashboard-main">
+        <div class="dashboard-main-inner">
+          <div class="page-header">
+            <h1 class="page-title">My Profile</h1>
+            <div class="header-actions">
+              <button
+                id="edit-btn"
+                class="btn btn-secondary btn-sm"
+                onclick="toggleEdit()"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M11 2l3 3L5 14H2v-3L11 2z" />
+                </svg>
+                Edit Profile
+              </button>
+              <button
+                id="save-btn"
+                class="btn btn-primary btn-sm"
+                onclick="saveProfile()"
+                style="display: none"
+              >
+                Save Changes
+              </button>
+              <button
+                id="cancel-btn"
+                class="btn btn-ghost btn-sm"
+                onclick="toggleEdit()"
+                style="display: none"
+              >
+                Cancel
+              </button>
             </div>
-        </aside>
+          </div>
 
-        <main class="dashboard-main">
-            <div class="dashboard-main-inner">
-
-                <div class="page-header">
-                    <h1 class="page-title">My Profile</h1>
-                    <div class="header-actions">
-                        <button id="edit-btn" class="btn btn-secondary btn-sm" onclick="toggleEdit()">
-                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor"
-                                stroke-width="1.5">
-                                <path d="M11 2l3 3L5 14H2v-3L11 2z" />
-                            </svg>
-                            Edit Profile
-                        </button>
-                        <button id="save-btn" class="btn btn-primary btn-sm" onclick="saveProfile()"
-                            style="display:none">
-                            Save Changes
-                        </button>
-                        <button id="cancel-btn" class="btn btn-ghost btn-sm" onclick="toggleEdit()"
-                            style="display:none">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card" style="max-width:560px">
-                    <!-- <div class="card-header">
+          <div class="card" style="max-width: 560px">
+            <!-- <div class="card-header">
                         <p class="card-title">Account Details</p>
                         <p class="card-subtitle">Your profile information as submitted during registration.</p>
                     </div> -->
 
-                    <div class="profile-field">
-                        <span class="label">Full Name</span>
-                        <span id="p-name" class="profile-value">—</span>
-                        <input type="text" id="i-name" class="profile-input">
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Email</span>
-                        <span id="p-email" class="profile-value">—</span>
-                        <input type="text" id="i-email" class="profile-input" disabled>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Phone</span>
-                        <span id="p-phone" class="profile-value">—</span>
-                        <input type="text" id="i-phone" class="profile-input">
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Domain</span>
-                        <span id="p-domain" class="profile-value">—</span>
-                        <select id="i-domain" class="profile-input">
-                            <option value="">Select Domain</option>
-                        </select>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">KYC Status</span>
-                        <span id="p-kyc" class="profile-value">—</span>
-                    </div>
-                    <div class="profile-field profile-field-stacked">
-                        <span class="label">About Me</span>
-                        <span id="p-about" class="profile-value profile-value-long">—</span>
-                        <textarea id="i-about" class="profile-input profile-textarea" rows="4"
-                            placeholder="Share your teaching style, strengths, and what students can expect."></textarea>
-                    </div>
-                    <div class="profile-field profile-field-stacked">
-                        <span class="label">Qualifications</span>
-                        <span id="p-qualifications" class="profile-value profile-value-long">—</span>
-                        <textarea id="i-qualifications" class="profile-input profile-textarea" rows="4"
-                            placeholder="Add degrees, certifications, experience, tools, or subject specialties."></textarea>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Tasks Completed</span>
-                        <span id="p-tasks" class="profile-value">—</span>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Average Rating</span>
-                        <span id="p-rating" class="profile-value">—</span>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Total Reviews</span>
-                        <span id="p-reviews" class="profile-value">—</span>
-                    </div>
-                    <div class="profile-field">
-                        <span class="label">Total Earnings</span>
-                        <span id="p-earnings" class="profile-value">—</span>
-                    </div>
-                </div>
-
-                <div class="card" style="max-width:560px; margin-top:16px;">
-                    <h3 style="margin:0 0 14px 0; font-size:16px;">Change Password</h3>
-                    <div style="display:grid; gap:10px;">
-                        <input id="cp-current" type="password" class="input" placeholder="Current password">
-                        <input id="cp-new" type="password" class="input" placeholder="New password (min 8 chars)">
-                        <input id="cp-confirm" type="password" class="input" placeholder="Confirm new password">
-                        <button id="cp-save-btn" class="btn btn-primary" style="width:fit-content" onclick="changePassword()">
-                            Update Password
-                        </button>
-                    </div>
-                </div>
-
+            <div class="profile-field">
+              <span class="label">Full Name</span>
+              <span id="p-name" class="profile-value">—</span>
+              <input type="text" id="i-name" class="profile-input" />
             </div>
-        </main>
+            <div class="profile-field">
+              <span class="label">Email</span>
+              <span id="p-email" class="profile-value">—</span>
+              <input type="text" id="i-email" class="profile-input" disabled />
+            </div>
+            <div class="profile-field">
+              <span class="label">Phone</span>
+              <span id="p-phone" class="profile-value">—</span>
+              <input
+                type="text"
+                id="i-phone"
+                class="profile-input"
+                pattern="^[+0-9\s().-]{10,25}$"
+                title="Enter a valid phone number with 10 to 15 digits"
+              />
+            </div>
+            <div class="profile-field">
+              <span class="label">WhatsApp Number</span>
+              <span id="p-whatsapp" class="profile-value">—</span>
+              <input
+                type="text"
+                id="i-whatsapp"
+                class="profile-input"
+                pattern="^[+0-9\s().-]{10,25}$"
+                title="Enter a valid phone number with 10 to 15 digits"
+              />
+            </div>
+            <div class="profile-field">
+              <span class="label">Domain</span>
+              <span id="p-domain" class="profile-value">—</span>
+              <select id="i-domain" class="profile-input">
+                <option value="">Select Domain</option>
+              </select>
+            </div>
+            <div class="profile-field">
+              <span class="label">KYC Status</span>
+              <span id="p-kyc" class="profile-value">—</span>
+            </div>
+            <div class="profile-field profile-field-stacked">
+              <span class="label">About Me</span>
+              <span id="p-about" class="profile-value profile-value-long"
+                >—</span
+              >
+              <textarea
+                id="i-about"
+                class="profile-input profile-textarea"
+                rows="4"
+                placeholder="Share your teaching style, strengths, and what students can expect."
+              ></textarea>
+            </div>
+            <div class="profile-field profile-field-stacked">
+              <span class="label">Qualifications</span>
+              <span
+                id="p-qualifications"
+                class="profile-value profile-value-long"
+                >—</span
+              >
+              <textarea
+                id="i-qualifications"
+                class="profile-input profile-textarea"
+                rows="4"
+                placeholder="Add degrees, certifications, experience, tools, or subject specialties."
+              ></textarea>
+            </div>
+            <div class="profile-field">
+              <span class="label">Tasks Completed</span>
+              <span id="p-tasks" class="profile-value">—</span>
+            </div>
+            <div class="profile-field">
+              <span class="label">Average Rating</span>
+              <span id="p-rating" class="profile-value">—</span>
+            </div>
+            <div class="profile-field">
+              <span class="label">Total Reviews</span>
+              <span id="p-reviews" class="profile-value">—</span>
+            </div>
+            <div class="profile-field">
+              <span class="label">Total Earnings</span>
+              <span id="p-earnings" class="profile-value">—</span>
+            </div>
+          </div>
+
+          <div class="card" style="max-width: 560px; margin-top: 16px">
+            <h3 style="margin: 0 0 14px 0; font-size: 16px">Change Password</h3>
+            <div style="display: grid; gap: 10px">
+              <input
+                id="cp-current"
+                type="password"
+                class="input"
+                placeholder="Current password"
+              />
+              <input
+                id="cp-new"
+                type="password"
+                class="input"
+                placeholder="New password (min 8 chars)"
+              />
+              <input
+                id="cp-confirm"
+                type="password"
+                class="input"
+                placeholder="Confirm new password"
+              />
+              <button
+                id="cp-save-btn"
+                class="btn btn-primary"
+                style="width: fit-content"
+                onclick="changePassword()"
+              >
+                Update Password
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
     <script src="/js/runtime-env.js"></script>
@@ -177,199 +311,269 @@
     <script src="/js/auth.js"></script>
     <script src="/js/toast.js"></script>
     <script>
-        if (!requireRole("expert")) throw new Error("Abort");
-        document.querySelector('[data-page="profile"]')?.classList.add("active");
+      if (!requireRole("expert")) throw new Error("Abort");
+      document.querySelector('[data-page="profile"]')?.classList.add("active");
 
-        let isEditing = false;
-        let profileData = {};
-        let domainsList = [];
+      let isEditing = false;
+      let profileData = {};
+      let domainsList = [];
 
-        const renderText = (value, fallback = "Not added yet") => {
-            const text = (value || "").trim();
-            return text || fallback;
-        };
+      const renderText = (value, fallback = "Not added yet") => {
+        const text = (value || "").trim();
+        return text || fallback;
+      };
 
-        async function loadDomains() {
-            try {
-                const res = await apiFetch("/auth/domains");
-                domainsList = await res.json();
-                const select = document.getElementById("i-domain");
-                select.innerHTML = '<option value="">Select Domain</option>';
-                domainsList.forEach(d => {
-                    const opt = document.createElement("option");
-                    opt.value = d.id;
-                    opt.textContent = d.name;
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error("Failed to load domains", err);
-            }
+      function validatePhoneNumber(phone) {
+        if (!phone || !phone.trim()) return true; // Optional field
+        const normalized = phone.trim();
+        const allowedPattern = /^[+0-9\s().-]+$/;
+        if (!allowedPattern.test(normalized)) return false;
+        const phoneDigits = normalized.replace(/\D/g, "");
+        return phoneDigits.length >= 10 && phoneDigits.length <= 15;
+      }
+
+      async function loadDomains() {
+        try {
+          const res = await apiFetch("/auth/domains");
+          domainsList = await res.json();
+          const select = document.getElementById("i-domain");
+          select.innerHTML = '<option value="">Select Domain</option>';
+          domainsList.forEach((d) => {
+            const opt = document.createElement("option");
+            opt.value = d.id;
+            opt.textContent = d.name;
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Failed to load domains", err);
+        }
+      }
+
+      async function loadProfile() {
+        try {
+          await loadDomains();
+          const [dashRes, meRes] = await Promise.all([
+            apiFetch("/expert/dashboard"),
+            apiFetch("/auth/me"),
+          ]);
+          const data = await dashRes.json();
+          const me = await meRes.json();
+          profileData = { ...data, email: me.email };
+
+          renderProfile();
+        } catch (e) {
+          toast("Failed to load profile details.", "error");
+        }
+      }
+
+      function renderProfile() {
+        const data = profileData;
+        document.getElementById("p-name").textContent = data.name || "—";
+        document.getElementById("p-email").textContent = data.email || "—";
+        document.getElementById("p-phone").textContent =
+          data.phone || "Not provided";
+        document.getElementById("p-whatsapp").textContent =
+          data.whatsapp_number || "Not provided";
+        document.getElementById("p-domain").textContent = data.domain || "—";
+        document.getElementById("p-about").textContent = renderText(
+          data.about_me || data.bio,
+        );
+        document.getElementById("p-qualifications").textContent = renderText(
+          data.qualifications,
+        );
+        document.getElementById("p-tasks").textContent =
+          data.tasks_completed ?? 0;
+        document.getElementById("p-reviews").textContent =
+          data.review_count ?? 0;
+        document.getElementById("p-earnings").textContent =
+          `₹${(data.total_earnings || 0).toFixed(2)}`;
+
+        // Set inputs
+        document.getElementById("i-name").value = data.name || "";
+        document.getElementById("i-email").value = data.email || "";
+        document.getElementById("i-phone").value = data.phone || "";
+        document.getElementById("i-whatsapp").value =
+          data.whatsapp_number || "";
+        document.getElementById("i-about").value =
+          data.about_me || data.bio || "";
+        document.getElementById("i-qualifications").value =
+          data.qualifications || "";
+
+        const domainSelect = document.getElementById("i-domain");
+        if (data.domain_id) {
+          domainSelect.value = data.domain_id;
+        } else if (data.domain) {
+          const matched = domainsList.find((d) => d.name === data.domain);
+          if (matched) {
+            domainSelect.value = matched.id;
+          } else {
+            domainSelect.value = "";
+          }
+        } else {
+          domainSelect.value = "";
         }
 
-        async function loadProfile() {
-            try {
-                await loadDomains();
-                const [dashRes, meRes] = await Promise.all([
-                    apiFetch("/expert/dashboard"),
-                    apiFetch("/auth/me")
-                ]);
-                const data = await dashRes.json();
-                const me = await meRes.json();
-                profileData = { ...data, email: me.email };
+        const avg = data.average_rating || 0;
+        const stars = [1, 2, 3, 4, 5]
+          .map(
+            (n) =>
+              `<span style="color:${n <= Math.round(avg) ? "#F59E0B" : "#d1d5db"}">★</span>`,
+          )
+          .join("");
+        document.getElementById("p-rating").innerHTML =
+          avg > 0
+            ? `${stars} <span style="font-size:13px;color:var(--color-gray-500);margin-left:4px">${avg.toFixed(1)} / 5</span>`
+            : `<span style="color:var(--color-gray-400)">No ratings yet</span>`;
 
-                renderProfile();
-            } catch (e) {
-                toast("Failed to load profile details.", "error");
-            }
-        }
-
-        function renderProfile() {
-            const data = profileData;
-            document.getElementById("p-name").textContent = data.name || "—";
-            document.getElementById("p-email").textContent = data.email || "—";
-            document.getElementById("p-phone").textContent = data.phone || "Not provided";
-            document.getElementById("p-domain").textContent = data.domain || "—";
-            document.getElementById("p-about").textContent = renderText(data.about_me || data.bio);
-            document.getElementById("p-qualifications").textContent = renderText(data.qualifications);
-            document.getElementById("p-tasks").textContent = data.tasks_completed ?? 0;
-            document.getElementById("p-reviews").textContent = data.review_count ?? 0;
-            document.getElementById("p-earnings").textContent = `₹${(data.total_earnings || 0).toFixed(2)}`;
-
-            // Set inputs
-            document.getElementById("i-name").value = data.name || "";
-            document.getElementById("i-email").value = data.email || "";
-            document.getElementById("i-phone").value = data.phone || "";
-            document.getElementById("i-about").value = data.about_me || data.bio || "";
-            document.getElementById("i-qualifications").value = data.qualifications || "";
-            
-            const domainSelect = document.getElementById("i-domain");
-            if (data.domain_id) {
-                domainSelect.value = data.domain_id;
-            } else if (data.domain) {
-                const matched = domainsList.find(d => d.name === data.domain);
-                if (matched) {
-                    domainSelect.value = matched.id;
-                } else {
-                    domainSelect.value = "";
-                }
-            } else {
-                domainSelect.value = "";
-            }
-
-            const avg = data.average_rating || 0;
-            const stars = [1, 2, 3, 4, 5].map(n =>
-                `<span style="color:${n <= Math.round(avg) ? '#F59E0B' : '#d1d5db'}">★</span>`
-            ).join("");
-            document.getElementById("p-rating").innerHTML =
-                avg > 0
-                    ? `${stars} <span style="font-size:13px;color:var(--color-gray-500);margin-left:4px">${avg.toFixed(1)} / 5</span>`
-                    : `<span style="color:var(--color-gray-400)">No ratings yet</span>`;
-
-            const statusClass = data.kyc_status === 'approved' ? 'completed' : data.kyc_status === 'rejected' ? 'refunded' : 'pending';
-            document.getElementById("p-kyc").innerHTML = `
+        const statusClass =
+          data.kyc_status === "approved"
+            ? "completed"
+            : data.kyc_status === "rejected"
+              ? "refunded"
+              : "pending";
+        document.getElementById("p-kyc").innerHTML = `
                 <span class="badge badge-${statusClass}">
-                    ${(data.kyc_status || 'pending').toUpperCase()}
+                    ${(data.kyc_status || "pending").toUpperCase()}
                 </span>`;
+      }
+
+      function toggleEdit() {
+        isEditing = !isEditing;
+        const fields = document.querySelectorAll(".profile-field");
+        fields.forEach((f) => {
+          if (f.querySelector(".profile-input")) {
+            f.classList.toggle("editing", isEditing);
+          }
+        });
+
+        document.getElementById("edit-btn").style.display = isEditing
+          ? "none"
+          : "flex";
+        document.getElementById("save-btn").style.display = isEditing
+          ? "flex"
+          : "none";
+        document.getElementById("cancel-btn").style.display = isEditing
+          ? "flex"
+          : "none";
+      }
+
+      async function saveProfile() {
+        const name = document.getElementById("i-name").value.trim();
+        const phone = document.getElementById("i-phone").value.trim();
+        const whatsapp_number = document
+          .getElementById("i-whatsapp")
+          .value.trim();
+        const about_me = document.getElementById("i-about").value.trim();
+        const qualifications = document
+          .getElementById("i-qualifications")
+          .value.trim();
+        const domainSelect = document.getElementById("i-domain");
+        const domain_id = domainSelect.value;
+        const domainName =
+          domainSelect.options[domainSelect.selectedIndex]?.textContent || "";
+
+        if (phone && !validatePhoneNumber(phone)) {
+          toast(
+            "Phone number must contain 10-15 digits and only use +, spaces, (), -, or .",
+            "error",
+          );
+          return;
         }
 
-        function toggleEdit() {
-            isEditing = !isEditing;
-            const fields = document.querySelectorAll('.profile-field');
-            fields.forEach(f => {
-                if (f.querySelector('.profile-input')) {
-                    f.classList.toggle('editing', isEditing);
-                }
-            });
-
-            document.getElementById("edit-btn").style.display = isEditing ? "none" : "flex";
-            document.getElementById("save-btn").style.display = isEditing ? "flex" : "none";
-            document.getElementById("cancel-btn").style.display = isEditing ? "flex" : "none";
+        if (whatsapp_number && !validatePhoneNumber(whatsapp_number)) {
+          toast(
+            "WhatsApp number must contain 10-15 digits and only use +, spaces, (), -, or .",
+            "error",
+          );
+          return;
         }
 
-        async function saveProfile() {
-            const name = document.getElementById("i-name").value.trim();
-            const phone = document.getElementById("i-phone").value.trim();
-            const about_me = document.getElementById("i-about").value.trim();
-            const qualifications = document.getElementById("i-qualifications").value.trim();
-            const domainSelect = document.getElementById("i-domain");
-            const domain_id = domainSelect.value;
-            const domainName = domainSelect.options[domainSelect.selectedIndex]?.textContent || "";
+        try {
+          const res = await apiFetch("/auth/profile", {
+            method: "PUT",
+            body: JSON.stringify({
+              name,
+              phone,
+              whatsapp_number,
+              domain_id,
+              about_me,
+              qualifications,
+            }),
+          });
 
-            try {
-                const res = await apiFetch("/auth/profile", {
-                    method: "PUT",
-                    body: JSON.stringify({ name, phone, domain_id, about_me, qualifications })
-                });
+          if (res.ok) {
+            toast("Profile updated successfully!", "success");
+            profileData.name = name;
+            profileData.phone = phone;
+            profileData.whatsapp_number = whatsapp_number;
+            profileData.about_me = about_me;
+            profileData.bio = about_me;
+            profileData.qualifications = qualifications;
+            profileData.domain_id = domain_id;
+            profileData.domain = domainName;
+            renderProfile();
+            toggleEdit();
+          } else {
+            const err = await res.json();
+            toast(err.error || "Failed to update profile", "error");
+          }
+        } catch (e) {
+          toast("An error occurred while saving.", "error");
+        }
+      }
 
-                if (res.ok) {
-                    toast("Profile updated successfully!", "success");
-                    profileData.name = name;
-                    profileData.phone = phone;
-                    profileData.about_me = about_me;
-                    profileData.bio = about_me;
-                    profileData.qualifications = qualifications;
-                    profileData.domain_id = domain_id;
-                    profileData.domain = domainName;
-                    renderProfile();
-                    toggleEdit();
-                } else {
-                    const err = await res.json();
-                    toast(err.error || "Failed to update profile", "error");
-                }
-            } catch (e) {
-                toast("An error occurred while saving.", "error");
-            }
+      async function changePassword() {
+        const current_password = document.getElementById("cp-current").value;
+        const new_password = document.getElementById("cp-new").value;
+        const confirm_password = document.getElementById("cp-confirm").value;
+        const btn = document.getElementById("cp-save-btn");
+
+        if (!current_password || !new_password || !confirm_password) {
+          toast("All password fields are required.", "error");
+          return;
+        }
+        if (new_password.length < 8) {
+          toast("New password must be at least 8 characters.", "error");
+          return;
+        }
+        if (new_password !== confirm_password) {
+          toast("New password and confirm password do not match.", "error");
+          return;
         }
 
-        async function changePassword() {
-            const current_password = document.getElementById("cp-current").value;
-            const new_password = document.getElementById("cp-new").value;
-            const confirm_password = document.getElementById("cp-confirm").value;
-            const btn = document.getElementById("cp-save-btn");
+        btn.disabled = true;
+        btn.textContent = "Updating...";
+        try {
+          const res = await apiFetch("/auth/change-password", {
+            method: "POST",
+            body: JSON.stringify({
+              current_password,
+              new_password,
+              confirm_password,
+            }),
+          });
+          const body = await res.json();
+          if (!res.ok) {
+            toast(body.error || "Failed to change password.", "error");
+            return;
+          }
 
-            if (!current_password || !new_password || !confirm_password) {
-                toast("All password fields are required.", "error");
-                return;
-            }
-            if (new_password.length < 8) {
-                toast("New password must be at least 8 characters.", "error");
-                return;
-            }
-            if (new_password !== confirm_password) {
-                toast("New password and confirm password do not match.", "error");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.textContent = "Updating...";
-            try {
-                const res = await apiFetch("/auth/change-password", {
-                    method: "POST",
-                    body: JSON.stringify({ current_password, new_password, confirm_password })
-                });
-                const body = await res.json();
-                if (!res.ok) {
-                    toast(body.error || "Failed to change password.", "error");
-                    return;
-                }
-
-                document.getElementById("cp-current").value = "";
-                document.getElementById("cp-new").value = "";
-                document.getElementById("cp-confirm").value = "";
-                toast("Password updated successfully.", "success");
-            } catch (e) {
-                toast("An error occurred while changing password.", "error");
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Update Password";
-            }
+          document.getElementById("cp-current").value = "";
+          document.getElementById("cp-new").value = "";
+          document.getElementById("cp-confirm").value = "";
+          toast("Password updated successfully.", "success");
+        } catch (e) {
+          toast("An error occurred while changing password.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Update Password";
         }
+      }
 
-        loadProfile();
+      loadProfile();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <script src="/js/notifications.js"></script>
     <script src="/js/expert-super-admin-chat-badge.js"></script>
-</body>
-
+  </body>
 </html>

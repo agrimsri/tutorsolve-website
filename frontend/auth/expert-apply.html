@@ -70,6 +70,19 @@
                   type="tel"
                   class="input"
                   placeholder="+91 9876543210"
+                  pattern="^[+0-9\s().-]{10,25}$"
+                  title="Enter a valid phone number with 10 to 15 digits"
+                />
+              </div>
+              <div class="form-group">
+                <label class="label">WhatsApp Number</label>
+                <input
+                  name="whatsapp_number"
+                  type="tel"
+                  class="input"
+                  placeholder="+91 9876543210"
+                  pattern="^[+0-9\s().-]{10,25}$"
+                  title="Enter a valid phone number with 10 to 15 digits"
                 />
               </div>
               <div class="form-group">
@@ -152,6 +165,15 @@
     <script src="/js/utils.js"></script>
     <script src="/js/landing.js"></script>
     <script>
+      function validatePhoneNumber(phone) {
+        if (!phone || !phone.trim()) return true; // Optional field
+        const normalized = phone.trim();
+        const allowedPattern = /^[+0-9\s().-]+$/;
+        if (!allowedPattern.test(normalized)) return false;
+        const phoneDigits = normalized.replace(/\D/g, "");
+        return phoneDigits.length >= 10 && phoneDigits.length <= 15;
+      }
+
       async function loadDomains() {
         try {
           const res = await apiFetch("/auth/domains");
@@ -189,6 +211,24 @@
           const idProofFile = formData.get("id_proof");
           if (!idProofFile || !idProofFile.name) {
             toast("ID Proof is required", "error");
+            return;
+          }
+
+          const phone = formData.get("phone");
+          if (phone && !validatePhoneNumber(phone)) {
+            toast(
+              "Phone number must contain 10-15 digits and only use +, spaces, (), -, or .",
+              "error",
+            );
+            return;
+          }
+
+          const whatsappNumber = formData.get("whatsapp_number");
+          if (whatsappNumber && !validatePhoneNumber(whatsappNumber)) {
+            toast(
+              "WhatsApp number must contain 10-15 digits and only use +, spaces, (), -, or .",
+              "error",
+            );
             return;
           }
 

@@ -128,6 +128,52 @@ function clearAuth() {
   localStorage.removeItem("ts_role");
 }
 
+function getSidebarRoleLabel() {
+  const path = window.location.pathname;
+  if (path.startsWith("/super-admin/")) return "Super Admin";
+  if (path.startsWith("/admin/")) return "Admin";
+  if (path.startsWith("/expert/")) return "Expert";
+  if (path.startsWith("/student/")) return "Student";
+  return "Workspace";
+}
+
+function enhanceSidebarBrand() {
+  document.querySelectorAll(".sidebar").forEach((sidebar) => {
+    if (sidebar.querySelector(".sidebar-brand")) return;
+
+    const existingLogo = Array.from(sidebar.children).find((child) =>
+      child.classList && child.classList.contains("sidebar-logo")
+    );
+    if (!existingLogo) return;
+
+    const roleLabel = getSidebarRoleLabel();
+    const brand = document.createElement("div");
+    brand.className = "sidebar-brand";
+    brand.innerHTML = `
+      <a href="/index.html" class="sidebar-back-link" aria-label="Back to TutorSolve landing page">
+        <svg class="sidebar-back-icon" width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 12L6 8l4-4"></path>
+          <path d="M6.5 8H14"></path>
+        </svg>
+      </a>
+      <a href="/index.html" class="sidebar-logo" aria-label="TutorSolve landing page">
+        <img src="/assets/logo.svg" alt="TutorSolve" width="30" height="30">
+        <span class="sidebar-brand-copy">
+          <span class="navbar-logo-text">TutorSolve</span>
+          <span class="sidebar-role-label">${roleLabel}</span>
+        </span>
+      </a>`;
+
+    existingLogo.replaceWith(brand);
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", enhanceSidebarBrand);
+} else {
+  enhanceSidebarBrand();
+}
+
 function requireRole(expectedRole) {
   if (!isLoggedIn()) {
     redirectToHome();
