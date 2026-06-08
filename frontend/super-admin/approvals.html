@@ -164,17 +164,17 @@
         <div class="approval-prices">
           <div class="price-box price-box--student">
             <p class="price-box-label">Student Price</p>
-            <p class="price-box-value">$${o.student_price?.toFixed(2)}</p>
+            <p class="price-box-value">${formatMoney(o.student_price || 0, o.student_currency)}</p>
             <p class="price-box-sub">Visible to student after approval</p>
           </div>
           <div class="price-box" style="background:var(--color-gray-50);border:1px solid var(--color-gray-200);border-radius:var(--radius-md);padding:var(--space-4)">
             <p class="price-box-label">Expert Payout</p>
-            <p class="price-box-value" style="color:var(--color-gray-700)">$${o.expert_payout?.toFixed(2) ?? '—'}</p>
+            <p class="price-box-value" style="color:var(--color-gray-700)">${o.expert_payout != null ? formatMoney(o.expert_payout, o.expert_currency) : '—'}</p>
             <p class="price-box-sub">Paid to expert on completion</p>
           </div>
           <div class="price-box" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-md);padding:var(--space-4)">
             <p class="price-box-label">Margin</p>
-            <p class="price-box-value" style="color:#16a34a">$${(o.student_price && o.expert_payout ? (o.student_price - o.expert_payout).toFixed(2) : '—')}</p>
+            <p class="price-box-value" style="color:#16a34a">${o.student_currency === o.expert_currency && o.student_price && o.expert_payout ? formatMoney(o.student_price - o.expert_payout, o.student_currency) : '—'}</p>
             <p class="price-box-sub">Platform revenue</p>
           </div>
         </div>

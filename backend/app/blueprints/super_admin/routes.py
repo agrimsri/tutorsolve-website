@@ -6,6 +6,7 @@ from app.blueprints.super_admin import super_admin_bp
 from app.extensions import get_db
 from app.utils.decorators import superadmin_required
 from app.utils.helpers import oid
+from app.utils.currency import money_label, bucket_add
 from app.services.payout_service import (
     get_eligible_payouts,
     mark_expert_payouts_as_paid,
@@ -42,6 +43,70 @@ def _as_iso(value):
     if value is None:
         return None
     return str(value)
+
+
+def _money_bucket_total(items, currency_key, amount_fn):
+    totals = {}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        bucket_add(totals, item.get(currency_key) or item.get("currency"), amount_fn(item))
+    return totals
+
+
+def _bucket_subtract(left, right):
+    result = dict(left or {})
+    for currency, amount in (right or {}).items():
+        result[currency] = round(float(result.get(currency, 0) or 0) - float(amount or 0), 2)
+    return result
+
+
+def _legacy_inr(totals):
+    return round(float((totals or {}).get("inr", 0) or 0), 2)
+
+
+def _upper_currency_bucket(totals):
+    return {
+        str(currency).upper(): round(float(amount or 0), 2)
+        for currency, amount in (totals or {}).items()
+        if round(float(amount or 0), 2) != 0
+    }
+
+
+def _merge_buckets(*buckets):
+    result = {}
+    for bucket in buckets:
+        for currency, amount in (bucket or {}).items():
+            bucket_add(result, currency, amount)
+    return result
+
+
+def _completed_refund_bucket(payments):
+    totals = {}
+    for p in payments:
+        if not isinstance(p, dict):
+            continue
+
+        refunds_blob = p.get("refunds")
+        if isinstance(refunds_blob, list):
+            for refund_item in refunds_blob:
+                if isinstance(refund_item, dict):
+                    bucket_add(
+                        totals,
+                        refund_item.get("currency") or p.get("currency"),
+                        refund_item.get("amount", 0),
+                    )
+            continue
+
+        amount = None
+        if isinstance(refunds_blob, dict):
+            amount = refunds_blob.get("amount")
+        if amount is None:
+            amount = p.get("refund_amount")
+        if amount is None:
+            amount = p.get("completion_amount", 0) if p.get("completion_refund_id") else p.get("advance_amount", 0)
+        bucket_add(totals, p.get("currency"), amount or 0)
+    return totals
 
 
 def _count_super_admin_unread_messages(db, thread, super_admin_user_oid):
@@ -220,6 +285,7 @@ def eligible_payouts():
             "question_title": question["title"] if question else "Unknown Question",
             "amount": float(p.get("amount", 0)),
             "original_amount": float(p.get("amount", 0)),
+            "currency": p.get("currency") or (question or {}).get("expert_currency", "inr"),
             "refunded_amount": float(refunded_amount or 0),
             "status": "refund_requested" if is_refund_requested else ("refunded" if is_refunded else "ready"),
             "task_completed_at": str(p.get("task_completed_at")) if p.get("task_completed_at") else None,
@@ -249,6 +315,7 @@ def pay_out_expert(expert_id):
         if blocked:
             return jsonify({"error": "Cannot release payout while refund request is pending review."}), 409
 
+        payout_currency_totals = _money_bucket_total(unpaid, "currency", lambda p: p.get("amount", 0))
         total_amount = mark_expert_payouts_as_paid(expert_id)
         expert = db.experts.find_one({"_id": oid(expert_id)})
         if expert:
@@ -256,17 +323,22 @@ def pay_out_expert(expert_id):
             if user:
                 from app.services.email_service import send_payout_released_email
                 from app.services.notification_service import create_notification
-                send_payout_released_email(user["email"], expert["name"], total_amount)
+                default_currency = next(iter(payout_currency_totals.keys()), "inr")
+                send_payout_released_email(user["email"], expert["name"], total_amount, default_currency)
                 from app.tasks.notification_tasks import send_notification_async
+                payout_summary = ", ".join(
+                    money_label(amount, currency)
+                    for currency, amount in payout_currency_totals.items()
+                ) or money_label(total_amount, default_currency)
                 send_notification_async.delay(
                     user_id=str(user["_id"]),
                     notif_type="payout_released",
                     title="Payout Released",
-                    body=f"Your payout of ${total_amount:.2f} has been released.",
+                    body=f"Your payout of {payout_summary} has been released.",
                     link="/expert/dashboard.html"
                 )
 
-        return jsonify({"status": "paid", "amount": total_amount}), 200
+        return jsonify({"status": "paid", "amount": total_amount, "amounts_by_currency": payout_currency_totals}), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -298,20 +370,22 @@ def pay_out_single_task(payout_id):
         user = db.users.find_one({"_id": expert["user_id"]})
         if user:
             from app.services.email_service import send_payout_released_email
-            send_payout_released_email(user["email"], expert["name"], payout.get("amount", 0))
+            payout_currency = payout.get("currency") or "inr"
+            send_payout_released_email(user["email"], expert["name"], payout.get("amount", 0), payout_currency)
             from app.tasks.notification_tasks import send_notification_async
             send_notification_async.delay(
                 user_id=str(user["_id"]),
                 notif_type="payout_released",
                 title="Payout Released",
-                body=f"Your payout of ${float(payout.get('amount', 0)):.2f} has been released.",
+                body=f"Your payout of {money_label(payout.get('amount', 0), payout_currency)} has been released.",
                 link="/expert/dashboard.html"
             )
 
     return jsonify({
         "status": "paid",
         "payout_id": payout_id,
-        "amount": float(payout.get("amount", 0))
+        "amount": float(payout.get("amount", 0)),
+        "currency": payout.get("currency") or "inr"
     }), 200
 
 
@@ -433,7 +507,9 @@ def pending_approvals():
             ),
             "status":         q["status"],
             "student_price":  q.get("student_price"),
+            "student_currency": q.get("student_currency", "inr"),
             "expert_payout":  q.get("expert_payout"),
+            "expert_currency": q.get("expert_currency", "inr"),
             "price_approved": q.get("price_approved", False),
             "created_at":     str(q["created_at"]),
         })
@@ -452,158 +528,146 @@ def stats():
     completed_orders  = db.questions.count_documents({"status": "completed"})
     pending_kyc       = db.experts.count_documents({"kyc_status": "pending"})
     refund_requests   = db.payments.count_documents({"status": "refund_requested"})
+    unassigned_employee_query = {"$or": [
+        {"assigned_employee_id": {"$exists": False}},
+        {"assigned_employee_id": None},
+        {"assigned_employee_id": ""},
+    ]}
+    assigned_employee_query = {"assigned_employee_id": {"$exists": True, "$nin": [None, ""]}}
 
-    # Gross Payments = total money received from students
-    payments     = list(db.payments.find({
-        "$or": [
-            {"advance_paid": True},
-            {"completion_paid": True}
-        ]
-    }))
-    gross_payments = sum(
-        (p.get("total_amount", 0) if p.get("completion_paid")
-         else p.get("advance_amount", 0))
-        for p in payments
-    )
-
-    # Refunds total (approved/completed refunds)
-    refunded_payments = list(db.payments.find({"status": "refunded"}))
-    total_refunds = 0.0
-    for p in refunded_payments:
-        if isinstance(p, list):
-            # Defensive fallback for malformed records that are list-shaped.
-            for p_item in p:
-                if isinstance(p_item, dict):
-                    total_refunds += float(p_item.get("amount", 0) or p_item.get("refund_amount", 0) or 0)
-            continue
-        if not isinstance(p, dict):
-            continue
-
-        refunds_blob = p.get("refunds")
-        amount = None
-
-        if isinstance(refunds_blob, dict):
-            amount = refunds_blob.get("amount")
-        elif isinstance(refunds_blob, list):
-            # Some records store multiple refunds as a list of objects.
-            amount = sum(float(r.get("amount", 0) or 0) for r in refunds_blob if isinstance(r, dict))
-
-        if amount is None:
-            amount = p.get("refund_amount")
-        if amount is None:
-            # Last-resort fallback: infer from refund type
-            if p.get("completion_refund_id"):
-                amount = p.get("completion_amount", 0)
-            else:
-                amount = p.get("advance_amount", 0)
-        total_refunds += float(amount or 0)
-
-    # Expert payouts
-    pending_payout_docs = list(db.payouts.find({"is_paid": False}))
-    paid_payout_docs    = list(db.payouts.find({"is_paid": True}))
-    pending_expert_payouts = sum(float(p.get("amount", 0)) for p in pending_payout_docs)
-    paid_expert_payouts    = sum(float(p.get("amount", 0)) for p in paid_payout_docs)
-    total_expert_payouts   = pending_expert_payouts + paid_expert_payouts
-
-    # Net Platform Earnings = gross payments - refunds - expert payouts
-    net_platform_earnings = round(gross_payments - total_refunds - total_expert_payouts, 2)
+    questions_awaiting_review = db.questions.count_documents({
+        "status": {"$in": ["awaiting_quote", "created", "pending_review", "CREATED", "PENDING_REVIEW"]},
+        **unassigned_employee_query,
+    })
+    negotiations_in_progress = db.questions.count_documents({
+        "status": {"$in": ["awaiting_quote", "negotiation", "NEGOTIATION"]},
+        **assigned_employee_query,
+    })
+    pricing_pending_approval = db.questions.count_documents({
+        "status": {"$in": ["pending_payment", "pricing_sent", "awaiting_advance_payment", "PRICING_SENT", "AWAITING_ADVANCE_PAYMENT"]}
+    })
+    experts_awaiting_assignment = db.questions.count_documents({
+        "$and": [
+            {"$or": [
+                {"assigned_expert_id": {"$exists": False}},
+                {"assigned_expert_id": None},
+                {"assigned_expert_id": ""},
+            ]},
+            {"$or": [
+                {"expert_id": {"$exists": False}},
+                {"expert_id": None},
+                {"expert_id": ""},
+            ]},
+        ],
+        "interested_expert_ids.0": {"$exists": True},
+        "status": {"$nin": ["completed", "cancelled", "refunded", "refund_requested"]},
+    })
 
     return jsonify({
+        "activeOrders": active_orders,
+        "completedOrders": completed_orders,
+        "pendingKYC": pending_kyc,
+        "refundRequests": refund_requests,
+        "questionsAwaitingReview": questions_awaiting_review,
+        "negotiationsInProgress": negotiations_in_progress,
+        "pricingPendingApproval": pricing_pending_approval,
+        "expertsAwaitingAssignment": experts_awaiting_assignment,
         "total_orders":      total_orders,
         "active_orders":     active_orders,
         "completed_orders":  completed_orders,
         "pending_kyc":       pending_kyc,
         "refund_requests":   refund_requests,
-        "gross_payments":    round(gross_payments, 2),
-        "pending_expert_payouts": round(pending_expert_payouts, 2),
-        "paid_expert_payouts":    round(paid_expert_payouts, 2),
-        "net_platform_earnings":  net_platform_earnings,
-        # Backward-compatible aliases for any older UI still reading old keys:
-        "total_inflow":      round(gross_payments, 2),
-        "total_paid_out":    round(paid_expert_payouts, 2),
-        "total_accrued":     round(total_expert_payouts, 2),
-        "projected_profit":  net_platform_earnings
+        "questions_awaiting_review": questions_awaiting_review,
+        "negotiations_in_progress": negotiations_in_progress,
+        "pricing_pending_approval": pricing_pending_approval,
+        "experts_awaiting_assignment": experts_awaiting_assignment,
     }), 200
+
+
+@super_admin_bp.route("/financial-summary", methods=["GET"])
+@superadmin_required
+def financial_summary():
+    db = get_db()
+
+    paid_payments = list(db.payments.find({
+        "$or": [
+            {"advance_paid": True},
+            {"completion_paid": True},
+        ]
+    }))
+    gross_payments = _money_bucket_total(
+        paid_payments,
+        "currency",
+        lambda p: p.get("total_amount", 0) if p.get("completion_paid") else p.get("advance_amount", 0),
+    )
+    gross_transaction_count = sum(
+        (1 if p.get("advance_paid") else 0) + (1 if p.get("completion_paid") else 0)
+        for p in paid_payments
+    )
+
+    pending_payout_docs = list(db.payouts.find({"is_paid": False}))
+    paid_payout_docs = list(db.payouts.find({"is_paid": True}))
+    pending_payouts = _money_bucket_total(
+        pending_payout_docs,
+        "currency",
+        lambda p: p.get("amount", 0),
+    )
+    paid_payouts = _money_bucket_total(
+        paid_payout_docs,
+        "currency",
+        lambda p: p.get("amount", 0),
+    )
+    total_payouts = _merge_buckets(pending_payouts, paid_payouts)
+
+    pending_refund_docs = list(db.payments.find({"status": "refund_requested"}))
+    pending_refunds = _money_bucket_total(
+        pending_refund_docs,
+        "currency",
+        lambda p: p.get("refund_amount", 0),
+    )
+
+    completed_refund_docs = list(db.payments.find({"status": "refunded"}))
+    completed_refunds = _completed_refund_bucket(completed_refund_docs)
+
+    platform_earnings = _bucket_subtract(
+        _bucket_subtract(gross_payments, total_payouts),
+        completed_refunds,
+    )
+
+    return jsonify({
+        "grossPayments": _upper_currency_bucket(gross_payments),
+        "pendingPayouts": _upper_currency_bucket(pending_payouts),
+        "paidPayouts": _upper_currency_bucket(paid_payouts),
+        "platformEarnings": _upper_currency_bucket(platform_earnings),
+        "refunds": {
+            "pending": _upper_currency_bucket(pending_refunds),
+            "completed": _upper_currency_bucket(completed_refunds),
+        },
+        "counts": {
+            "grossPaymentTransactions": gross_transaction_count,
+            "pendingPayouts": len(pending_payout_docs),
+            "paidPayouts": len(paid_payout_docs),
+            "pendingRefunds": len(pending_refund_docs),
+            "completedRefunds": len(completed_refund_docs),
+        },
+    }), 200
+
 
 @super_admin_bp.route("/dashboard/charts", methods=["GET"])
 @superadmin_required
 def dashboard_charts():
-    from dateutil.relativedelta import relativedelta
     from datetime import datetime, timedelta
     db = get_db()
     
     now = datetime.utcnow()
-    
-    # 1. Monthly Revenue & Margin Comparison (last 12 months for revenue, last 6 for margin)
-    twelve_months_ago = datetime(now.year, now.month, 1) - relativedelta(months=11)
-    
-    # Payments
-    payments_data = list(db.payments.aggregate([
-        {"$match": {
-            "status": {"$in": ["advance_paid", "fully_paid"]},
-            "created_at": {"$gte": twelve_months_ago}
-        }},
-        {"$project": {
-            "month": {"$month": "$created_at"},
-            "year": {"$year": "$created_at"},
-            "amount": {"$cond": [
-                {"$eq": ["$status", "fully_paid"]},
-                "$total_amount",
-                "$advance_amount"
-            ]}
-        }},
-        {"$group": {
-            "_id": {"month": "$month", "year": "$year"},
-            "revenue": {"$sum": "$amount"}
-        }}
-    ]))
-    
-    # Payouts (All accrued)
-    payouts_data = list(db.payouts.aggregate([
-        {"$match": {
-            # We don't have created_at on payouts reliably in older models, assuming task_completed_at
-            "task_completed_at": {"$gte": twelve_months_ago}
-        }},
-        {"$project": {
-            "month": {"$month": "$task_completed_at"},
-            "year": {"$year": "$task_completed_at"},
-            "amount": 1
-        }},
-        {"$group": {
-            "_id": {"month": "$month", "year": "$year"},
-            "payout": {"$sum": "$amount"}
-        }}
-    ]))
-    
-    monthly_revenue = []
-    margin_comparison = []
-    
-    for i in range(11, -1, -1):
-        dt = datetime(now.year, now.month, 1) - relativedelta(months=i)
-        month_label = dt.strftime("%b '%y")
-        
-        rev = sum(item["revenue"] for item in payments_data if item["_id"]["month"] == dt.month and item["_id"]["year"] == dt.year)
-        pay = sum(item["payout"] for item in payouts_data if item["_id"]["month"] == dt.month and item["_id"]["year"] == dt.year)
-        
-        monthly_revenue.append({
-            "month": month_label,
-            "revenue": float(rev or 0)
-        })
-        
-        if i < 6:
-            margin_comparison.append({
-                "month": dt.strftime("%b"),
-                "revenue": float(rev or 0),
-                "payout": float(pay or 0)
-            })
-            
-    # 2. Expert Pool Health
+
+    # Expert Pool Health
     health_data = list(db.experts.aggregate([
         {"$group": {"_id": "$kyc_status", "count": {"$sum": 1}}}
     ]))
     expert_health = {item["_id"] or "pending": item["count"] for item in health_data}
     
-    # 3. Signups Over Time (last 30 days)
+    # Signups Over Time (last 30 days)
     thirty_days_ago = now - timedelta(days=29)
     users_data = list(db.users.aggregate([
         {"$match": {"created_at": {"$gte": thirty_days_ago}, "role": {"$in": ["student", "expert"]}}},
@@ -632,9 +696,7 @@ def dashboard_charts():
         })
         
     return jsonify({
-        "monthly_revenue": monthly_revenue,
         "expert_health": expert_health,
-        "margin_comparison": margin_comparison,
         "signups_over_time": signups_over_time
     }), 200
 
@@ -677,7 +739,11 @@ def get_activity():
     payments = list(db.payments.find().sort("created_at", -1).limit(5))
     for p in payments:
         if p.get("created_at"):
-            activities.append({"type": "payment", "message": f"💰 Payment of ${p.get('total_amount', 0):.2f} received", "timestamp": p["created_at"]})
+            activities.append({
+                "type": "payment",
+                "message": "💰 Student payment received",
+                "timestamp": p["created_at"]
+            })
             
     # Task completed (Feedback)
     feedbacks = list(db.feedback.find().sort("created_at", -1).limit(5))
@@ -721,6 +787,7 @@ def list_refunds():
             "advance_amount":       p.get("advance_amount"),
             "completion_amount":    p.get("completion_amount"),
             "refund_amount":        p.get("refund_amount"),
+            "currency":             p.get("currency", p.get("student_currency", "inr")),
             "refund_type":          p.get("refund_type", "advance"),
             "advance_paid":         p.get("advance_paid", False),
             "completion_paid":      p.get("completion_paid", False),
@@ -985,18 +1052,31 @@ def revenue():
     payouts_paid = list(db.payouts.find({"is_paid": True}))
     payouts_all  = list(db.payouts.find({}))
 
-    total_inflow   = sum(p.get("total_amount", 0) for p in payments if p.get("completion_paid"))
-    total_inflow  += sum(p.get("advance_amount", 0) for p in payments if p.get("advance_paid") and not p.get("completion_paid"))
-    
-    total_paid_out = sum(p.get("amount", 0) for p in payouts_paid)
-    total_accrued  = sum(p.get("amount", 0) for p in payouts_all)
+    total_inflow_by_currency = _money_bucket_total(
+        payments,
+        "currency",
+        lambda p: p.get("total_amount", 0) if p.get("completion_paid") else p.get("advance_amount", 0)
+    )
+    total_paid_out_by_currency = _money_bucket_total(
+        payouts_paid, "currency", lambda p: p.get("amount", 0)
+    )
+    total_accrued_by_currency = _money_bucket_total(
+        payouts_all, "currency", lambda p: p.get("amount", 0)
+    )
+    net_profit_by_currency = _bucket_subtract(total_inflow_by_currency, total_paid_out_by_currency)
+    projected_profit_by_currency = _bucket_subtract(total_inflow_by_currency, total_accrued_by_currency)
 
     return jsonify({
-        "total_inflow":    round(total_inflow, 2),
-        "total_paid_out":  round(total_paid_out, 2),
-        "total_accrued":   round(total_accrued, 2),
-        "net_profit":      round(total_inflow - total_paid_out, 2),
-        "projected_profit": round(total_inflow - total_accrued, 2),
+        "total_inflow_by_currency": total_inflow_by_currency,
+        "total_paid_out_by_currency": total_paid_out_by_currency,
+        "total_accrued_by_currency": total_accrued_by_currency,
+        "net_profit_by_currency": net_profit_by_currency,
+        "projected_profit_by_currency": projected_profit_by_currency,
+        "total_inflow":    _legacy_inr(total_inflow_by_currency),
+        "total_paid_out":  _legacy_inr(total_paid_out_by_currency),
+        "total_accrued":   _legacy_inr(total_accrued_by_currency),
+        "net_profit":      _legacy_inr(net_profit_by_currency),
+        "projected_profit": _legacy_inr(projected_profit_by_currency),
         "total_orders":    db.questions.count_documents({"status": "completed"}),
     }), 200
 
@@ -1374,6 +1454,9 @@ def demo_pay_advance(question_id):
             "advance_amount":    advance,
             "completion_amount": completion,
             "total_amount":      question.get("student_price", 0),
+            "currency":          question.get("student_currency", "inr"),
+            "student_currency":  question.get("student_currency", "inr"),
+            "expert_currency":   question.get("expert_currency", "inr"),
             "advance_paid":      True,
             "advance_paid_at":   datetime.utcnow(),
             "completion_paid":   False,
@@ -1419,6 +1502,7 @@ def demo_pay_completion(question_id):
             "question_id":       oid(question_id),
             "expert_id":         question["assigned_expert_id"],
             "amount":            float(expert_payout),
+            "currency":          question.get("expert_currency", "inr"),
             "is_paid":           False,
             "paid_at":           None,
             "task_completed_at": now,
@@ -1432,7 +1516,10 @@ def demo_pay_completion(question_id):
         {"question_id": oid(question_id)},
         {"$set": {
             "revenue": float(student_price),
-            "profit":  float(profit)
+            "profit":  float(profit),
+            "currency": question.get("student_currency", "inr"),
+            "student_currency": question.get("student_currency", "inr"),
+            "expert_currency": question.get("expert_currency", "inr")
         }}
     )
 

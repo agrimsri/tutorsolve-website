@@ -32,7 +32,8 @@ async function loadDomains() {
       askEls.domain.appendChild(opt);
     });
   } catch (_err) {
-    askEls.domain.innerHTML = '<option value="">Could not load domains</option>';
+    askEls.domain.innerHTML =
+      '<option value="">Could not load domains</option>';
   }
 }
 
@@ -65,7 +66,9 @@ function initFileUpload() {
   if (!askEls.zone || !askEls.fileInput) return;
 
   askEls.zone.addEventListener("click", () => askEls.fileInput.click());
-  askEls.fileInput.addEventListener("change", () => addFiles(askEls.fileInput.files || []));
+  askEls.fileInput.addEventListener("change", () =>
+    addFiles(askEls.fileInput.files || []),
+  );
 
   askEls.zone.addEventListener("dragover", (event) => {
     event.preventDefault();
@@ -119,6 +122,16 @@ async function onSubmit() {
   askEls.submit.textContent = "Saving...";
 
   try {
+    if (isLoggedIn() && getRole() !== "student") {
+      toast(
+        "Only students can post a question. Please log in with a student account.",
+        "error",
+      );
+      askEls.submit.disabled = false;
+      askEls.submit.textContent = originalLabel;
+      return;
+    }
+
     if (!window.PendingQuestionDraft) {
       throw new Error("Draft storage is not available.");
     }
@@ -162,11 +175,22 @@ function hydrateExistingDraft() {
     });
 }
 
+function enforceStudentOnlyAccess() {
+  if (isLoggedIn() && getRole() !== "student") {
+    askEls.submit.disabled = true;
+    toast(
+      "Only students can post a question. Please log in with a student account.",
+      "error",
+    );
+  }
+}
+
 async function initAskPage() {
   setMinimumDeadline();
   initFileUpload();
   await loadDomains();
   hydrateExistingDraft();
+  enforceStudentOnlyAccess();
   askEls.submit.addEventListener("click", onSubmit);
 }
 

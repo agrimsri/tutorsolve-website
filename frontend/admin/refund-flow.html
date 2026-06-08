@@ -1,178 +1,320 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Refund Flow — TutorSolve Admin</title>
-  <link rel="stylesheet" href="/css/base.css" />
-  <link rel="stylesheet" href="/css/admin.css" />
-  <style>
-    :root {
-      --flow-bg: #f6f8fc;
-      --flow-surface: #ffffff;
-      --flow-border: #e5eaf2;
-      --flow-text: #0f172a;
-      --flow-muted: #64748b;
-      --flow-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
-      --flow-radius: 14px;
-      --flow-primary: #0ea5e9;
-      --flow-success: #22c55e;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Refund Flow — TutorSolve Admin</title>
+    <link rel="stylesheet" href="/css/base.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+    <style>
+      :root {
+        --flow-bg: #f6f8fc;
+        --flow-surface: #ffffff;
+        --flow-border: #e5eaf2;
+        --flow-text: #0f172a;
+        --flow-muted: #64748b;
+        --flow-shadow: 0 6px 24px rgba(15, 23, 42, 0.06);
+        --flow-radius: 14px;
+        --flow-primary: #0ea5e9;
+        --flow-success: #22c55e;
+      }
 
-    body { background: radial-gradient(1200px 500px at 80% -10%, #e6f4ff 0%, transparent 45%), var(--flow-bg); }
-    .dashboard-layout { display: flex; min-height: 100vh; }
-    .main { flex: 1; padding: 28px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-    .header-row h1 { font-size: 24px; letter-spacing: -0.02em; color: var(--flow-text); }
-    .grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
-    .card {
-      background: var(--flow-surface);
-      border: 1px solid var(--flow-border);
-      border-radius: var(--flow-radius);
-      padding: 18px;
-      box-shadow: var(--flow-shadow);
-    }
-    .card h3 {
-      margin: 0 0 12px 0;
-      font-size: 15px;
-      color: var(--flow-text);
-      letter-spacing: -0.01em;
-    }
-    #content.card {
-      border-radius: 18px;
-      border: 1px solid var(--flow-border);
-      background: rgba(255,255,255,0.76);
-      backdrop-filter: blur(2px);
-      box-shadow: var(--flow-shadow);
-    }
-    .timeline { border-left: 2px solid var(--flow-border); margin-left: 8px; padding-left: 16px; }
-    .t-item { position: relative; margin-bottom: 14px; }
-    .t-dot { position: absolute; left: -25px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; }
-    .t-item.done .t-dot { background: var(--flow-success); }
-    .t-item.active .t-dot { background: var(--flow-primary); }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .files { display: grid; gap: 10px; }
-    .file-row {
-      border: 1px solid var(--flow-border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      background: #fbfdff;
-      transition: border-color .16s ease, transform .16s ease;
-    }
-    .file-row:hover { border-color: #bfdcff; transform: translateY(-1px); }
-    .chat-box { max-height: 340px; overflow-y: auto; display: grid; gap: 10px; }
-    .msg { border: 1px solid var(--flow-border); border-radius: 12px; padding: 10px 12px; background: #fff; }
-    .muted { color: var(--flow-muted); font-size: 12px; }
-    .kpi {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .kpi-item {
-      border: 1px solid var(--flow-border);
-      border-radius: 12px;
-      background: #fbfdff;
-      padding: 10px;
-    }
-    .kpi-label { font-size: 11px; color: var(--flow-muted); text-transform: uppercase; letter-spacing: .04em; }
-    .kpi-value { margin-top: 3px; font-weight: 700; font-size: 15px; color: var(--flow-text); }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 12px;
-      border: 1px solid var(--flow-border);
-      color: var(--flow-text);
-      background: #f8fafc;
-    }
-    @media (max-width: 980px) {
-      .main { padding: 16px; }
-      .grid { grid-template-columns: 1fr; }
-      .kpi { grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-<body>
-  <div class="dashboard-layout">
-    <aside class="sidebar">
-      <a href="/index.html" class="sidebar-logo">
-        <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
-        <span class="navbar-logo-text">TutorSolve Admin</span>
-      </a>
-      <nav class="sidebar-nav">
-        <p class="sidebar-section-label">Menu</p>
-        <a href="/admin/dashboard.html" class="sidebar-item" data-page="dashboard">Dashboard</a>
-        <a href="/admin/orders.html" class="sidebar-item" data-page="orders">Orders</a>
-        <a href="/admin/super-admin-chat.html" class="sidebar-item" data-page="super-admin-chat">
-          Super Admin Chat
-          <span id="sa-admin-chat-unread-badge" class="sa-admin-chat-unread-badge">0</span>
+      body {
+        background:
+          radial-gradient(
+            1200px 500px at 80% -10%,
+            #e6f4ff 0%,
+            transparent 45%
+          ),
+          var(--flow-bg);
+      }
+      .dashboard-layout {
+        display: flex;
+        min-height: 100vh;
+      }
+      .main {
+        flex: 1;
+        padding: 28px;
+      }
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+      .header-row h1 {
+        font-size: 24px;
+        letter-spacing: -0.02em;
+        color: var(--flow-text);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: var(--flow-surface);
+        border: 1px solid var(--flow-border);
+        border-radius: var(--flow-radius);
+        padding: 18px;
+        box-shadow: var(--flow-shadow);
+      }
+      .card h3 {
+        margin: 0 0 12px 0;
+        font-size: 15px;
+        color: var(--flow-text);
+        letter-spacing: -0.01em;
+      }
+      #content.card {
+        border-radius: 18px;
+        border: 1px solid var(--flow-border);
+        background: rgba(255, 255, 255, 0.76);
+        backdrop-filter: blur(2px);
+        box-shadow: var(--flow-shadow);
+      }
+      .timeline {
+        border-left: 2px solid var(--flow-border);
+        margin-left: 8px;
+        padding-left: 16px;
+      }
+      .t-item {
+        position: relative;
+        margin-bottom: 14px;
+      }
+      .t-dot {
+        position: absolute;
+        left: -25px;
+        top: 2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #cbd5e1;
+      }
+      .t-item.done .t-dot {
+        background: var(--flow-success);
+      }
+      .t-item.active .t-dot {
+        background: var(--flow-primary);
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .files {
+        display: grid;
+        gap: 10px;
+      }
+      .file-row {
+        border: 1px solid var(--flow-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #fbfdff;
+        transition:
+          border-color 0.16s ease,
+          transform 0.16s ease;
+      }
+      .file-row:hover {
+        border-color: #bfdcff;
+        transform: translateY(-1px);
+      }
+      .chat-box {
+        max-height: 340px;
+        overflow-y: auto;
+        display: grid;
+        gap: 10px;
+      }
+      .msg {
+        border: 1px solid var(--flow-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+        background: #fff;
+      }
+      .muted {
+        color: var(--flow-muted);
+        font-size: 12px;
+      }
+      .kpi {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 12px 0;
+      }
+      .kpi-item {
+        border: 1px solid var(--flow-border);
+        border-radius: 12px;
+        background: #fbfdff;
+        padding: 10px;
+      }
+      .kpi-label {
+        font-size: 11px;
+        color: var(--flow-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .kpi-value {
+        margin-top: 3px;
+        font-weight: 700;
+        font-size: 15px;
+        color: var(--flow-text);
+      }
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 12px;
+        border: 1px solid var(--flow-border);
+        color: var(--flow-text);
+        background: #f8fafc;
+      }
+      @media (max-width: 980px) {
+        .main {
+          padding: 16px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .kpi {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-layout">
+      <aside class="sidebar">
+        <a href="/index.html" class="sidebar-logo">
+          <img src="/assets/logo.svg" alt="TutorSolve" width="28" />
+          <span class="navbar-logo-text">TutorSolve Admin</span>
         </a>
-        <a href="/admin/profile.html" class="sidebar-item" data-page="profile">Profile</a>
-      </nav>
-      <div class="sidebar-footer">
-        <button onclick="logout()" class="sidebar-item" style="width:100%;border:none;background:none;cursor:pointer;text-align:left">Logout</button>
-      </div>
-    </aside>
+        <nav class="sidebar-nav">
+          <p class="sidebar-section-label">Menu</p>
+          <a
+            href="/admin/dashboard.html"
+            class="sidebar-item"
+            data-page="dashboard"
+            >Dashboard</a
+          >
+          <a href="/admin/orders.html" class="sidebar-item" data-page="orders"
+            >Orders</a
+          >
+          <a
+            href="/admin/super-admin-chat.html"
+            class="sidebar-item"
+            data-page="super-admin-chat"
+          >
+            Super Admin Chat
+            <span
+              id="sa-admin-chat-unread-badge"
+              class="sa-admin-chat-unread-badge"
+              >0</span
+            >
+          </a>
+          <a href="/admin/profile.html" class="sidebar-item" data-page="profile"
+            >Profile</a
+          >
+        </nav>
+        <div class="sidebar-footer">
+          <button
+            onclick="logout()"
+            class="sidebar-item"
+            style="
+              width: 100%;
+              border: none;
+              background: none;
+              cursor: pointer;
+              text-align: left;
+            "
+          >
+            Logout
+          </button>
+        </div>
+      </aside>
 
-    <main class="main">
-      <div class="header-row">
-        <h1 style="margin:0;font-size:22px">Refund Flow View</h1>
-        <button class="btn btn-secondary btn-sm" id="back-btn">Back to Cockpit</button>
-      </div>
-      <div id="content" class="card">Loading refund flow...</div>
-    </main>
-  </div>
+      <main class="main">
+        <div class="header-row">
+          <h1 style="margin: 0; font-size: 22px">Refund Flow View</h1>
+          <div style="display: flex; gap: var(--space-2)">
+            <button
+              class="btn btn-secondary btn-sm"
+              id="chat-employee-btn"
+              style="display: none"
+              onclick="openEmployeeChat()"
+            >
+              💬 Chat with Employee
+            </button>
+            <button class="btn btn-secondary btn-sm" id="back-btn">
+              Back to Cockpit
+            </button>
+          </div>
+        </div>
+        <div id="content" class="card">Loading refund flow...</div>
+      </main>
+    </div>
 
-  <script src="/js/runtime-env.js"></script>
+    <script src="/js/runtime-env.js"></script>
     <script src="/js/runtime-config.js"></script>
     <script src="/js/api.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/toast.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
-  <script src="/js/admin-super-admin-chat-badge.js"></script>
-  <script>
-    if (!isLoggedIn()) {
-      window.location.href = "/auth/login.html";
-      throw new Error("Abort");
-    }
-    const role = getRole();
-    if (role !== "employee" && role !== "super_admin") {
-      window.location.href = "/auth/login.html";
-      throw new Error("Abort");
-    }
-
-    const qid = new URLSearchParams(window.location.search).get("id");
-    document.getElementById("back-btn").onclick = () => {
-      const currentRole = getRole();
-      if (currentRole === "super_admin") {
-        window.location.href = "/super-admin/financials.html";
-        return;
+    <script src="/js/auth.js"></script>
+    <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/js/admin-super-admin-chat-badge.js"></script>
+    <script>
+      if (!isLoggedIn()) {
+        window.location.href = "/auth/login.html";
+        throw new Error("Abort");
       }
-      if (qid) window.location.href = `/admin/cockpit.html?id=${qid}`;
-      else window.location.href = "/admin/orders.html";
-    };
+      const role = getRole();
+      if (role !== "employee" && role !== "super_admin") {
+        window.location.href = "/auth/login.html";
+        throw new Error("Abort");
+      }
 
-    function esc(s) {
-      if (s === null || s === undefined) return "";
-      return String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+      const qid = new URLSearchParams(window.location.search).get("id");
+      let assignedEmployeeUserId = null;
 
-    function fmt(dt) {
-      if (!dt) return "-";
-      const d = new Date(dt);
-      if (Number.isNaN(d.getTime())) return dt;
-      return d.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
-    }
+      document.getElementById("back-btn").onclick = () => {
+        const currentRole = getRole();
+        if (currentRole === "super_admin") {
+          window.location.href = "/super-admin/financials.html";
+          return;
+        }
+        if (qid) window.location.href = `/admin/cockpit.html?id=${qid}`;
+        else window.location.href = "/admin/orders.html";
+      };
 
-    function renderFiles(list) {
-      if (!list || !list.length) return `<div class="muted">No files.</div>`;
-      return `<div class="files">${list.map(f => `
+      function openEmployeeChat() {
+        if (!assignedEmployeeUserId) {
+          toast("Employee information not available.", "error");
+          return;
+        }
+        window.location.href = `/super-admin/users.html?role=employee&openEmployeeUser=${assignedEmployeeUserId}`;
+      }
+
+      function esc(s) {
+        if (s === null || s === undefined) return "";
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function fmt(dt) {
+        if (!dt) return "-";
+        const d = new Date(dt);
+        if (Number.isNaN(d.getTime())) return dt;
+        return d.toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        });
+      }
+
+      function renderFiles(list) {
+        if (!list || !list.length) return `<div class="muted">No files.</div>`;
+        return `<div class="files">${list
+          .map(
+            (f) => `
         <div class="file-row">
           <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
             <div>
@@ -181,99 +323,131 @@
             </div>
             <button class="btn btn-secondary btn-sm" onclick="openFile('${esc(f._id)}', this)">View</button>
           </div>
-        </div>`).join("")}</div>`;
-    }
-
-    async function openFile(fileId, btn) {
-      if (!fileId) return;
-      const original = btn ? btn.textContent : null;
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Opening...";
+        </div>`,
+          )
+          .join("")}</div>`;
       }
-      try {
-        const res = await apiFetch(`/admin/files/${fileId}/url-shared`);
-        const data = await res.json();
-        if (!res.ok || !data.url) {
-          toast(data.error || "Unable to open file.", "error");
-          return;
-        }
-        window.open(data.url, "_blank", "noopener,noreferrer");
-      } catch (e) {
-        console.error("Open file error:", e);
-        toast("Unable to open file.", "error");
-      } finally {
+
+      async function openFile(fileId, btn) {
+        if (!fileId) return;
+        const original = btn ? btn.textContent : null;
         if (btn) {
-          btn.disabled = false;
-          btn.textContent = original || "View";
+          btn.disabled = true;
+          btn.textContent = "Opening...";
+        }
+        try {
+          const res = await apiFetch(`/admin/files/${fileId}/url-shared`);
+          const data = await res.json();
+          if (!res.ok || !data.url) {
+            toast(data.error || "Unable to open file.", "error");
+            return;
+          }
+          window.open(data.url, "_blank", "noopener,noreferrer");
+        } catch (e) {
+          console.error("Open file error:", e);
+          toast("Unable to open file.", "error");
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = original || "View";
+          }
         }
       }
-    }
 
-    function renderChat(list) {
-      if (!list || !list.length) return `<div class="muted">No chat messages.</div>`;
-      return `<div class="chat-box">${list.map(m => `
+      function renderChat(list) {
+        if (!list || !list.length)
+          return `<div class="muted">No chat messages.</div>`;
+        return `<div class="chat-box">${list
+          .map(
+            (m) => `
         <div class="msg">
           <div class="muted">${esc(m.sender_name)} (${esc(m.sender_role)}) · ${fmt(m.created_at)}</div>
           <div>${esc(m.body)}</div>
-        </div>`).join("")}</div>`;
-    }
+        </div>`,
+          )
+          .join("")}</div>`;
+      }
 
-    function renderTimeline(list) {
-      if (!list || !list.length) return `<div class="muted">No timeline data.</div>`;
-      return `<div class="timeline">${list.map(i => `
+      function renderTimeline(list) {
+        if (!list || !list.length)
+          return `<div class="muted">No timeline data.</div>`;
+        return `<div class="timeline">${list
+          .map(
+            (i) => `
         <div class="t-item ${esc(i.state || "pending")}">
           <span class="t-dot"></span>
           <div><strong>${esc(i.title)}</strong></div>
           <div class="muted">${fmt(i.at)}</div>
           <div>${esc(i.detail || "")}</div>
-        </div>`).join("")}</div>`;
-    }
-
-    async function approveRefund(paymentId, btn) {
-      if (!paymentId) {
-        toast("Missing payment reference for refund.", "error");
-        return;
+        </div>`,
+          )
+          .join("")}</div>`;
       }
-      btn.disabled = true;
-      const old = btn.textContent;
-      btn.textContent = "Processing...";
-      try {
-        const res = await apiFetch(`/superadmin/refunds/${paymentId}/approve`, { method: "POST" });
-        const data = await res.json();
-        if (res.ok) {
-          toast("✅ Refund approved — Stripe refund issued and student has been notified.", "success");
-          load();
-        } else {
-          toast(data.error || "Failed to approve refund.", "error");
+
+      async function approveRefund(paymentId, btn) {
+        if (!paymentId) {
+          toast("Missing payment reference for refund.", "error");
+          return;
+        }
+        btn.disabled = true;
+        const old = btn.textContent;
+        btn.textContent = "Processing...";
+        try {
+          const res = await apiFetch(
+            `/superadmin/refunds/${paymentId}/approve`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            toast(
+              "✅ Refund approved — Stripe refund issued and student has been notified.",
+              "success",
+            );
+            load();
+          } else {
+            toast(data.error || "Failed to approve refund.", "error");
+            btn.disabled = false;
+            btn.textContent = old;
+          }
+        } catch (e) {
+          console.error(e);
+          toast("Failed to approve refund.", "error");
           btn.disabled = false;
           btn.textContent = old;
         }
-      } catch (e) {
-        console.error(e);
-        toast("Failed to approve refund.", "error");
-        btn.disabled = false;
-        btn.textContent = old;
-      }
-    }
-
-    async function load() {
-      if (!qid) {
-        document.getElementById("content").innerHTML = "Missing order id.";
-        return;
-      }
-      const res = await apiFetch(`/admin/orders/${qid}/refund-flow`);
-      const data = await res.json();
-      if (!res.ok) {
-        document.getElementById("content").innerHTML = esc(data.error || "Failed to load flow");
-        return;
       }
 
-      const isSuperAdminRole = role === "super_admin";
-      const hasPaymentRef = isSuperAdminRole && data.payment && data.payment.payment_id;
-      const canAcceptRefund = hasPaymentRef && data.payment.status === "refund_requested";
+      async function load() {
+        if (!qid) {
+          document.getElementById("content").innerHTML = "Missing order id.";
+          return;
+        }
+        const res = await apiFetch(`/admin/orders/${qid}/refund-flow`);
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById("content").innerHTML = esc(
+            data.error || "Failed to load flow",
+          );
+          return;
+        }
 
-      document.getElementById("content").innerHTML = `
+        // Store assigned employee user ID and update button visibility
+        assignedEmployeeUserId = data.assigned_employee_user_id || null;
+        const chatBtn = document.getElementById("chat-employee-btn");
+        if (chatBtn) {
+          chatBtn.style.display =
+            assignedEmployeeUserId && role === "super_admin"
+              ? "inline-flex"
+              : "none";
+        }
+
+        const isSuperAdminRole = role === "super_admin";
+        const hasPaymentRef =
+          isSuperAdminRole && data.payment && data.payment.payment_id;
+        const canAcceptRefund =
+          hasPaymentRef && data.payment.status === "refund_requested";
+
+        document.getElementById("content").innerHTML = `
         <div style="display:grid;gap:16px">
           <div class="card" style="padding:12px">
             <div><strong>${esc(data.question.title)}</strong></div>
@@ -293,33 +467,37 @@
               <div class="kpi">
                 <div class="kpi-item">
                   <div class="kpi-label">Advance</div>
-                  <div class="kpi-value">₹${esc(data.payment?.advance_amount ?? "-")}</div>
+                  <div class="kpi-value">${data.payment?.advance_amount != null ? formatMoney(data.payment.advance_amount, data.payment.currency) : "-"}</div>
                 </div>
                 <div class="kpi-item">
                   <div class="kpi-label">Completion</div>
-                  <div class="kpi-value">₹${esc(data.payment?.completion_amount ?? "-")}</div>
+                  <div class="kpi-value">${data.payment?.completion_amount != null ? formatMoney(data.payment.completion_amount, data.payment.currency) : "-"}</div>
                 </div>
                 <div class="kpi-item">
                   <div class="kpi-label">Total Paid</div>
-                  <div class="kpi-value">₹${esc(data.payment?.total_amount ?? "-")}</div>
+                  <div class="kpi-value">${data.payment?.total_amount != null ? formatMoney(data.payment.total_amount, data.payment.currency) : "-"}</div>
                 </div>
                 <div class="kpi-item">
                   <div class="kpi-label">Refund Requested</div>
-                  <div class="kpi-value">₹${esc(data.payment?.refund_amount ?? "-")}</div>
+                  <div class="kpi-value">${data.payment?.refund_amount != null ? formatMoney(data.payment.refund_amount, data.payment.currency) : "-"}</div>
                 </div>
               </div>
               <div class="muted" style="margin-top:8px">Advance paid at: ${fmt(data.payment?.advance_paid_at)}</div>
               <div class="muted">Final paid at: ${fmt(data.payment?.completion_paid_at)}</div>
               <div class="muted">Refund requested at: ${fmt(data.payment?.refund_requested_at)}</div>
               <div class="muted">Refund reason: ${esc(data.payment?.refund_reason || "-")}</div>
-              ${hasPaymentRef ? `
+              ${
+                hasPaymentRef
+                  ? `
                 <div style="margin-top:12px">
                   <button class="btn btn-primary btn-sm" onclick="approveRefund('${esc(data.payment.payment_id)}', this)" ${canAcceptRefund ? "" : "disabled"}>
                     ✓ Accept Refund
                   </button>
                   ${canAcceptRefund ? "" : `<div class="muted" style="margin-top:6px">Refund cannot be accepted in current status: ${esc(data.payment.status || "unknown")}.</div>`}
                 </div>
-              ` : ""}
+              `
+                  : ""
+              }
             </div>
           </div>
 
@@ -333,9 +511,9 @@
             <div class="card"><h3 style="margin-top:0">Chat: Admin ↔ Expert</h3>${renderChat(data.chat_admin_expert)}</div>
           </div>
         </div>`;
-    }
+      }
 
-    load();
-  </script>
-</body>
+      load();
+    </script>
+  </body>
 </html>

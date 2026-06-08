@@ -1,6 +1,7 @@
 import time
 import logging
 from app.tasks.email_tasks import send_email_task
+from app.utils.currency import money_label
 
 def dispatch_email_task(**kwargs):
     t0 = time.perf_counter()
@@ -25,7 +26,7 @@ def send_order_received_email(student_email, student_name, question_title):
     )
 
 
-def send_price_quote_email(student_email, student_name, question_title, student_price):
+def send_price_quote_email(student_email, student_name, question_title, student_price, currency=None):
     """Sent to student when admin sets and approves the price."""
     dispatch_email_task(
         to_email=student_email,
@@ -34,7 +35,7 @@ def send_price_quote_email(student_email, student_name, question_title, student_
         html_content=f"""
             <p>Hi {student_name},</p>
             <p>Your quote for <strong>{question_title}</strong> is ready.</p>
-            <p>Total: <strong>${student_price:.2f} USD</strong></p>
+            <p>Total: <strong>{money_label(student_price, currency)} {((currency or 'inr').upper())}</strong></p>
             <p>Log in to your dashboard to review and pay.</p>
             <p>— The TutorSolve Team</p>
         """
@@ -266,7 +267,7 @@ def send_kyc_status_email(expert_email, expert_name, status):
     )
 
 
-def send_payout_released_email(expert_email, expert_name, amount):
+def send_payout_released_email(expert_email, expert_name, amount, currency=None):
     """Sent to expert when their payout clears the 20-day hold."""
     dispatch_email_task(
         to_email=expert_email,
@@ -274,7 +275,7 @@ def send_payout_released_email(expert_email, expert_name, amount):
         subject="Your payout has been released — TutorSolve",
         html_content=f"""
             <p>Hi {expert_name},</p>
-            <p>Your payout of <strong>${amount:.2f} USD</strong> has cleared the 20-day hold and is being processed.</p>
+            <p>Your payout of <strong>{money_label(amount, currency)} {((currency or 'inr').upper())}</strong> has cleared the 20-day hold and is being processed.</p>
             <p>— The TutorSolve Team</p>
         """
     )

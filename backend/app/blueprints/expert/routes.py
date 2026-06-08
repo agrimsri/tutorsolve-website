@@ -422,6 +422,7 @@ def my_tasks():
             "deadline":     str(q["deadline"]) if q.get("deadline") else None,
             "status":       q["status"],
             "expert_payout": q.get("expert_payout"),
+            "expert_currency": q.get("expert_currency", "inr"),
         })
     return jsonify(result), 200
 
@@ -571,6 +572,7 @@ def task_detail(question_id):
         "deadline":     str(question["deadline"]) if question.get("deadline") else None,
         "status":       question["status"],
         "expert_payout": question.get("expert_payout"),
+        "expert_currency": question.get("expert_currency", "inr"),
     }), 200
 
 @expert_bp.route("/tasks/<question_id>/submit", methods=["POST"])

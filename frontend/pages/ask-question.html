@@ -35,7 +35,7 @@
             </li>
           </ul>
         </nav>
-        <div class="nav-actions">
+        <div class="nav-actions" id="nav-actions">
           <a href="/auth/login.html" class="btn btn-ghost btn-sm">Login</a>
           <a href="/auth/signup.html" class="btn btn-secondary btn-sm"
             >Sign Up</a
@@ -130,5 +130,21 @@
     <script src="/js/utils.js"></script>
     <script src="/js/pending-question.js"></script>
     <script src="/js/ask-question.js"></script>
+    <script>
+      // Navbar auth state (keeps behavior consistent with other pages)
+      (function () {
+        try {
+          const actions = document.getElementById("nav-actions");
+          if (!actions) return;
+          if (typeof isLoggedIn === "function" && isLoggedIn()) {
+            actions.innerHTML = `\n                <a href="${getDashboardUrl()}" class="btn btn-secondary btn-sm">Dashboard</a>\n                <button onclick="logout()" class="btn btn-ghost btn-sm">Logout</button>`;
+          } else {
+            actions.innerHTML = `\n                <a href="/auth/login.html" class="btn btn-ghost btn-sm">Login</a>\n                <a href="/auth/signup.html" class="btn btn-secondary btn-sm">Sign Up</a>`;
+          }
+        } catch (e) {
+          console.error("Failed to render nav actions", e);
+        }
+      })();
+    </script>
   </body>
 </html>

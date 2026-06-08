@@ -5,6 +5,7 @@ import logging
 
 from app.extensions import get_db
 from app.utils.helpers import oid
+from app.utils.currency import money_label
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,10 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
     if payment.get("advance_refund_id"):
         raise Exception("Already refunded")
 
-    # Determine the amount to refund.
-    # refund_amount is in INR (rupees). Stripe expects paise (integer, ×100).
+    currency = payment.get("currency") or payment.get("student_currency") or "inr"
+
+    # Determine the amount to refund in the payment currency.
+    # Stripe expects the smallest unit (integer, x100 for INR/USD).
     advance_amount = payment.get("advance_amount", 0)
     if refund_amount is None:
         refund_amount = advance_amount  # default: full refund
@@ -46,8 +49,8 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
     refund_amount = float(refund_amount)
     if refund_amount <= 0 or refund_amount > advance_amount:
         raise Exception(
-            f"Refund amount ₹{refund_amount:.2f} is invalid "
-            f"(advance paid: ₹{advance_amount:.2f})"
+            f"Refund amount {money_label(refund_amount, currency)} is invalid "
+            f"(advance paid: {money_label(advance_amount, currency)})"
         )
 
     is_partial = refund_amount < advance_amount
@@ -58,7 +61,7 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
         "reason": "requested_by_customer",
     }
     if is_partial:
-        stripe_kwargs["amount"] = int(round(refund_amount * 100))  # convert to paise
+        stripe_kwargs["amount"] = int(round(refund_amount * 100))
 
     # BUG#2, #10: Validate Stripe refund status + distinguish recoverable vs fatal errors
     try:
@@ -98,6 +101,7 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
                 "refunds": {
                     "refund_id":    refund.id,
                     "amount":       refund_amount,
+                    "currency":     currency,
                     "payment_type": "advance",
                     "reason":       reason,
                     "status":       refund.status,
@@ -128,7 +132,10 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
         
         db.students.update_one(
             {"_id": student_id},
-            {"$set": {"total_spent": new_spent}}
+            {
+                "$set": {"total_spent": new_spent},
+                "$inc": {f"total_spent_by_currency.{currency}": -float(refund_amount)}
+            }
         )
 
     # Optionally cancel pending payout for this question (pre-completion safety path).
@@ -148,7 +155,7 @@ def refund_advance_payment(question_id, admin_id, reason, refund_amount=None, ca
                     user_id=str(student["user_id"]),
                     notif_type="refund_approved",
                     title="Refund Processed",
-                    body=f"Your refund of \u20b9{refund_amount:.2f} for '{question.get('title', 'your order')}' has been issued.",
+                    body=f"Your refund of {money_label(refund_amount, currency)} for '{question.get('title', 'your order')}' has been issued.",
                     link=f"/student/order-detail.html?id={question_id}"
                 )
     except Exception as e:
@@ -202,7 +209,9 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
     if payment.get("completion_refund_id"):
         raise Exception("Completion payment already refunded")
 
-    # Determine the amount to refund
+    currency = payment.get("currency") or payment.get("student_currency") or "inr"
+
+    # Determine the amount to refund in the payment currency.
     completion_amount = payment.get("completion_amount", 0)
     if refund_amount is None:
         refund_amount = completion_amount  # default: full refund
@@ -210,8 +219,8 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
     refund_amount = float(refund_amount)
     if refund_amount <= 0 or refund_amount > completion_amount:
         raise Exception(
-            f"Refund amount ₹{refund_amount:.2f} is invalid "
-            f"(completion paid: ₹{completion_amount:.2f})"
+            f"Refund amount {money_label(refund_amount, currency)} is invalid "
+            f"(completion paid: {money_label(completion_amount, currency)})"
         )
 
     is_partial = refund_amount < completion_amount
@@ -221,7 +230,7 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
         "reason": "requested_by_customer",
     }
     if is_partial:
-        stripe_kwargs["amount"] = int(round(refund_amount * 100))  # paise
+        stripe_kwargs["amount"] = int(round(refund_amount * 100))
 
     # BUG#2, #10: Validate Stripe refund status + distinguish recoverable vs fatal errors
     try:
@@ -263,6 +272,7 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
                 "refunds": {
                     "refund_id":    refund.id,
                     "amount":       refund_amount,
+                    "currency":     currency,
                     "payment_type": "completion",
                     "reason":       reason,
                     "status":       refund.status,
@@ -292,12 +302,16 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
         
         db.students.update_one(
             {"_id": student_id},
-            {"$set": {"total_spent": new_spent}}
+            {
+                "$set": {"total_spent": new_spent},
+                "$inc": {f"total_spent_by_currency.{currency}": -float(refund_amount)}
+            }
         )
 
     # BUG#6: Reverse expert earnings when refunding completion payment
     if assigned_expert_id and not cancel_unpaid_payouts:
         expert_payout = question.get("expert_payout", 0) if question else 0
+        expert_currency = question.get("expert_currency", "inr") if question else "inr"
         if expert_payout > 0:
             expert = db.experts.find_one({"_id": assigned_expert_id})
             current_earnings = float(expert.get("total_earnings", 0) or 0) if expert else 0
@@ -305,7 +319,10 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
             
             db.experts.update_one(
                 {"_id": assigned_expert_id},
-                {"$set": {"total_earnings": new_earnings}}
+                {
+                    "$set": {"total_earnings": new_earnings},
+                    "$inc": {f"total_earnings_by_currency.{expert_currency}": -float(expert_payout)}
+                }
             )
             logger.info(f"Reversed expert {assigned_expert_id} earnings for refunded question {question_id}: {expert_payout}")
 
@@ -323,7 +340,7 @@ def refund_completion_payment(question_id, admin_id, reason, refund_amount=None,
                     user_id=str(student["user_id"]),
                     notif_type="refund_approved",
                     title="Refund Processed",
-                    body=f"Your refund of \u20b9{refund_amount:.2f} for '{question.get('title', 'your order')}' has been issued.",
+                    body=f"Your refund of {money_label(refund_amount, currency)} for '{question.get('title', 'your order')}' has been issued.",
                     link=f"/student/order-detail.html?id={question_id}"
                 )
     except Exception as e:

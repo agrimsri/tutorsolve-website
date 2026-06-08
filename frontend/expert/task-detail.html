@@ -293,7 +293,7 @@
 
                 document.getElementById("task-title").textContent = task.title;
                 document.getElementById("task-domain").textContent = task.domain;
-                document.getElementById("task-payout").textContent = `₹${task.expert_payout || 0}`;
+                document.getElementById("task-payout").textContent = formatMoney(task.expert_payout || 0, task.expert_currency);
                 document.getElementById("task-status").innerHTML = `<span class="badge badge-${statusClass(task.status)}">${formatStatus(task.status)}</span>`;
                 document.getElementById("task-deadline").textContent = task.deadline ? `Due ${formatDate(task.deadline)}` : "No deadline";
 

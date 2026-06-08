@@ -61,6 +61,29 @@ function formatStatus(status) {
     return (status || "").replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function formatMoney(amount, currency = "inr") {
+    const code = String(currency || "inr").toLowerCase();
+    const symbol = {
+        inr: "₹",
+        usd: "$",
+        eur: "€",
+        gbp: "£",
+        aud: "A$",
+        cad: "C$",
+        sgd: "S$"
+    }[code] || `${code.toUpperCase()} `;
+    const value = Number(amount || 0);
+    return `${symbol}${value.toFixed(2)}`;
+}
+
+function formatMoneyBuckets(buckets) {
+    const entries = Object.entries(buckets || {})
+        .filter(([, value]) => Number(value || 0) !== 0)
+        .sort(([a], [b]) => a.localeCompare(b));
+    if (!entries.length) return formatMoney(0, "inr");
+    return entries.map(([currency, amount]) => formatMoney(amount, currency)).join(" / ");
+}
+
 /**
  * Initializes all password visibility toggles on the page.
  * Looks for elements with class .password-toggle inside .password-wrapper.

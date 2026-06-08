@@ -151,7 +151,7 @@
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;margin-left:var(--space-4)">
-            <p class="payout-amount">₹${task.expert_payout || 0}</p>
+            <p class="payout-amount">${formatMoney(task.expert_payout || 0, task.expert_currency)}</p>
             <p style="font-size:11px;color:var(--color-gray-500);margin-top:2px">Payout</p>
           </div>
         </div>

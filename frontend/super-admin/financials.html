@@ -163,6 +163,35 @@
             <h1 class="page-title">Financials</h1>
           </div>
 
+          <div class="financial-summary-grid">
+            <div class="sa-stat-card">
+              <p class="stat-label">Gross Payments</p>
+              <div id="summary-gross-payments" class="currency-stack">—</div>
+              <p id="summary-gross-count" class="financial-card-note">—</p>
+            </div>
+            <div class="sa-stat-card">
+              <p class="stat-label">Pending Expert Payouts</p>
+              <div id="summary-pending-payouts" class="currency-stack">—</div>
+              <p id="summary-pending-payout-count" class="financial-card-note">—</p>
+            </div>
+            <div class="sa-stat-card">
+              <p class="stat-label">Paid Expert Payouts</p>
+              <div id="summary-paid-payouts" class="currency-stack">—</div>
+              <p id="summary-paid-payout-count" class="financial-card-note">—</p>
+            </div>
+            <div class="sa-stat-card sa-stat-card--profit">
+              <p class="stat-label">Platform Earnings</p>
+              <div id="summary-platform-earnings" class="currency-stack">—</div>
+            </div>
+            <div class="sa-stat-card">
+              <p class="stat-label">Refunds</p>
+              <p class="financial-card-note">Pending</p>
+              <div id="summary-refunds-pending" class="currency-stack">—</div>
+              <p class="financial-card-note">Completed</p>
+              <div id="summary-refunds-completed" class="currency-stack">—</div>
+            </div>
+          </div>
+
           <!-- Tab navigation -->
           <div class="sa-tabs" id="tabs">
             <button class="sa-tab active" onclick="switchTab('payouts')">
@@ -219,6 +248,49 @@
       document
         .querySelector('[data-page="financials"]')
         ?.classList.add("active");
+
+      function renderCurrencyStack(buckets) {
+        const entries = Object.entries(buckets || {})
+          .filter(([, amount]) => Number(amount || 0) !== 0)
+          .sort(([a], [b]) => a.localeCompare(b));
+
+        if (!entries.length) {
+          return `<div class="currency-row"><span class="currency-code">—</span><span>${formatMoney(0, "inr")}</span></div>`;
+        }
+
+        return entries.map(([currency, amount]) => `
+          <div class="currency-row">
+            <span class="currency-code">${escapeHtml(currency.toUpperCase())}</span>
+            <span>${formatMoney(amount, currency)}</span>
+          </div>
+        `).join("");
+      }
+
+      async function loadFinancialSummary() {
+        const res = await apiFetch("/superadmin/financial-summary");
+        if (!res.ok) return;
+        const data = await res.json();
+        const counts = data.counts || {};
+
+        document.getElementById("summary-gross-payments").innerHTML =
+          renderCurrencyStack(data.grossPayments);
+        document.getElementById("summary-gross-count").textContent =
+          `${counts.grossPaymentTransactions || 0} transactions collected`;
+        document.getElementById("summary-pending-payouts").innerHTML =
+          renderCurrencyStack(data.pendingPayouts);
+        document.getElementById("summary-pending-payout-count").textContent =
+          `${counts.pendingPayouts || 0} payouts pending`;
+        document.getElementById("summary-paid-payouts").innerHTML =
+          renderCurrencyStack(data.paidPayouts);
+        document.getElementById("summary-paid-payout-count").textContent =
+          `${counts.paidPayouts || 0} payouts completed`;
+        document.getElementById("summary-platform-earnings").innerHTML =
+          renderCurrencyStack(data.platformEarnings);
+        document.getElementById("summary-refunds-pending").innerHTML =
+          renderCurrencyStack(data.refunds?.pending);
+        document.getElementById("summary-refunds-completed").innerHTML =
+          renderCurrencyStack(data.refunds?.completed);
+      }
 
       function switchTab(tab) {
         ["payouts", "revenue", "refunds"].forEach((t) => {
@@ -278,11 +350,11 @@
                   <code style="font-size:11px;color:var(--color-gray-500)">${(p.expert_id || "").slice(-8)}</code>
                 </td>
                 <td style="font-size:12px;color:var(--color-gray-700)">${escapeHtml(p.expert_phone || "—")}</td>
-                <td><strong>₹${(p.original_amount ?? p.amount ?? 0).toFixed(2)}</strong></td>
+                <td><strong>${formatMoney(p.original_amount ?? p.amount ?? 0, p.currency)}</strong></td>
                 <td>
                   ${
                     (p.refunded_amount || 0) > 0
-                      ? `<strong style="color:var(--color-danger)">₹${p.refunded_amount.toFixed(2)}</strong>`
+                      ? `<strong style="color:var(--color-danger)">${formatMoney(p.refunded_amount, p.currency)}</strong>`
                       : `<span style="color:var(--color-gray-500)">—</span>`
                   }
                 </td>
@@ -325,6 +397,7 @@
         if (res.ok) {
           document.getElementById(`payout-row-${payoutId}`)?.remove();
           toast("Task payout marked as paid.");
+          loadFinancialSummary();
         } else {
           const d = await res.json();
           toast(d.error || "Failed to process payout", "error");
@@ -337,12 +410,12 @@
       async function loadRevenue() {
         const res = await apiFetch("/superadmin/revenue");
         const data = await res.json();
-        document.getElementById("rev-inflow").textContent =
-          `₹${data.total_inflow.toFixed(2)}`;
-        document.getElementById("rev-accrued").textContent =
-          `₹${data.total_accrued.toFixed(2)}`;
-        document.getElementById("rev-profit").textContent =
-          `₹${data.projected_profit.toFixed(2)}`;
+        document.getElementById("rev-inflow").innerHTML =
+          renderCurrencyStack(data.total_inflow_by_currency || { inr: data.total_inflow || 0 });
+        document.getElementById("rev-accrued").innerHTML =
+          renderCurrencyStack(data.total_accrued_by_currency || { inr: data.total_accrued || 0 });
+        document.getElementById("rev-profit").innerHTML =
+          renderCurrencyStack(data.projected_profit_by_currency || { inr: data.projected_profit || 0 });
       }
 
       // ── Refunds ───────────────────────────────────────────────
@@ -382,8 +455,8 @@
                   </div>
                 </td>
                 <td>
-                  <strong style="color:var(--color-danger)">₹${(r.refund_amount || r.advance_amount || 0).toFixed(2)}</strong>
-                  <div style="font-size:11px;color:var(--color-gray-500)">out of ₹${(r.advance_amount || 0).toFixed(2)} advance</div>
+                  <strong style="color:var(--color-danger)">${formatMoney(r.refund_amount || r.advance_amount || 0, r.currency)}</strong>
+                  <div style="font-size:11px;color:var(--color-gray-500)">out of ${formatMoney(r.advance_amount || 0, r.currency)} advance</div>
                 </td>
                 <td>
                   <div style="max-width:220px; font-size:13px; color:var(--color-gray-700); line-height:1.4;"
@@ -439,6 +512,7 @@
           } else {
             toast("✕ Refund denied — order continues and student has been notified.");
           }
+          loadFinancialSummary();
         } else {
           btn.disabled = false;
           btn.textContent = "✕ Deny";
@@ -460,6 +534,7 @@
       }
 
       // Load payouts tab by default
+      loadFinancialSummary();
       loadPayouts();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>

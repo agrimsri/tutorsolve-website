@@ -3,6 +3,7 @@ from flask import current_app
 from datetime import datetime
 from app.extensions import get_db
 from app.utils.helpers import oid
+from app.utils.currency import normalize_currency
 
 
 def _stripe():
@@ -23,7 +24,7 @@ def get_split_amounts(student_price):
     return advance, completion
 
 
-def create_advance_session(question_id, student_price, question_title, student_email):
+def create_advance_session(question_id, student_price, question_title, student_email, currency=None):
     """
     Creates a Stripe Checkout Session for the advance payment.
     Returns the session URL to redirect the student to.
@@ -31,6 +32,7 @@ def create_advance_session(question_id, student_price, question_title, student_e
     s = _stripe()
     advance, _ = get_split_amounts(student_price)
     frontend   = current_app.config["FRONTEND_URL"]
+    currency = normalize_currency(currency)
 
     session = s.checkout.Session.create(
         mode="payment",
@@ -39,7 +41,7 @@ def create_advance_session(question_id, student_price, question_title, student_e
 
         line_items=[{
             "price_data": {
-                "currency":     "inr",
+                "currency":     currency,
                 "unit_amount":  int(advance * 100),   # Stripe expects cents
                 "product_data": {
                     "name":        f"Advance Payment — {question_title}",
@@ -58,7 +60,7 @@ def create_advance_session(question_id, student_price, question_title, student_e
     return session.url, session.id
 
 
-def create_completion_session(question_id, student_price, question_title, student_email, completion_amount=None):
+def create_completion_session(question_id, student_price, question_title, student_email, completion_amount=None, currency=None):
     """
     Creates a Stripe Checkout Session for the completion payment.
     Returns the session URL to redirect the student to.
@@ -67,6 +69,7 @@ def create_completion_session(question_id, student_price, question_title, studen
     _, split_completion = get_split_amounts(student_price)
     completion = float(completion_amount) if completion_amount is not None else split_completion
     frontend      = current_app.config["FRONTEND_URL"]
+    currency = normalize_currency(currency)
     description = (
         "Full payment to unlock your solution file."
         if completion_amount is not None and completion == float(student_price)
@@ -80,7 +83,7 @@ def create_completion_session(question_id, student_price, question_title, studen
 
         line_items=[{
             "price_data": {
-                "currency":     "inr",
+                "currency":     currency,
                 "unit_amount":  int(completion * 100),
                 "product_data": {
                     "name":        f"Completion Payment — {question_title}",
@@ -111,6 +114,8 @@ def ensure_payment_record(question_id_str, student_price, student_id_oid):
     # Fetch expert_payout from question
     question = db.questions.find_one({"_id": oid(question_id_str)})
     expert_payout = question.get("expert_payout", 0) if question else 0
+    student_currency = normalize_currency(question.get("student_currency") if question else None)
+    expert_currency = normalize_currency(question.get("expert_currency") if question else None)
     expected_profit = (student_price or 0) - (expert_payout or 0)
 
     existing = db.payments.find_one({"question_id": oid(question_id_str)})
@@ -121,7 +126,10 @@ def ensure_payment_record(question_id_str, student_price, student_id_oid):
             "advance_amount":     advance,
             "completion_amount":  completion,
             "total_amount":       student_price,
+            "currency":           student_currency,
+            "student_currency":   student_currency,
             "expert_payout":      expert_payout,
+            "expert_currency":    expert_currency,
             "revenue":            student_price,
             "expected_profit":    expected_profit,
             "advance_paid":       False,
@@ -149,7 +157,10 @@ def ensure_payment_record(question_id_str, student_price, student_id_oid):
                     "advance_amount":    advance,
                     "completion_amount": completion,
                     "total_amount":      student_price,
+                    "currency":          student_currency,
+                    "student_currency":  student_currency,
                     "expert_payout":      expert_payout,
+                    "expert_currency":    expert_currency,
                     "revenue":            student_price,
                     "expected_profit":    expected_profit
                 }}

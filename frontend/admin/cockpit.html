@@ -301,7 +301,7 @@
             ${isAlreadyRequested
               ? `<span style="font-size:13px; font-weight:600; color:#92400E; background:#FEF3C7; border:1px solid #FCD34D; padding:6px 14px; border-radius:9999px;">⏳ Refund Requested — Awaiting Super Admin</span>`
               : `<button class="btn btn-sm" style="color:#dc2626; border:1.5px solid #dc2626; background:#fff; font-weight:500;"
-                  onclick="openRefundModal('${order._id}', ${refundableAmount || 0}, '${order.payment?.completion_paid ? "completion" : "advance"}')">⚠️ Initiate Refund</button>`
+                  onclick="openRefundModal('${order._id}', ${refundableAmount || 0}, '${order.payment?.completion_paid ? "completion" : "advance"}', '${order.payment?.currency || order.student_currency || "inr"}')">⚠️ Initiate Refund</button>`
             }
           </div>`;
       }
@@ -347,7 +347,7 @@
             <div class="workflow-step-body">
                 ${!step2Done
           ? renderPricingSectionInner(order)
-          : `<div class="workflow-step-summary">Approved: ₹${order.student_price} Student / ₹${order.expert_payout} Expert</div>`
+          : `<div class="workflow-step-summary">Approved: ${formatMoney(order.student_price, order.student_currency)} Student / ${formatMoney(order.expert_payout, order.expert_currency)} Expert</div>`
         }
             </div>
         </div>
@@ -368,11 +368,11 @@
                         <div style="background: var(--color-gray-50); border: 1px solid var(--color-gray-200); padding: 12px; border-radius: var(--radius-md); margin-bottom: 12px;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
                                 <span style="font-size:12px; color:var(--color-gray-500);">Advance Amount:</span>
-                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">₹${order.payment.advance_amount}</span>
+                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">${formatMoney(order.payment.advance_amount, order.payment.currency || order.student_currency)}</span>
                             </div>
                             <div style="display:flex; justify-content:space-between;">
                                 <span style="font-size:12px; color:var(--color-gray-500);">Completion Amount:</span>
-                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">₹${order.payment.completion_amount}</span>
+                                <span style="font-size:13px; font-weight:600; color:var(--color-gray-900);">${formatMoney(order.payment.completion_amount, order.payment.currency || order.student_currency)}</span>
                             </div>
                         </div>
                         <div class="workflow-step-summary" style="color:#d97706;font-weight:500; display:flex; align-items:center; gap:8px;">
@@ -386,7 +386,7 @@
                         <button class="btn btn-secondary btn-sm" style="margin-top:8px; width:100%; color:#7c3aed; border-color:#c4b5fd;" onclick="bypassAdvancePayment('${order._id}')">Bypass Advance — Full Payment After Completion</button>
                     `}
                 ` : ''}
-                ${step2Done ? `<div class="workflow-step-summary">${advanceBypassed ? `Advance bypassed. Full amount due after completion: ₹${order.payment?.completion_amount || order.student_price}` : `Advance Paid: ₹${order.payment.advance_amount}`}</div>` : ''}
+                ${step2Done ? `<div class="workflow-step-summary">${advanceBypassed ? `Advance bypassed. Full amount due after completion: ${formatMoney(order.payment?.completion_amount || order.student_price, order.payment?.currency || order.student_currency)}` : `Advance Paid: ${formatMoney(order.payment.advance_amount, order.payment?.currency || order.student_currency)}`}</div>` : ''}
             </div>
         </div>
       `;
@@ -437,7 +437,7 @@
                 ${step5Locked ? `<div class="workflow-step-summary">Wait for full payment.</div>` : ''}
                 ${(step5Active || step5Done) ? `
                     <div style="margin-bottom:12px;font-size:13px;color:var(--color-gray-600)">
-                      ${order.payment?.completion_paid ? `✅ Completion Paid: ₹${order.payment.completion_amount}` : `⏳ Waiting for completion payment...`}
+                      ${order.payment?.completion_paid ? `✅ Completion Paid: ${formatMoney(order.payment.completion_amount, order.payment?.currency || order.student_currency)}` : `⏳ Waiting for completion payment...`}
                     </div>
                     ${step5Done ? `<div class="workflow-step-summary">Order closed.</div>` : renderFeedbackSectionInner(order)}
                 ` : ''}
@@ -502,15 +502,32 @@
       return `
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:var(--space-4); margin-bottom:var(--space-4)">
                 <div class="form-group" style="margin-bottom:0;">
-                    <label class="label">Student Price (₹)</label>
-                    <input id="student-price" type="number" class="input" step="0.01" min="0" value="${order.student_price || ""}">
+                    <label class="label">Student Price</label>
+                    <div style="display:flex; gap:8px;">
+                      <input id="student-price" type="number" class="input" step="0.01" min="0" value="${order.student_price || ""}" style="flex:1; min-width:0;">
+                      <select id="student-currency" class="input" style="width:92px;">
+                        ${renderCurrencyOptions(order.student_currency)}
+                      </select>
+                    </div>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
-                    <label class="label">Expert Payout (₹)</label>
-                    <input id="expert-payout" type="number" class="input" step="0.01" min="0" value="${order.expert_payout || ""}">
+                    <label class="label">Expert Payout</label>
+                    <div style="display:flex; gap:8px;">
+                      <input id="expert-payout" type="number" class="input" step="0.01" min="0" value="${order.expert_payout || ""}" style="flex:1; min-width:0;">
+                      <select id="expert-currency" class="input" style="width:92px;">
+                        ${renderCurrencyOptions(order.expert_currency)}
+                      </select>
+                    </div>
                 </div>
             </div>
             <button class="btn btn-primary btn-sm" onclick="submitQuote('${order._id}')">${buttonText}</button>`;
+    }
+
+    function renderCurrencyOptions(selected = "inr") {
+      const value = String(selected || "inr").toLowerCase();
+      return ["inr", "usd"].map(code => (
+        `<option value="${code}" ${code === value ? "selected" : ""}>${code.toUpperCase()}</option>`
+      )).join("");
     }
 
 
@@ -518,17 +535,24 @@
     async function submitQuote(questionId) {
       const studentPrice = parseFloat(document.getElementById("student-price").value);
       const expertPayout = parseFloat(document.getElementById("expert-payout").value);
+      const studentCurrency = document.getElementById("student-currency").value;
+      const expertCurrency = document.getElementById("expert-currency").value;
 
       if (!studentPrice || !expertPayout) {
         toast("Both prices are required.", "error"); return;
       }
-      if (expertPayout >= studentPrice) {
+      if (studentCurrency === expertCurrency && expertPayout >= studentPrice) {
         toast("Expert payout must be less than student price.", "error"); return;
       }
 
       const res = await apiFetch(`/admin/orders/${questionId}/quote`, {
         method: "POST",
-        body: JSON.stringify({ student_price: studentPrice, expert_payout: expertPayout })
+        body: JSON.stringify({
+          student_price: studentPrice,
+          expert_payout: expertPayout,
+          student_currency: studentCurrency,
+          expert_currency: expertCurrency
+        })
       });
 
       if (res.ok) {
@@ -545,9 +569,9 @@
       const data = await res.json();
 
       if (res.ok) {
-        toast(`Payment ready — Advance: ₹${data.advance} / Completion: ₹${data.completion}`);
+        toast(`Payment ready — Advance: ${formatMoney(data.advance, data.currency)} / Completion: ${formatMoney(data.completion, data.currency)}`);
         sendMessageToThread(activeOrderId, "A",
-          `Your quote has been confirmed. Advance payment: ₹${data.advance}. ` +
+          `Your quote has been confirmed. Advance payment: ${formatMoney(data.advance, data.currency)}. ` +
           `Log in to your order page to pay and get started.`
         );
         openOrder(questionId);
@@ -569,7 +593,7 @@
       const data = await res.json();
 
       if (res.ok) {
-        toast(`Advance bypassed. Full completion payment: ₹${data.completion_amount}`);
+        toast(`Advance bypassed. Full completion payment: ${formatMoney(data.completion_amount, data.currency)}`);
         openOrder(questionId);
       } else {
         toast(data.error || "Failed to bypass advance payment", "error");
@@ -807,13 +831,15 @@
     }
 
     // ── Refund Modal ──────────────────────────────────────────────
-    function openRefundModal(questionId, maxRefundAmount, refundType = "advance") {
+    function openRefundModal(questionId, maxRefundAmount, refundType = "advance", currency = "inr") {
       document.getElementById("refund-modal-qid").value = questionId;
+      document.getElementById("refund-modal-currency").value = currency;
       document.getElementById("refund-reason-input").value = "";
       document.getElementById("refund-amount-input").value = maxRefundAmount || "";
       document.getElementById("refund-amount-input").max = maxRefundAmount || "";
       const paymentLabel = refundType === "completion" ? "completion payment" : "advance payment";
-      document.getElementById("refund-modal-desc").textContent = `The student paid ₹${maxRefundAmount || 0} as ${paymentLabel}. You can request a partial or full refund.`;
+      document.getElementById("refund-modal-desc").textContent = `The student paid ${formatMoney(maxRefundAmount || 0, currency)} as ${paymentLabel}. You can request a partial or full refund.`;
+      document.getElementById("refund-amount-label").textContent = `Refund Amount (${String(currency || "inr").toUpperCase()})`;
       
       const btn = document.getElementById("refund-submit-btn");
       if (btn) {
@@ -891,8 +917,9 @@
         Please provide a clear reason below.
       </p>
       <input type="hidden" id="refund-modal-qid">
+      <input type="hidden" id="refund-modal-currency" value="inr">
       <div class="form-group">
-        <label class="label">Refund Amount (₹) <span style="color:var(--color-danger)">*</span></label>
+        <label class="label"><span id="refund-amount-label">Refund Amount (INR)</span> <span style="color:var(--color-danger)">*</span></label>
         <input type="number" id="refund-amount-input" class="input" step="0.01" min="0.01" style="width: 100%;">
       </div>
       <div class="form-group">

@@ -24,15 +24,18 @@ def broadcast_question(question_id):
     send_domain_blast(question)
 
 
-def set_price_quote(question_id, student_price, expert_payout):
+def set_price_quote(question_id, student_price, expert_payout, student_currency=None, expert_currency=None):
     db = get_db()
-    db.questions.update_one(
-        {"_id": oid(question_id)},
-        {"$set": {
-            "student_price": student_price,
-            "expert_payout": expert_payout,
-        }}
-    )
+    update = {
+        "student_price": student_price,
+        "expert_payout": expert_payout,
+    }
+    if student_currency:
+        update["student_currency"] = student_currency
+    if expert_currency:
+        update["expert_currency"] = expert_currency
+
+    db.questions.update_one({"_id": oid(question_id)}, {"$set": update})
 
 
 def approve_price(question_id):

@@ -226,7 +226,7 @@
 
         let priceHTML = "";
         if (o.price_approved && o.student_price != null) {
-          priceHTML = `<div style="font-weight: 600; color: var(--color-gray-900); margin-top: 8px;">₹${o.student_price}</div>`;
+          priceHTML = `<div style="font-weight: 600; color: var(--color-gray-900); margin-top: 8px;">${formatMoney(o.student_price, o.student_currency)}</div>`;
         }
 
         card.innerHTML = `

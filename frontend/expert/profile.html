@@ -310,6 +310,7 @@
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
       if (!requireRole("expert")) throw new Error("Abort");
       document.querySelector('[data-page="profile"]')?.classList.add("active");
@@ -386,7 +387,7 @@
         document.getElementById("p-reviews").textContent =
           data.review_count ?? 0;
         document.getElementById("p-earnings").textContent =
-          `₹${(data.total_earnings || 0).toFixed(2)}`;
+          formatMoneyBuckets(data.total_earnings_by_currency || { inr: data.total_earnings || 0 });
 
         // Set inputs
         document.getElementById("i-name").value = data.name || "";

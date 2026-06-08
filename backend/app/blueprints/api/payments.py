@@ -15,6 +15,7 @@ from app.services.payment_service import (
     ensure_payment_record,
     get_split_amounts
 )
+from app.utils.currency import normalize_currency
 
 
 # ── Admin initiates payment setup ────────────────────────────────────────────
@@ -46,10 +47,12 @@ def setup_payment(question_id):
     ensure_payment_record(question_id, question["student_price"], question["student_id"])
 
     advance, completion = get_split_amounts(question["student_price"])
+    currency = normalize_currency(question.get("student_currency"))
     return jsonify({
         "advance":    advance,
         "completion": completion,
         "total":      question["student_price"],
+        "currency":   currency,
         "gateway":    "stripe"
     }), 200
 
@@ -110,7 +113,8 @@ def create_checkout(question_id):
         if payment_type == "advance":
             session_url, session_id = create_advance_session(
                 question_id, question["student_price"],
-                question["title"], student_email
+                question["title"], student_email,
+                currency=payment.get("currency") or question.get("student_currency")
             )
             db.payments.update_one(
                 {"question_id": oid(question_id)},
@@ -127,7 +131,8 @@ def create_checkout(question_id):
             session_url, session_id = create_completion_session(
                 question_id, question["student_price"],
                 question["title"], student_email,
-                completion_amount=completion_amount
+                completion_amount=completion_amount,
+                currency=payment.get("currency") or question.get("student_currency")
             )
             db.payments.update_one(
                 {"question_id": oid(question_id)},
@@ -332,6 +337,7 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
         payment_intent_id = None
 
     if payment_type == "advance":
+        student_currency = payment.get("currency") or question.get("student_currency", "inr")
         # Idempotency check — already paid, but backfill intent_id if it was missed
         if payment.get("advance_paid"):
             if payment_intent_id and not payment.get("advance_payment_intent_id"):
@@ -349,6 +355,9 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
                 "advance_session_id": session_id,
                 "status":             "advance_paid",
                 "advance_payment_intent_id": payment_intent_id,
+                "currency":           payment.get("currency") or question.get("student_currency", "inr"),
+                "student_currency":   payment.get("student_currency") or question.get("student_currency", "inr"),
+                "expert_currency":    payment.get("expert_currency") or question.get("expert_currency", "inr"),
                 "triggered_by":       triggered_by  # Audit trail
             }}
         )
@@ -360,7 +369,10 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
         # Increment student's total_spent
         db.students.update_one(
             {"_id": question["student_id"]},
-            {"$inc": {"total_spent": amount_paid}}
+            {"$inc": {
+                "total_spent": amount_paid,
+                f"total_spent_by_currency.{student_currency}": amount_paid
+            }}
         )
 
         # Notify student
@@ -368,6 +380,8 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
         return "advance"
 
     elif payment_type == "completion":
+        student_currency = payment.get("currency") or question.get("student_currency", "inr")
+        expert_currency = question.get("expert_currency", "inr")
         # Idempotency check — already paid, but backfill intent_id if it was missed
         if payment.get("completion_paid"):
             if payment_intent_id and not payment.get("completion_payment_intent_id"):
@@ -385,6 +399,9 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
                 "completion_session_id": session_id,
                 "status":                "fully_paid",
                 "completion_payment_intent_id": payment_intent_id,
+                "currency":              payment.get("currency") or question.get("student_currency", "inr"),
+                "student_currency":      payment.get("student_currency") or question.get("student_currency", "inr"),
+                "expert_currency":       payment.get("expert_currency") or question.get("expert_currency", "inr"),
                 "triggered_by":       triggered_by  # Audit trail
             }}
         )
@@ -401,7 +418,10 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
         # Increment student's total_spent
         db.students.update_one(
             {"_id": question["student_id"]},
-            {"$inc": {"total_spent": amount_paid}}
+            {"$inc": {
+                "total_spent": amount_paid,
+                f"total_spent_by_currency.{student_currency}": amount_paid
+            }}
         )
 
         # Increment expert's total_earnings and tasks_completed
@@ -412,6 +432,7 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
                 {"_id": assigned_expert_id},
                 {"$inc": {
                     "total_earnings": float(expert_payout),
+                    f"total_earnings_by_currency.{expert_currency}": float(expert_payout),
                     "tasks_completed": 1
                 }}
             )
@@ -420,6 +441,7 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
                 "question_id":       oid(question_id),
                 "expert_id":         assigned_expert_id,
                 "amount":            float(expert_payout),
+                "currency":          question.get("expert_currency", "inr"),
                 "is_paid":           False,
                 "paid_at":           None,
                 "task_completed_at": now,
@@ -433,7 +455,10 @@ def _handle_checkout_completed(session, triggered_by="webhook"):
             {"question_id": oid(question_id)},
             {"$set": {
                 "revenue": float(student_price),
-                "profit":  float(profit)
+                "profit":  float(profit),
+                "currency": question.get("student_currency", "inr"),
+                "student_currency": question.get("student_currency", "inr"),
+                "expert_currency": question.get("expert_currency", "inr")
             }}
         )
 
@@ -541,6 +566,9 @@ def payment_status(question_id):
             "completion_paid": False,
             "advance_amount":  None,
             "completion_amount": None,
+            "currency":        question.get("student_currency", "inr"),
+            "student_currency": question.get("student_currency", "inr"),
+            "expert_currency": question.get("expert_currency", "inr"),
             "status":          "not_setup"
         }), 200
 
@@ -552,6 +580,9 @@ def payment_status(question_id):
         "advance_amount":    payment.get("advance_amount",  advance),
         "completion_amount": payment.get("completion_amount", completion),
         "total_amount":      payment.get("total_amount",    question["student_price"]),
+        "currency":          payment.get("currency", question.get("student_currency", "inr")),
+        "student_currency":  payment.get("student_currency", question.get("student_currency", "inr")),
+        "expert_currency":   payment.get("expert_currency", question.get("expert_currency", "inr")),
         "advance_bypassed":  payment.get("advance_bypassed", False),
         "status":            payment.get("status",          "pending"),
         "gateway":           "stripe"

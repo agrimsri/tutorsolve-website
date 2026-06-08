@@ -180,7 +180,7 @@
           document.getElementById("charts-row").style.display = "grid";
           document.getElementById("tasks-list-container").style.display = "block";
 
-          document.getElementById("stat-earnings").textContent = `₹${(data.total_earnings || 0).toFixed(2)}`;
+          document.getElementById("stat-earnings").textContent = formatMoneyBuckets(data.total_earnings_by_currency || { inr: data.total_earnings || 0 });
           document.getElementById("stat-quality").textContent = `${(data.quality_score || 0).toFixed(1)} / 5`;
           document.getElementById("stat-ontime").textContent = `${Math.round((data.on_time_rate || 0) * 100)}%`;
           document.getElementById("stat-completed").textContent = data.tasks_completed || 0;
@@ -302,7 +302,7 @@
         tr.innerHTML = `
           <td style="padding: 12px 16px; font-weight: 500;">${escapeHtml(t.title.substring(0, 40))}${t.title.length > 40 ? '...' : ''}</td>
           <td style="padding: 12px 16px;"><span class="badge badge-${t.status}">${formatStatus(t.status)}</span></td>
-          <td style="padding: 12px 16px;">₹${(t.expert_payout || 0).toFixed(2)}</td>
+          <td style="padding: 12px 16px;">${formatMoney(t.expert_payout || 0, t.expert_currency)}</td>
           <td style="padding: 12px 16px;">${deadlineHtml}</td>
           <td style="padding: 12px 16px; text-align: right;">
             <a href="/expert/task-detail.html?id=${t._id}" class="btn btn-secondary btn-sm">Open Task</a>

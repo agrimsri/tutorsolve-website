@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import get_jwt_identity
 from bson import ObjectId
 from datetime import datetime, timezone
@@ -162,7 +162,9 @@ def create_order():
         "deadline":             deadline,
         "status":               OrderStatus.AWAITING_QUOTE,
         "student_price":        None,
+        "student_currency":     "inr",
         "expert_payout":        None,
+        "expert_currency":      "inr",
         "price_approved":       False,
         "assigned_expert_id":   None,
         "assigned_employee_id": None,
@@ -298,6 +300,8 @@ def order_detail(question_id):
             "advance_amount":  payment.get("advance_amount"),
             "completion_amount": payment.get("completion_amount"),
             "total_amount":    payment.get("total_amount"),
+            "currency":        payment.get("currency", question.get("student_currency", "inr")),
+            "student_currency": payment.get("student_currency", question.get("student_currency", "inr")),
             "status":          payment.get("status"),
         }
     else:
@@ -311,33 +315,47 @@ def order_detail(question_id):
 def add_order_files(question_id):
     uid  = get_jwt_identity()
     db   = get_db()
-    data = request.json
+    
+    try:
+        data = request.get_json() or {}
+    except Exception as e:
+        return jsonify({"error": "Invalid JSON payload"}), 400
+    
     file_ids = data.get("file_ids", [])
     
     if not file_ids:
         return jsonify({"error": "No files provided"}), 400
     
     student = db.students.find_one({"user_id": oid(uid)})
+    if not student:
+        return jsonify({"error": "Student profile not found"}), 404
+    
     question = db.questions.find_one({
         "_id":        oid(question_id),
         "student_id": student["_id"]
     })
     
     if not question:
-        return jsonify({"error": "Order not found"}), 404
+        return jsonify({"error": "Order not found or does not belong to you"}), 404
     
-    # Check status — only allow adding files before payment (awaiting_quote or pending_payment)
-    # Actually, the user said "till the payment has not been made"
-    if question["status"] not in ("awaiting_quote", "pending_payment"):
-        return jsonify({"error": "Cannot add files at this stage"}), 403
+    # Check status — allow adding files anytime except for cancelled/refunded orders
+    if question["status"] in ("cancelled", "refunded"):
+        return jsonify({"error": "Cannot add files to cancelled or refunded orders"}), 403
     
-    # Link files
-    db.files.update_many(
-        {"_id": {"$in": [oid(fid) for fid in file_ids]}, "student_user_id": oid(uid)},
-        {"$set": {"question_id": oid(question_id)}}
-    )
+    # Link files - verify they belong to the student
+    try:
+        result = db.files.update_many(
+            {"_id": {"$in": [oid(fid) for fid in file_ids]}, "student_user_id": oid(uid)},
+            {"$set": {"question_id": oid(question_id)}}
+        )
+        if result.matched_count == 0:
+            current_app.logger.warning(f"[Files] No files matched for student {uid} and files {file_ids}")
+            return jsonify({"error": "Files not found or do not belong to you"}), 404
+    except Exception as e:
+        current_app.logger.error(f"[Files] Error linking files: {str(e)}")
+        return jsonify({"error": "Failed to link files"}), 500
     
-    return jsonify({"status": "files_added"}), 200
+    return jsonify({"status": "files_added", "linked_count": result.modified_count}), 200
 
 
 @student_bp.route("/orders/<question_id>/thread", methods=["GET"])

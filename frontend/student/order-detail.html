@@ -587,7 +587,8 @@
           "
         >
           Do you have a concern with this order? <br /><br />
-          Clicking confirm will notify the admin team. An employee will review your case and chat with you here to resolve any issues.
+          Clicking confirm will notify the admin team. An employee will review
+          your case and chat with you here to resolve any issues.
         </p>
         <div style="display: flex; gap: 12px">
           <button
@@ -692,7 +693,7 @@
                         </div>
                     </div>
                     ${order.description ? `<p style="margin-top: 16px;">${order.description}</p>` : ""}
-                    ${order.student_price ? `<p style="font-weight: 600; margin-top: 16px;">Total Price: ₹${order.student_price}</p>` : ""}
+                    ${order.student_price ? `<p style="font-weight: 600; margin-top: 16px;">Total Price: ${formatMoney(order.student_price, order.student_currency)}</p>` : ""}
                 `;
 
           renderRoadmap(order, reviewData.reviewed);
@@ -729,11 +730,8 @@
             }
           }
 
-          // Show add file button
-          if (
-            order.status === "awaiting_quote" ||
-            order.status === "pending_payment"
-          ) {
+          // Show add file button — allow students to upload at all times except cancelled/refunded
+          if (order.status !== "cancelled" && order.status !== "refunded") {
             document.getElementById("add-file-btn").style.display = "block";
           } else {
             document.getElementById("add-file-btn").style.display = "none";
@@ -840,7 +838,8 @@
       function renderRoadmap(order, isReviewed = false) {
         const container = document.getElementById("order-roadmap");
         const isAdvancePaid = order.payment && order.payment.advance_paid;
-        const isAdvanceBypassed = order.payment && order.payment.advance_bypassed;
+        const isAdvanceBypassed =
+          order.payment && order.payment.advance_bypassed;
         const isAdvanceSatisfied = isAdvancePaid || isAdvanceBypassed;
         const isCompletionPaid = order.payment && order.payment.completion_paid;
 
@@ -865,11 +864,12 @@
         };
         if (order.price_approved && !isAdvanceSatisfied) {
           paymentStep.status = "active";
-          paymentStep.desc = `Price set to ₹${order.student_price}. Pay 50% to start work.`;
-          paymentStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('advance')">Pay ₹${(order.student_price / 2).toFixed(2)}</button>`;
+          paymentStep.desc = `Price set to ${formatMoney(order.student_price, order.student_currency)}. Pay 50% to start work.`;
+          paymentStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('advance')">Pay ${formatMoney(order.student_price / 2, order.student_currency)}</button>`;
         } else if (isAdvanceBypassed) {
           paymentStep.status = "completed";
-          paymentStep.desc = "Advance payment deferred. You will pay the full amount after completion.";
+          paymentStep.desc =
+            "Advance payment deferred. You will pay the full amount after completion.";
         } else if (isAdvancePaid) {
           paymentStep.status = "completed";
           paymentStep.desc = "Advance payment received.";
@@ -899,19 +899,25 @@
         // 4. Preview & Final Payment
         let previewStep = {
           id: "preview",
-          title: isAdvanceBypassed ? "Solution Preview & Full Payment" : "Solution Preview & Balance",
+          title: isAdvanceBypassed
+            ? "Solution Preview & Full Payment"
+            : "Solution Preview & Balance",
           status: "greyed",
         };
         if (order.status === "reviewing") {
           previewStep.status = "active";
           if (!isCompletionPaid) {
-            const amountDue = Number(isAdvanceBypassed
-              ? (order.payment?.completion_amount || order.payment?.total_amount || order.student_price)
-              : (order.student_price - order.student_price / 2));
+            const amountDue = Number(
+              isAdvanceBypassed
+                ? order.payment?.completion_amount ||
+                    order.payment?.total_amount ||
+                    order.student_price
+                : order.student_price - order.student_price / 2,
+            );
             previewStep.desc = isAdvanceBypassed
               ? "Review preview and pay the full amount to unlock full file."
               : "Review preview and pay balance to unlock full file.";
-            previewStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('completion')">Pay ₹${amountDue.toFixed(2)}</button>`;
+            previewStep.action = `<button class="btn btn-primary btn-sm" onclick="payNow('completion')">Pay ${formatMoney(amountDue, order.payment?.currency || order.student_currency)}</button>`;
           } else {
             previewStep.desc = "Payment complete. Solution unlocked.";
             previewStep.status = "completed";

@@ -10,6 +10,7 @@ from app.utils.decorators import admin_required, role_required
 from app.utils.helpers import oid, to_str_id
 from app.services.diamond_engine import set_price_quote, assign_expert
 from app.utils.constants import Role
+from app.utils.currency import normalize_currency, money_label
 
 
 def _to_object_id(raw_id):
@@ -203,6 +204,8 @@ def orders():
             ),
             "status":         q["status"],
             "student_price":  q.get("student_price"),
+            "student_currency": q.get("student_currency", "inr"),
+            "expert_currency": q.get("expert_currency", "inr"),
             "price_approved": q.get("price_approved", False),
             "has_thread_a":   has_thread_a,
             "assigned_employee_id": str(q["assigned_employee_id"]) if q.get("assigned_employee_id") else None,
@@ -216,7 +219,7 @@ def orders():
 @admin_bp.route("/orders/<question_id>/quote", methods=["POST"])
 @admin_required
 def set_quote(question_id):
-    data = request.get_json()
+    data = request.get_json() or {}
     db   = get_db()
     uid  = get_jwt_identity()
     
@@ -238,9 +241,20 @@ def set_quote(question_id):
         return jsonify({"error": f"Cannot edit price in current status: {question['status']}"}), 400
 
     is_update = (question["status"] == OrderStatus.PENDING_PAYMENT)
-    
+
+    try:
+        student_price = float(data.get("student_price"))
+        expert_payout = float(data.get("expert_payout"))
+        student_currency = normalize_currency(data.get("student_currency") or question.get("student_currency"))
+        expert_currency = normalize_currency(data.get("expert_currency") or question.get("expert_currency"))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Valid prices and supported currencies are required."}), 400
+
+    if student_price <= 0 or expert_payout <= 0:
+        return jsonify({"error": "Both prices must be greater than zero."}), 400
+
     from app.services.diamond_engine import set_price_quote
-    set_price_quote(question_id, data["student_price"], data["expert_payout"])
+    set_price_quote(question_id, student_price, expert_payout, student_currency, expert_currency)
     
     # Auto-approve the price (replaces Maker-Checker flow)
     from app.services.diamond_engine import approve_price
@@ -248,70 +262,98 @@ def set_quote(question_id):
 
     # Sync with payments record
     from app.services.payment_service import ensure_payment_record
-    ensure_payment_record(question_id, data["student_price"], question["student_id"])
+    ensure_payment_record(question_id, student_price, question["student_id"])
 
     from app.services.email_service import send_price_quote_email
-    
-    if question:
-        student_price = float(data.get("student_price") or 0)
-        expert_payout = float(data.get("expert_payout") or 0)
 
-        # Send predefined message to Thread A (student ↔ admin)
-        thread_a = db.threads.find_one({
+    old_student_price = question.get("student_price")
+    old_expert_payout = question.get("expert_payout")
+    old_student_currency = normalize_currency(question.get("student_currency"))
+    old_expert_currency = normalize_currency(question.get("expert_currency"))
+    student_price_changed = (
+        old_student_price is None
+        or round(float(old_student_price or 0), 2) != round(student_price, 2)
+        or old_student_currency != student_currency
+    )
+    expert_price_changed = (
+        old_expert_payout is None
+        or round(float(old_expert_payout or 0), 2) != round(expert_payout, 2)
+        or old_expert_currency != expert_currency
+    )
+
+    def insert_thread_message(thread_type, body):
+        thread = db.threads.find_one({
             "question_id": oid(question_id),
-            "thread_type": "A"
+            "thread_type": thread_type
         })
-        if thread_a and employee:
-            msg_body = (
-                f"We've reviewed your question and are pleased to offer you the following:\n\n"
-                f"Total Price: ₹{student_price:.2f}\n\n"
-                f"Advance (50%): ₹{student_price / 2:.2f} \n\n"
-                f"Completion (50%): ₹{student_price - student_price / 2:.2f}\n\n"
-                f"Refresh to see the paymnet link."
-            )
-            if is_update:
-                msg_body = (
-                    f"**Quote Updated!**\n\n"
-                    f"We have updated your quote for this order:\n"
-                    f"New Total Price: ₹{student_price:.2f}\n"
-                    f"New Advance (50%): ₹{student_price / 2:.2f}\n"
-                    f"New Completion (50%): ₹{student_price - student_price / 2:.2f}\n\n"
-                    f"Refresh to see the payment link."
-                )
+        if not thread or not employee:
+            return
 
-            db.messages.insert_one({
-                "thread_id":      thread_a["_id"],
-                "sender_user_id": employee["user_id"],
-                "body":           msg_body,
-                "created_at":     datetime.utcnow()
-            })
-            # Emit via SocketIO using start_background_task to avoid deadlocking
-            # the PubSub subscriber greenlet in gevent mode.
+        now = datetime.utcnow()
+        db.messages.insert_one({
+            "thread_id":      thread["_id"],
+            "sender_user_id": employee["user_id"],
+            "body":           body,
+            "created_at":     now
+        })
+        try:
             from app.extensions import socketio
-            _tid = str(thread_a["_id"])
-            _emp_uid = str(employee["user_id"])
+            _tid = str(thread["_id"])
             _payload = {
                 "thread_id":      _tid,
-                "sender_user_id": _emp_uid,
+                "sender_user_id": str(employee["user_id"]),
                 "sender_role":    "employee",
-                "body":           msg_body,
-                "created_at":     datetime.utcnow().isoformat(),
+                "body":           body,
+                "created_at":     now.isoformat(),
             }
-            
-            def emit_msg():
-                try:
-                    socketio.emit("new_message", _payload, room=f"thread_{_tid}")
-                    print(f"[DEBUG] set_quote: socketio.emit (background) succeeded")
-                except Exception as e:
-                    print(f"[ERROR] set_quote: socketio.emit (background) FAILED: {e}")
+            socketio.start_background_task(
+                lambda: socketio.emit("new_message", _payload, room=f"thread_{_tid}")
+            )
+        except Exception:
+            pass
 
-            socketio.start_background_task(emit_msg)
+    student_total = money_label(student_price, student_currency)
+    student_advance = money_label(student_price / 2, student_currency)
+    student_completion = money_label(student_price - student_price / 2, student_currency)
+    if (not is_update) or student_price_changed:
+        msg_body = (
+            f"We've reviewed your question and are pleased to offer you the following:\n\n"
+            f"Total Price: {student_total}\n\n"
+            f"Advance (50%): {student_advance}\n\n"
+            f"Completion (50%): {student_completion}\n\n"
+            f"Refresh to see the payment link."
+        )
+        if is_update:
+            msg_body = (
+                f"**Quote Updated!**\n\n"
+                f"We have updated your quote for this order:\n"
+                f"New Total Price: {student_total}\n"
+                f"New Advance (50%): {student_advance}\n"
+                f"New Completion (50%): {student_completion}\n\n"
+                f"Refresh to see the payment link."
+            )
+        insert_thread_message("A", msg_body)
 
+    if is_update and expert_price_changed and question.get("assigned_expert_id"):
+        expert_body = (
+            f"**Payout Updated**\n\n"
+            f"The expert payout for this order has been updated to "
+            f"{money_label(expert_payout, expert_currency)}."
+        )
+        insert_thread_message("B", expert_body)
+
+    if (not is_update) or student_price_changed:
         student = db.students.find_one({"_id": question["student_id"]})
         if student:
             user = db.users.find_one({"_id": student["user_id"]})
             if user:
-                send_price_quote_email(user["email"], student["name"], question["title"], student_price)
+                send_price_quote_email(
+                    user["email"],
+                    student["name"],
+                    question["title"],
+                    student_price,
+                    student_currency
+                )
                 from app.tasks.notification_tasks import send_notification_async
                 print(f"[DEBUG] set_quote: Dispatching send_notification_async.delay to student user_id={user['_id']}")
                 try:
@@ -319,12 +361,27 @@ def set_quote(question_id):
                         user_id=str(user["_id"]),
                         notif_type="quote_ready",
                         title="Your quote has been updated" if is_update else "Your quote is ready",
-                        body=f"\u20b9{student_price:.2f} \u2014 log in to check.",
+                        body=f"{student_total} — log in to check.",
                         link=f"/student/order-detail.html?id={question_id}"
                     )
                     print(f"[DEBUG] set_quote: send_notification_async.delay dispatched OK")
                 except Exception as e:
                     print(f"[ERROR] set_quote: send_notification_async.delay FAILED: {e}")
+
+    if is_update and expert_price_changed and question.get("assigned_expert_id"):
+        expert = db.experts.find_one({"_id": question["assigned_expert_id"]})
+        if expert:
+            from app.tasks.notification_tasks import send_notification_async
+            try:
+                send_notification_async.delay(
+                    user_id=str(expert["user_id"]),
+                    notif_type="expert_payout_updated",
+                    title="Payout updated",
+                    body=f"Your payout for '{question['title']}' is now {money_label(expert_payout, expert_currency)}.",
+                    link=f"/expert/task-detail.html?id={question_id}"
+                )
+            except Exception as e:
+                print(f"[ERROR] set_quote: expert payout notification FAILED: {e}")
 
     return jsonify({"status": "quote_set_and_approved", "is_update": is_update}), 200
 
@@ -730,7 +787,9 @@ def order_detail(question_id):
         "domain":           domain_name,
         "status":           question["status"],
         "student_price":    question.get("student_price"),
+        "student_currency": question.get("student_currency", "inr"),
         "expert_payout":    question.get("expert_payout"),   # Admin CAN see this
+        "expert_currency":  question.get("expert_currency", "inr"),
         "price_approved":   question.get("price_approved", False),
         "deadline":         str(question["deadline"]) if question.get("deadline") else None,
         "assigned_expert_id": str(question["assigned_expert_id"]) if question.get("assigned_expert_id") else None,
@@ -744,6 +803,9 @@ def order_detail(question_id):
             "advance_amount":  payment.get("advance_amount"),
             "completion_amount": payment.get("completion_amount"),
             "total_amount":    payment.get("total_amount"),
+            "currency":        payment.get("currency", question.get("student_currency", "inr")),
+            "student_currency": payment.get("student_currency", question.get("student_currency", "inr")),
+            "expert_currency": payment.get("expert_currency", question.get("expert_currency", "inr")),
             "status":          payment.get("status"),
         } if payment else None,
         "files": [{
@@ -859,6 +921,9 @@ def refund_flow_detail(question_id):
             "advance_amount": payment.get("advance_amount"),
             "completion_amount": payment.get("completion_amount"),
             "total_amount": payment.get("total_amount"),
+            "currency": payment.get("currency", question.get("student_currency", "inr")),
+            "student_currency": payment.get("student_currency", question.get("student_currency", "inr")),
+            "expert_currency": payment.get("expert_currency", question.get("expert_currency", "inr")),
             "advance_paid": bool(payment.get("advance_paid")),
             "advance_bypassed": bool(payment.get("advance_bypassed")),
             "completion_paid": bool(payment.get("completion_paid")),
@@ -887,7 +952,7 @@ def refund_flow_detail(question_id):
         timeline.append({
             "title": "Advance Payment Completed",
             "at": payment_payload.get("advance_paid_at"),
-            "detail": f"₹{payment_payload.get('advance_amount', 0)} paid",
+            "detail": f"{money_label(payment_payload.get('advance_amount', 0), payment_payload.get('currency'))} paid",
             "state": "done"
         })
     elif payment_payload and payment_payload.get("advance_bypassed"):
@@ -917,7 +982,7 @@ def refund_flow_detail(question_id):
         timeline.append({
             "title": "Final Payment Completed",
             "at": payment_payload.get("completion_paid_at"),
-            "detail": f"₹{payment_payload.get('completion_amount', 0)} paid",
+            "detail": f"{money_label(payment_payload.get('completion_amount', 0), payment_payload.get('currency'))} paid",
             "state": "done"
         })
     else:
@@ -936,6 +1001,13 @@ def refund_flow_detail(question_id):
             "state": "active"
         })
 
+    # Get assigned employee's user_id if present
+    assigned_employee_user_id = None
+    if question.get("assigned_employee_id"):
+        employee = db.employees.find_one({"_id": question["assigned_employee_id"]})
+        if employee and employee.get("user_id"):
+            assigned_employee_user_id = str(employee["user_id"])
+
     return jsonify({
         "question": {
             "_id": str(question["_id"]),
@@ -946,7 +1018,9 @@ def refund_flow_detail(question_id):
             "deadline": str(question.get("deadline")) if question.get("deadline") else None,
             "created_at": str(question.get("created_at")) if question.get("created_at") else None,
             "student_price": question.get("student_price"),
+            "student_currency": question.get("student_currency", "inr"),
             "expert_payout": question.get("expert_payout"),
+            "expert_currency": question.get("expert_currency", "inr"),
             "student_name": student.get("name") if student else "Unknown Student",
         },
         "payment": payment_payload,
@@ -954,7 +1028,8 @@ def refund_flow_detail(question_id):
         "solution_files": solution_files,
         "chat_student_admin": _thread_messages(thread_a),
         "chat_admin_expert": _thread_messages(thread_b),
-        "timeline": timeline
+        "timeline": timeline,
+        "assigned_employee_user_id": assigned_employee_user_id
     }), 200
 
 
@@ -967,7 +1042,9 @@ def get_quote(question_id):
         return jsonify({"error": "Not found"}), 404
     return jsonify({
         "student_price":  question.get("student_price"),
+        "student_currency": question.get("student_currency", "inr"),
         "expert_payout":  question.get("expert_payout"),
+        "expert_currency": question.get("expert_currency", "inr"),
         "price_approved": question.get("price_approved", False),
     }), 200
 
@@ -1022,6 +1099,9 @@ def bypass_advance_payment(question_id):
             "advance_amount": 0,
             "completion_amount": total_amount,
             "total_amount": total_amount,
+            "currency": question.get("student_currency", "inr"),
+            "student_currency": question.get("student_currency", "inr"),
+            "expert_currency": question.get("expert_currency", "inr"),
             "status": "advance_bypassed",
         }}
     )
@@ -1038,7 +1118,7 @@ def bypass_advance_payment(question_id):
     if thread_a:
         body = (
             "ℹ️ Advance payment has been bypassed for this order. "
-            f"You can pay the full amount of ₹{total_amount:.2f} after the solution preview is ready."
+            f"You can pay the full amount of {money_label(total_amount, question.get('student_currency'))} after the solution preview is ready."
         )
         msg_result = db.messages.insert_one({
             "thread_id": thread_a["_id"],
@@ -1080,7 +1160,8 @@ def bypass_advance_payment(question_id):
     return jsonify({
         "status": "advance_bypassed",
         "completion_amount": total_amount,
-        "total_amount": total_amount
+        "total_amount": total_amount,
+        "currency": question.get("student_currency", "inr")
     }), 200
 
 
@@ -1389,7 +1470,13 @@ def initiate_refund(question_id):
         pool_label = "advance payment"
 
     if refund_amount > max_refundable:
-        return jsonify({"error": f"Refund amount (₹{refund_amount:.2f}) cannot exceed the {pool_label} (₹{max_refundable:.2f})"}), 400
+        currency = payment.get("currency") or question.get("student_currency", "inr")
+        return jsonify({
+            "error": (
+                f"Refund amount ({money_label(refund_amount, currency)}) cannot exceed "
+                f"the {pool_label} ({money_label(max_refundable, currency)})"
+            )
+        }), 400
 
     # BUG#8: Validate payment intents exist before escalating
     if refund_type == "advance":
@@ -1415,6 +1502,9 @@ def initiate_refund(question_id):
             "refund_type":                refund_type,
             "refund_reason":              reason,
             "refund_amount":              refund_amount,
+            "currency":                   payment.get("currency") or question.get("student_currency", "inr"),
+            "student_currency":           payment.get("student_currency") or question.get("student_currency", "inr"),
+            "expert_currency":            payment.get("expert_currency") or question.get("expert_currency", "inr"),
             "refund_initiated_by":        employee["_id"],
             "refund_initiated_by_name":   employee.get("name", ""),
             "refund_requested_at":        now

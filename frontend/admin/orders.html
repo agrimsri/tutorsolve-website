@@ -270,6 +270,7 @@
     <script src="/js/api.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/toast.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
       if (!requireRole("employee")) throw new Error("Abort");
 
@@ -325,7 +326,7 @@
 
         let priceRow = "";
         if (order.student_price) {
-          priceRow = `<div class="price-row">💰 Quote: <strong>₹${order.student_price}</strong> ${order.price_approved ? "✅ Approved" : "⏳ Pending approval"}</div>`;
+          priceRow = `<div class="price-row">💰 Quote: <strong>${formatMoney(order.student_price, order.student_currency)}</strong> ${order.price_approved ? "✅ Approved" : "⏳ Pending approval"}</div>`;
         }
 
         return `
